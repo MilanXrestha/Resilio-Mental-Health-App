@@ -1,0 +1,15 @@
+{
+  "@@locale": "en",
+  "appTitle": "Resilio",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  "login": "Login",
+  "@login": {
+    "description": "Login button text"
+  },
+  "adminLogin": "Admin Login",
+  "@adminLogin": {
+    "description": "Admin login page title"
+  }
+}

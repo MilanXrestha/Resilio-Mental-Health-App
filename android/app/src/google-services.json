@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "28061750512",
+    "project_id": "resilio-mental-health-app",
+    "storage_bucket": "resilio-mental-health-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:28061750512:android:4af92f1621df3fb848de35",
+        "android_client_info": {
+          "package_name": "com.islington.resilio"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAFV3PaylH4ZePBu7_ZtsbsZzbDAOVgRhI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
