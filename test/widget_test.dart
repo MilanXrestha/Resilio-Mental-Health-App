@@ -1,6 +1,7 @@
+import 'package:Resilio/app/resilio_app.dart';
+import 'package:Resilio/core/settings/app_settings.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:resilio/core/settings/app_settings.dart';
-import 'package:resilio/main.dart';
+
 
 void main() {
   testWidgets('App renders smoke test', (WidgetTester tester) async {

@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
+import '../../../../../core/errors/failures.dart';
 import '../../domain/usecases/login_usecase.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
@@ -23,7 +24,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
 
     result.fold(
-      (failure) => emit(AuthError(failure.message)),
+      (failure) => emit(AuthError((failure as Failure?)!.message)),
       (user) => emit(AuthAuthenticated(user)),
     );
   }

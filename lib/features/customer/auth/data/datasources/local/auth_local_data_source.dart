@@ -1,6 +1,7 @@
 import 'package:injectable/injectable.dart';
-import 'package:resilio/core/database/database_helper.dart';
-import 'package:resilio/core/proto_generated/auth.pb.dart';
+
+import '../../../../../../core/database/database_helper.dart';
+import '../../../../../../core/proto_generated/auth.pb.dart';
 
 abstract class AuthLocalDataSource {
   Future<void> cacheUser(User user);

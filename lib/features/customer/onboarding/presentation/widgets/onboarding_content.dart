@@ -1,10 +1,11 @@
+import 'package:Resilio/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lottie/lottie.dart';
 
-import 'package:resilio/core/theme/app_colors.dart';
-import 'package:resilio/core/theme/app_text_styles.dart';
-import 'package:resilio/features/customer/onboarding/domain/entities/onboarding_entity.dart';
+
+import '../../../../../core/theme/app_text_styles.dart';
+import '../../domain/entities/onboarding_entity.dart';
 
 /// A stateless widget that displays the content for an onboarding screen.
 class OnboardingContent extends StatelessWidget {

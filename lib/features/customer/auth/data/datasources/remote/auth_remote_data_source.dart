@@ -1,7 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
-import 'package:resilio/core/constants/api_endpoints.dart';
-import 'package:resilio/core/proto_generated/auth.pb.dart';
+
+
+import '../../../../../../core/constants/api_endpoints.dart';
+import '../../../../../../core/proto_generated/auth.pb.dart';
 
 abstract class AuthRemoteDataSource {
   Future<LoginResponse> login({required LoginRequest request});

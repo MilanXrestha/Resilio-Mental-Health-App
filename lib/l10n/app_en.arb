@@ -1,6 +1,9 @@
 {
   "@@locale": "en",
   "appTitle": "Resilio",
+  "appSubtitle": "Breathe. Move. Thrive.",
+  "appVersion": "v1.0.0",
+  "copyright": "Copyright © 2026 Resilio App.\nAll rights reserved.",
   "login": "Login",
   "adminLogin": "Admin Login",
   "onboardingTitle1": "Welcome to Resilio",

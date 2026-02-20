@@ -1,32 +1,24 @@
+import 'package:Resilio/core/routing/route_names.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:resilio/core/di/injection.dart';
-import 'package:resilio/core/routing/navigation_service.dart';
-import 'package:resilio/core/routing/route_names.dart';
-import 'package:resilio/core/usecases/usecase.dart';
-import 'package:resilio/features/customer/auth/presentation/screens/login_screen.dart';
-import 'package:resilio/features/customer/onboarding/domain/usecases/check_onboarding_status_usecase.dart';
-import 'package:resilio/features/customer/onboarding/presentation/screens/onboarding_screen.dart';
+import '../../features/customer/auth/presentation/screens/login_screen.dart';
+import '../../features/customer/onboarding/presentation/screens/onboarding_screen.dart';
+import '../../features/customer/splash/presentation/screens/splash_screen.dart';
+import '../di/injection.dart';
+import 'navigation_service.dart';
+
+
 
 class AppRouter {
   static final router = GoRouter(
     navigatorKey: getIt<NavigationService>().navigatorKey,
     initialLocation: '/',
-    redirect: (context, state) async {
-      final checkOnboardingStatus = getIt<CheckOnboardingStatusUseCase>();
-      final result = await checkOnboardingStatus.call(const NoParams());
-      final onboardingCompleted = result.getOrElse(() => false);
-      final path = state.matchedLocation;
-
-      if (path == '/' || path == '') {
-        return onboardingCompleted ? '/login' : '/onboarding';
-      }
-      if (path == '/onboarding' && onboardingCompleted) {
-        return '/login';
-      }
-      return null;
-    },
     routes: [
+      GoRoute(
+        path: '/',
+        name: RouteNames.splash,
+        builder: (context, state) => const SplashScreen(),
+      ),
       GoRoute(
         path: '/onboarding',
         name: RouteNames.onboarding,

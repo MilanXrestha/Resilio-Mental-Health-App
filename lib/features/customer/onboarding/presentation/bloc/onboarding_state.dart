@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:resilio/features/customer/onboarding/domain/entities/onboarding_entity.dart';
+import '../../domain/entities/onboarding_entity.dart';
 
 abstract class OnboardingState extends Equatable {
   const OnboardingState();

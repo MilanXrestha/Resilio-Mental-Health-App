@@ -1,20 +1,21 @@
+import 'package:Resilio/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:resilio/core/di/injection.dart';
-import 'package:resilio/core/routing/route_names.dart';
-import 'package:resilio/core/settings/app_settings_scope.dart';
-import 'package:resilio/core/theme/app_colors.dart';
-import 'package:resilio/core/theme/app_text_styles.dart';
-import 'package:resilio/features/customer/onboarding/presentation/bloc/onboarding_bloc.dart';
-import 'package:resilio/features/customer/onboarding/presentation/bloc/onboarding_event.dart';
-import 'package:resilio/features/customer/onboarding/presentation/bloc/onboarding_state.dart';
-import 'package:resilio/features/customer/onboarding/presentation/widgets/onboarding_content.dart';
-import 'package:resilio/features/customer/onboarding/presentation/widgets/slide_to_start_button.dart';
-import 'package:resilio/l10n/app_localizations.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+
+import '../../../../../core/di/injection.dart';
+import '../../../../../core/routing/route_names.dart';
+import '../../../../../core/settings/app_settings_scope.dart';
+import '../../../../../core/theme/app_text_styles.dart';
+import '../../../../../l10n/app_localizations.dart';
+import '../bloc/onboarding_bloc.dart';
+import '../bloc/onboarding_event.dart';
+import '../bloc/onboarding_state.dart';
+import '../widgets/onboarding_content.dart';
+import '../widgets/slide_to_start_button.dart';
 
 /// A screen that displays the onboarding flow to introduce app features to new users.
 class OnboardingScreen extends StatelessWidget {

@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
-import 'package:resilio/core/errors/failures.dart';
-import 'package:resilio/core/usecases/usecase.dart';
+import '../../../../../core/errors/failures.dart';
+import '../../../../../core/usecases/usecase.dart';
 import '../entities/onboarding_entity.dart';
 import '../repositories/onboarding_repository.dart';
 

@@ -1,5 +1,5 @@
 import 'package:dartz/dartz.dart';
-import 'package:resilio/core/errors/failures.dart';
+import '../../../../../core/errors/failures.dart';
 import '../entities/onboarding_entity.dart';
 
 abstract class OnboardingRepository {

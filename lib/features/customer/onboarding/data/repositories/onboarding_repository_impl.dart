@@ -1,11 +1,12 @@
 import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
-import 'package:resilio/core/errors/failures.dart';
-import 'package:resilio/core/localization/l10.dart';
-import 'package:resilio/features/customer/onboarding/data/datasources/onboarding_local_data_source.dart';
-import 'package:resilio/features/customer/onboarding/data/models/onboarding_model.dart';
-import 'package:resilio/features/customer/onboarding/domain/entities/onboarding_entity.dart';
-import 'package:resilio/features/customer/onboarding/domain/repositories/onboarding_repository.dart';
+
+import '../../../../../core/errors/failures.dart';
+import '../../../../../core/localization/l10.dart';
+import '../../domain/entities/onboarding_entity.dart';
+import '../../domain/repositories/onboarding_repository.dart';
+import '../datasources/onboarding_local_data_source.dart';
+import '../models/onboarding_model.dart';
 
 @LazySingleton(as: OnboardingRepository)
 class OnboardingRepositoryImpl implements OnboardingRepository {

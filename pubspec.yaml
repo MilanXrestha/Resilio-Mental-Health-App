@@ -1,4 +1,4 @@
-name: resilio
+name: Resilio
 description: Mental wellness application
 publish_to: 'none'
 version: 1.0.0+1
@@ -157,13 +157,3 @@ flutter:
       fonts:
         - asset: assets/fonts/PlayfairDisplay-Regular.ttf
         - asset: assets/fonts/PlayfairDisplay-Italic.ttf
-
-flutter_native_splash:
-  color: "#F5F8F6"
-  color_dark: "#121212"
-  image: assets/icons/png/app_logo.png
-  ios_content_mode: center
-  android_gravity: center
-  fullscreen: true
-  android: true
-  ios: true

@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
-import 'package:resilio/core/errors/failures.dart';
+
+import '../errors/failures.dart';
 
 /// Base class for all use cases
 abstract class UseCase<T, Params> {

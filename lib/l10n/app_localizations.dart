@@ -104,6 +104,24 @@ abstract class AppLocalizations {
   /// **'Resilio'**
   String get appTitle;
 
+  /// No description provided for @appSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Breathe. Move. Thrive.'**
+  String get appSubtitle;
+
+  /// No description provided for @appVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'v1.0.0'**
+  String get appVersion;
+
+  /// No description provided for @copyright.
+  ///
+  /// In en, this message translates to:
+  /// **'Copyright © 2026 Resilio App.\nAll rights reserved.'**
+  String get copyright;
+
   /// No description provided for @login.
   ///
   /// In en, this message translates to:

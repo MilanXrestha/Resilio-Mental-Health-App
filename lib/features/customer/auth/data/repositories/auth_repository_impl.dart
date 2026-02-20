@@ -1,11 +1,11 @@
+import 'package:Resilio/features/customer/auth/data/models/user_mapper.dart';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
-import 'package:resilio/core/errors/failures.dart';
-import 'package:resilio/core/network/network_info.dart';
-import 'package:resilio/core/proto_generated/auth.pb.dart';
-import 'package:resilio/features/customer/auth/data/models/user_mapper.dart';
 
+import '../../../../../core/errors/failures.dart';
+import '../../../../../core/network/network_info.dart';
+import '../../../../../core/proto_generated/auth.pb.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/local/auth_local_data_source.dart';

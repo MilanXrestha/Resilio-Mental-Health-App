@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:resilio/core/theme/app_colors.dart';
-import 'package:resilio/core/theme/color_model.dart';
+
 
 /// Centralized text styles for the app using Poppins and PlayfairDisplay fonts
 class AppTextStyles {
@@ -9,7 +8,7 @@ class AppTextStyles {
 
   // ==================== DISPLAY ====================
   static TextStyle get displayLarge => TextStyle(
-        fontFamily: 'PlayfairDisplay',
+        fontFamily: 'Poppins',
         fontSize: 32.sp,
         fontWeight: FontWeight.bold,
         height: 1.2,

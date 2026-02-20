@@ -12,6 +12,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appTitle => 'Resilio';
 
   @override
+  String get appSubtitle => 'Breathe. Move. Thrive.';
+
+  @override
+  String get appVersion => 'v1.0.0';
+
+  @override
+  String get copyright => 'Copyright © 2026 Resilio App.\nAll rights reserved.';
+
+  @override
   String get login => 'Login';
 
   @override

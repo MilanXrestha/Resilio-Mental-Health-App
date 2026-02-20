@@ -1,5 +1,5 @@
 import 'package:dartz/dartz.dart';
-import 'package:resilio/core/errors/failures.dart';
+import '../../../../../core/errors/failures.dart';
 import '../entities/user_entity.dart';
 
 abstract class AuthRepository {

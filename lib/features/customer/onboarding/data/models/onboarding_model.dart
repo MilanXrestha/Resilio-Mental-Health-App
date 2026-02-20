@@ -1,4 +1,4 @@
-import 'package:resilio/features/customer/onboarding/domain/entities/onboarding_entity.dart';
+import '../../domain/entities/onboarding_entity.dart';
 
 /// Data model for onboarding page content.
 class OnboardingModel {

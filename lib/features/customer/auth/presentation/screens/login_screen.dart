@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:resilio/core/localization/l10.dart';
+
+import '../../../../../core/localization/l10.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});

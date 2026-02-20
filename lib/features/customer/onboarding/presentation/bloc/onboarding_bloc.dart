@@ -1,8 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
-import 'package:resilio/core/usecases/usecase.dart';
-import 'package:resilio/features/customer/onboarding/domain/usecases/complete_onboarding_usecase.dart';
-import 'package:resilio/features/customer/onboarding/domain/usecases/get_onboarding_pages_usecase.dart';
+
+import '../../../../../core/usecases/usecase.dart';
+import '../../domain/usecases/complete_onboarding_usecase.dart';
+import '../../domain/usecases/get_onboarding_pages_usecase.dart';
 import 'onboarding_event.dart';
 import 'onboarding_state.dart';
 

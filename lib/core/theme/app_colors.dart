@@ -1,6 +1,6 @@
 // lib/theme/app_colors.dart
+import 'package:Resilio/core/theme/theme_extension.dart';
 import 'package:flutter/material.dart';
-import 'package:resilio/core/theme/theme_extension.dart';
 import 'color_model.dart';
 
 /// Extension to get colors easily without context

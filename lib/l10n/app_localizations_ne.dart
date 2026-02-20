@@ -12,6 +12,16 @@ class AppLocalizationsNe extends AppLocalizations {
   String get appTitle => 'रेसिलियो';
 
   @override
+  String get appSubtitle => 'सास फेर्नुहोस्। हलचल गर्नुहोस्। फसल उठाउनुहोस्।';
+
+  @override
+  String get appVersion => 'v1.0.0';
+
+  @override
+  String get copyright =>
+      'प्रतिलिपि अधिकार © 2025 रेसिलियो।\nसबै अधिकार सुरक्षित।';
+
+  @override
   String get login => 'लगइन';
 
   @override
