@@ -98,23 +98,125 @@ abstract class AppLocalizations {
     Locale('ne'),
   ];
 
-  /// The title of the application
+  /// No description provided for @appTitle.
   ///
   /// In en, this message translates to:
   /// **'Resilio'**
   String get appTitle;
 
-  /// Login button text
+  /// No description provided for @login.
   ///
   /// In en, this message translates to:
   /// **'Login'**
   String get login;
 
-  /// Admin login page title
+  /// No description provided for @adminLogin.
   ///
   /// In en, this message translates to:
   /// **'Admin Login'**
   String get adminLogin;
+
+  /// No description provided for @onboardingTitle1.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to Resilio'**
+  String get onboardingTitle1;
+
+  /// No description provided for @onboardingDescription1.
+  ///
+  /// In en, this message translates to:
+  /// **'Your journey to mental wellness starts here. Discover mindfulness and peace.'**
+  String get onboardingDescription1;
+
+  /// No description provided for @onboardingTitle2.
+  ///
+  /// In en, this message translates to:
+  /// **'Mindful Meditation'**
+  String get onboardingTitle2;
+
+  /// No description provided for @onboardingDescription2.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice meditation and build habits that support your mental health.'**
+  String get onboardingDescription2;
+
+  /// No description provided for @onboardingTitle3.
+  ///
+  /// In en, this message translates to:
+  /// **'Share Your Progress'**
+  String get onboardingTitle3;
+
+  /// No description provided for @onboardingDescription3.
+  ///
+  /// In en, this message translates to:
+  /// **'Track your journey and share your progress with loved ones.'**
+  String get onboardingDescription3;
+
+  /// No description provided for @onboardingTitle4.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s Get Started'**
+  String get onboardingTitle4;
+
+  /// No description provided for @onboardingDescription4.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re ready to begin. Take the first step towards a calmer mind.'**
+  String get onboardingDescription4;
+
+  /// No description provided for @nextButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get nextButton;
+
+  /// No description provided for @skipButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get skipButton;
+
+  /// No description provided for @startButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Get Started'**
+  String get startButton;
+
+  /// No description provided for @language.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
+
+  /// No description provided for @theme.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get theme;
+
+  /// No description provided for @themeLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get themeLight;
+
+  /// No description provided for @themeDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get themeDark;
+
+  /// No description provided for @languageEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get languageEnglish;
+
+  /// No description provided for @languageNepali.
+  ///
+  /// In en, this message translates to:
+  /// **'नेपाली'**
+  String get languageNepali;
 }
 
 class _AppLocalizationsDelegate

@@ -409,6 +409,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.0"
+  enum_to_string:
+    dependency: transitive
+    description:
+      name: enum_to_string
+      sha256: "93b75963d3b0c9f6a90c095b3af153e1feccb79f6f08282d3274ff8d9eea52bc"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.1"
   equatable:
     dependency: "direct main"
     description:
@@ -584,6 +592,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.1"
+  flag:
+    dependency: "direct main"
+    description:
+      name: flag
+      sha256: "69e3e1d47453349ef72e2ebf4234b88024c0d57f9bcfaa7cc7facec49cd8561f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "7.0.2"
   flip_card:
     dependency: "direct main"
     description:
@@ -980,6 +996,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.1.2"
+  hugeicons:
+    dependency: "direct main"
+    description:
+      name: hugeicons
+      sha256: d19c0e2b57ccf455dd8ef08b84da40ae6dbba898c92960a0a0ada77df7865b8a
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.5"
   image:
     dependency: transitive
     description:
@@ -1593,6 +1617,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  smooth_page_indicator:
+    dependency: "direct main"
+    description:
+      name: smooth_page_indicator
+      sha256: "4b497e9898d095de40d246db943371183fa7482492a88391cfa8415ef94d57ba"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.1"
   source_gen:
     dependency: transitive
     description:
