@@ -12,7 +12,20 @@
           "package_name": "com.islington.resilio"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "28061750512-f7tp46dl17irh1kdvb8qk8g78d6vu575.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.islington.resilio",
+            "certificate_hash": "2daa76dd1b317ee436607241d7442533c7923738"
+          }
+        },
+        {
+          "client_id": "28061750512-8p5ibcu9qimlh0hmubi780k3ha6cafgn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAFV3PaylH4ZePBu7_ZtsbsZzbDAOVgRhI"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "28061750512-8p5ibcu9qimlh0hmubi780k3ha6cafgn.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "28061750512-4hbgtg7n3v2tshiv0jbpdfkrjko68j7h.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.islington.resilio"
+              }
+            }
+          ]
         }
       }
     }
