@@ -9,51 +9,125 @@ class AppLocalizationsNe extends AppLocalizations {
   AppLocalizationsNe([String locale = 'ne']) : super(locale);
 
   @override
-  String get appTitle => 'रेसिलियो';
+  String get appTitle => 'Resilio';
 
   @override
-  String get appSubtitle => 'सास फेर्नुहोस्। हलचल गर्नुहोस्। फसल उठाउनुहोस्।';
+  String get appSubtitle => 'शान्त मन, उज्यालो जीवन';
 
   @override
   String get appVersion => 'v1.0.0';
 
   @override
-  String get copyright =>
-      'प्रतिलिपि अधिकार © 2025 रेसिलियो।\nसबै अधिकार सुरक्षित।';
+  String get copyright => 'Copyright © 2026 Resilio App.\nAll rights reserved.';
 
   @override
   String get login => 'लगइन';
 
   @override
-  String get adminLogin => 'प्रशासक लगइन';
+  String get adminLogin => 'एड्मिन लगइन';
 
   @override
-  String get onboardingTitle1 => 'रेसिलियोमा स्वागत छ';
+  String get signUp => 'साइन अप';
+
+  @override
+  String get createAccount => 'खाता सिर्जना गर्नुहोस्';
+
+  @override
+  String get welcomeBack => 'फेरि स्वागत छ!';
+
+  @override
+  String get startJourney =>
+      'Resilio सँग आफ्नो मानसिक स्वास्थ्य यात्रा सुरु गर्नुहोस्';
+
+  @override
+  String get email => 'इमेल';
+
+  @override
+  String get emailHint => 'आफ्नो इमेल प्रविष्ट गर्नुहोस्';
+
+  @override
+  String get password => 'पासवर्ड';
+
+  @override
+  String get passwordHint => 'पासवर्ड प्रविष्ट गर्नुहोस्';
+
+  @override
+  String get confirmPassword => 'पासवर्ड पुष्टि गर्नुहोस्';
+
+  @override
+  String get confirmPasswordHint => 'पासवर्ड फेरि प्रविष्ट गर्नुहोस्';
+
+  @override
+  String get fullName => 'पूरा नाम';
+
+  @override
+  String get fullNameHint => 'आफ्नो पूरा नाम लेख्नुहोस्';
+
+  @override
+  String get rememberMe => 'मलाई सम्झनुहोस्';
+
+  @override
+  String get forgotPassword => 'पासवर्ड बिर्सनुभयो?';
+
+  @override
+  String get or => 'वा';
+
+  @override
+  String get continueWithGoogle => 'गूगलसँग जारी राख्नुहोस्';
+
+  @override
+  String get continueWithFacebook => 'फेसबुकसँग जारी राख्नुहोस्';
+
+  @override
+  String get continueWithEmailLink => 'इमेल लिंकमार्फत जारी राख्नुहोस्';
+
+  @override
+  String get emailLinkSent => 'साइन-इन लिंक पठाइयो! इमेल जाँच गर्नुहोस्।';
+
+  @override
+  String get emailLinkError =>
+      'इमेल लिंक पठाउन असफल। कृपया फेरि प्रयास गर्नुहोस्।';
+
+  @override
+  String get enterEmailForLink =>
+      'साइन-इन लिंक प्राप्त गर्न इमेल प्रविष्ट गर्नुहोस्';
+
+  @override
+  String get sendLink => 'साइन-इन लिंक पठाउनुहोस्';
+
+  @override
+  String get dontHaveAccount => 'खाता छैन?';
+
+  @override
+  String get alreadyHaveAccount => 'पहिले नै खाता छ?';
+
+  @override
+  String get onboardingTitle1 => 'Resilio मा स्वागत छ';
 
   @override
   String get onboardingDescription1 =>
-      'तपाईंको मानसिक स्वास्थ्य यात्रा यहाँबाट सुरु हुन्छ। ध्यान र शान्ति पत्ता लगाउनुहोस्।';
+      'मानसिक स्वास्थ्य सुधारको यात्रा यहाँबाट सुरु हुन्छ। शान्ति र ध्यान पत्ता लगाउनुहोस्।';
 
   @override
-  String get onboardingTitle2 => 'ध्यानमग्न ध्यान';
+  String get onboardingTitle2 => 'ध्यान अभ्यास';
 
   @override
   String get onboardingDescription2 =>
-      'ध्यान अभ्यास गर्नुहोस् र तपाईंको मानसिक स्वास्थ्यलाई समर्थन गर्ने बानीहरू बनाउनुहोस्।';
+      'ध्यान अभ्यास गरेर मानसिक स्वास्थ्यका लागि स्वस्थ बानी बनाउनुहोस्।';
 
   @override
-  String get onboardingTitle3 => 'तपाईंको प्रगति साझा गर्नुहोस्';
+  String get onboardingTitle3 => 'अभियान साझा गर्नुहोस्';
 
   @override
   String get onboardingDescription3 =>
-      'तपाईंको यात्रा ट्र्याक गर्नुहोस् र प्रियजनहरूसँग तपाईंको प्रगति साझा गर्नुहोस्।';
+      'आफ्नो यात्रा ट्र्याक गर्नुहोस् र प्रगति साझा गर्नुहोस्।';
 
   @override
   String get onboardingTitle4 => 'सुरु गरौं';
 
   @override
   String get onboardingDescription4 =>
-      'तपाईं सुरु गर्न तयार हुनुहुन्छ। शान्त मनतर्फ पहिलो कदम बढाउनुहोस्।';
+      'तपाईं तयार हुनुहुन्छ। शान्त मनको लागि पहिलो कदम चाल्नुहोस्।';
 
   @override
   String get nextButton => 'अर्को';
@@ -81,4 +155,8 @@ class AppLocalizationsNe extends AppLocalizations {
 
   @override
   String get languageNepali => 'नेपाली';
+
+  @override
+  String get signInToContinue =>
+      'तपाईंको मानसिक स्वास्थ्य यात्राको लागि लगइन गर्नुहोस्';
 }

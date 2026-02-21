@@ -2,13 +2,12 @@ import 'package:Resilio/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
+import '../../../../../common/widgets/settings_toggle_widget.dart';
 import '../../../../../core/di/injection.dart';
 import '../../../../../core/routing/route_names.dart';
-import '../../../../../core/settings/app_settings_scope.dart';
 import '../../../../../core/theme/app_text_styles.dart';
 import '../../../../../l10n/app_localizations.dart';
 import '../bloc/onboarding_bloc.dart';
@@ -160,13 +159,7 @@ class _OnboardingViewState extends State<_OnboardingView> {
   Widget _buildTopBar(BuildContext context, bool isDarkMode, AppLocalizations l10n) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _buildLanguageSelector(context, isDarkMode, l10n),
-          _buildThemeToggle(context, isDarkMode),
-        ],
-      ),
+      child: const SettingsToggleWidget(),
     );
   }
 
@@ -219,48 +212,6 @@ class _OnboardingViewState extends State<_OnboardingView> {
     );
   }
 
-  Widget _buildThemeToggle(BuildContext context, bool isDarkMode) {
-    final settings = AppSettingsScope.of(context);
-
-    return GestureDetector(
-      onTap: () {
-        settings.setThemeMode(isDarkMode ? ThemeMode.light : ThemeMode.dark);
-      },
-      child: Container(
-        width: 44.w,
-        height: 44.h,
-        decoration: BoxDecoration(
-          color: isDarkMode
-              ? Colors.white.withValues(alpha: 0.1)
-              : context.surfaceColor,
-          borderRadius: BorderRadius.circular(22.r),
-          border: Border.all(
-            color: isDarkMode
-                ? Colors.white.withValues(alpha: 0.2)
-                : context.borderColor,
-            width: 1.5,
-          ),
-          boxShadow: isDarkMode
-              ? null
-              : [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Center(
-          child: Icon(
-            isDarkMode ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
-            color: isDarkMode ? Colors.amber : context.textPrimaryColor,
-            size: 22.sp,
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildNextButton(BuildContext context, bool isDarkMode, AppLocalizations l10n, int totalPages) {
     return GestureDetector(
       onTap: () => _nextPage(totalPages),
@@ -295,49 +246,4 @@ class _OnboardingViewState extends State<_OnboardingView> {
     );
   }
 
-  Widget _buildLanguageSelector(BuildContext context, bool isDarkMode, AppLocalizations l10n) {
-    final settings = AppSettingsScope.of(context);
-    final isEnglish = settings.locale.languageCode == 'en';
-
-    return GestureDetector(
-      onTap: () {
-        final newLocale = isEnglish ? const Locale('ne') : const Locale('en');
-        settings.setLocale(newLocale);
-      },
-      child: Container(
-        width: 110.w,
-        height: 44.h,
-        decoration: BoxDecoration(
-          color: isDarkMode ? Colors.white.withValues(alpha: 0.1) : context.surfaceColor,
-          borderRadius: BorderRadius.circular(22.r),
-          border: Border.all(
-            color: isDarkMode ? Colors.white.withValues(alpha: 0.2) : context.borderColor,
-            width: 1.5,
-          ),
-          boxShadow: isDarkMode ? null : [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SvgPicture.asset(
-              isEnglish ? 'assets/icons/svg/flag_uk.svg' : 'assets/icons/svg/flag_nepal.svg',
-              width: 20.w,
-              height: 20.w,
-            ),
-            SizedBox(width: 8.w),
-            Text(
-              isEnglish ? l10n.languageEnglish : l10n.languageNepali,
-              style: AppTextStyles.languageButton.copyWith(color: context.textPrimaryColor),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }

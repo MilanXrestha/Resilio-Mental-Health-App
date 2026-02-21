@@ -125,7 +125,7 @@ abstract class AppLocalizations {
   /// No description provided for @login.
   ///
   /// In en, this message translates to:
-  /// **'Login'**
+  /// **'LOGIN'**
   String get login;
 
   /// No description provided for @adminLogin.
@@ -133,6 +133,150 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Admin Login'**
   String get adminLogin;
+
+  /// No description provided for @signUp.
+  ///
+  /// In en, this message translates to:
+  /// **'SIGN UP'**
+  String get signUp;
+
+  /// No description provided for @createAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Account'**
+  String get createAccount;
+
+  /// No description provided for @welcomeBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome Back!'**
+  String get welcomeBack;
+
+  /// No description provided for @startJourney.
+  ///
+  /// In en, this message translates to:
+  /// **'Start your wellness journey with Resilio'**
+  String get startJourney;
+
+  /// No description provided for @email.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get email;
+
+  /// No description provided for @emailHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your email'**
+  String get emailHint;
+
+  /// No description provided for @password.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get password;
+
+  /// No description provided for @passwordHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your password'**
+  String get passwordHint;
+
+  /// No description provided for @confirmPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Password'**
+  String get confirmPassword;
+
+  /// No description provided for @confirmPasswordHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm your password'**
+  String get confirmPasswordHint;
+
+  /// No description provided for @fullName.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Name'**
+  String get fullName;
+
+  /// No description provided for @fullNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your full name'**
+  String get fullNameHint;
+
+  /// No description provided for @rememberMe.
+  ///
+  /// In en, this message translates to:
+  /// **'Remember me'**
+  String get rememberMe;
+
+  /// No description provided for @forgotPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot Password?'**
+  String get forgotPassword;
+
+  /// No description provided for @or.
+  ///
+  /// In en, this message translates to:
+  /// **'OR'**
+  String get or;
+
+  /// No description provided for @continueWithGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with Google'**
+  String get continueWithGoogle;
+
+  /// No description provided for @continueWithFacebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with Facebook'**
+  String get continueWithFacebook;
+
+  /// No description provided for @continueWithEmailLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with Email Link'**
+  String get continueWithEmailLink;
+
+  /// No description provided for @emailLinkSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign-in link sent! Check your email.'**
+  String get emailLinkSent;
+
+  /// No description provided for @emailLinkError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to send email link. Please try again.'**
+  String get emailLinkError;
+
+  /// No description provided for @enterEmailForLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your email to receive a sign-in link'**
+  String get enterEmailForLink;
+
+  /// No description provided for @sendLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Sign-In Link'**
+  String get sendLink;
+
+  /// No description provided for @dontHaveAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t have an account?'**
+  String get dontHaveAccount;
+
+  /// No description provided for @alreadyHaveAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Already have an account?'**
+  String get alreadyHaveAccount;
 
   /// No description provided for @onboardingTitle1.
   ///
@@ -235,6 +379,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'नेपाली'**
   String get languageNepali;
+
+  /// No description provided for @signInToContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to continue your wellness journey'**
+  String get signInToContinue;
 }
 
 class _AppLocalizationsDelegate

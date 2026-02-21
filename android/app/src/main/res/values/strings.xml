@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Resilio</string>
+    <string name="facebook_app_id">1938108997077812</string>
+    <string name="fb_login_protocol_scheme">fb1938108997077812</string>
+    <string name="facebook_client_token">02a4a7d7f3d173336872848fb8cf1a00</string>
+</resources>

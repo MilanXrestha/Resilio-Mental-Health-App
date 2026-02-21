@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>28061750512-4hbgtg7n3v2tshiv0jbpdfkrjko68j7h.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.28061750512-4hbgtg7n3v2tshiv0jbpdfkrjko68j7h</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>28061750512-f7tp46dl17irh1kdvb8qk8g78d6vu575.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyCYjT61JSTvqtKaYP7EbKG_Bv0Mk_Cbnnk</string>
+	<key>GCM_SENDER_ID</key>
+	<string>28061750512</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.islington.resilio</string>
+	<key>PROJECT_ID</key>
+	<string>resilio-mental-health-app</string>
+	<key>STORAGE_BUCKET</key>
+	<string>resilio-mental-health-app.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:28061750512:ios:9c4e18b1c709b4ce48de35</string>
+</dict>
+</plist>

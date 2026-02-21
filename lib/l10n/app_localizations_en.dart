@@ -21,10 +21,82 @@ class AppLocalizationsEn extends AppLocalizations {
   String get copyright => 'Copyright © 2026 Resilio App.\nAll rights reserved.';
 
   @override
-  String get login => 'Login';
+  String get login => 'LOGIN';
 
   @override
   String get adminLogin => 'Admin Login';
+
+  @override
+  String get signUp => 'SIGN UP';
+
+  @override
+  String get createAccount => 'Create Account';
+
+  @override
+  String get welcomeBack => 'Welcome Back!';
+
+  @override
+  String get startJourney => 'Start your wellness journey with Resilio';
+
+  @override
+  String get email => 'Email';
+
+  @override
+  String get emailHint => 'Enter your email';
+
+  @override
+  String get password => 'Password';
+
+  @override
+  String get passwordHint => 'Enter your password';
+
+  @override
+  String get confirmPassword => 'Confirm Password';
+
+  @override
+  String get confirmPasswordHint => 'Confirm your password';
+
+  @override
+  String get fullName => 'Full Name';
+
+  @override
+  String get fullNameHint => 'Enter your full name';
+
+  @override
+  String get rememberMe => 'Remember me';
+
+  @override
+  String get forgotPassword => 'Forgot Password?';
+
+  @override
+  String get or => 'OR';
+
+  @override
+  String get continueWithGoogle => 'Continue with Google';
+
+  @override
+  String get continueWithFacebook => 'Continue with Facebook';
+
+  @override
+  String get continueWithEmailLink => 'Continue with Email Link';
+
+  @override
+  String get emailLinkSent => 'Sign-in link sent! Check your email.';
+
+  @override
+  String get emailLinkError => 'Failed to send email link. Please try again.';
+
+  @override
+  String get enterEmailForLink => 'Enter your email to receive a sign-in link';
+
+  @override
+  String get sendLink => 'Send Sign-In Link';
+
+  @override
+  String get dontHaveAccount => 'Don\'t have an account?';
+
+  @override
+  String get alreadyHaveAccount => 'Already have an account?';
 
   @override
   String get onboardingTitle1 => 'Welcome to Resilio';
@@ -80,4 +152,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get languageNepali => 'नेपाली';
+
+  @override
+  String get signInToContinue => 'Sign in to continue your wellness journey';
 }

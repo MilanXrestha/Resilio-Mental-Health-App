@@ -9,7 +9,7 @@ void main() {
     await appSettings.load();
     
     // Build our app and trigger a frame.
-    await tester.pumpWidget(ResilioApp(appSettings: appSettings));
+    await tester.pumpWidget(ResilioApp());
     await tester.pumpAndSettle();
 
     // Verify that the app renders

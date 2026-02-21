@@ -9,7 +9,7 @@ class AppTextStyles {
   // ==================== DISPLAY ====================
   static TextStyle get displayLarge => TextStyle(
         fontFamily: 'Poppins',
-        fontSize: 32.sp,
+        fontSize: 30.sp,
         fontWeight: FontWeight.bold,
         height: 1.2,
       );

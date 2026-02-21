@@ -67,6 +67,9 @@ dependencies:
   google_sign_in: ^7.2.0
   flutter_facebook_auth: ^7.1.1
 
+  # Deep Linking
+  app_links: ^6.4.0
+
   # Data & Serialization
   freezed_annotation: ^3.1.0
   json_annotation: ^4.11.0
