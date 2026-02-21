@@ -83,7 +83,11 @@ class _SignUpViewState extends State<_SignUpView> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthAuthenticated) {
-          context.goNamed(RouteNames.home);
+          if (state.user.preferencesCompleted) {
+            context.goNamed(RouteNames.home);
+          } else {
+            context.goNamed(RouteNames.preferences);
+          }
         } else if (state is AuthError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

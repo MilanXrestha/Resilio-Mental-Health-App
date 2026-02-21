@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
-import 'proto_transformer.dart';
+
+import '../constants/api_endpoints.dart';
 
 @module
 abstract class NetworkModule {
@@ -8,16 +9,13 @@ abstract class NetworkModule {
   Dio get dio {
     final dio = Dio(
       BaseOptions(
-        baseUrl: 'https://api.resilio.com',
+        baseUrl: ApiEndpoints.baseUrl,
         connectTimeout: const Duration(seconds: 15),
         receiveTimeout: const Duration(seconds: 15),
-        // Protobuf uses binary, but we can set default content type
-        contentType: 'application/x-protobuf',
-        responseType: ResponseType.bytes,
+        contentType: 'application/json',
+        responseType: ResponseType.json,
       ),
     );
-
-    dio.transformer = ProtobufTransformer();
 
     dio.interceptors.add(LogInterceptor(
       requestBody: true,

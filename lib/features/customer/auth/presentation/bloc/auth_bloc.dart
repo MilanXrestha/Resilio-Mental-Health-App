@@ -5,6 +5,7 @@ import '../../../../../core/usecases/usecase.dart';
 import '../../domain/usecases/facebook_signin_usecase.dart';
 import '../../domain/usecases/google_signin_usecase.dart';
 import '../../domain/usecases/login_usecase.dart';
+import '../../domain/usecases/logout_usecase.dart';
 import '../../domain/usecases/send_signin_link_usecase.dart';
 import '../../domain/usecases/signin_with_email_link_usecase.dart';
 import '../../domain/usecases/signup_usecase.dart';
@@ -19,6 +20,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final FacebookSignInUseCase _facebookSignInUseCase;
   final SendSignInLinkUseCase _sendSignInLinkUseCase;
   final SignInWithEmailLinkUseCase _signInWithEmailLinkUseCase;
+  final LogoutUseCase _logoutUseCase;
 
   AuthBloc(
     this._loginUseCase,
@@ -27,6 +29,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     this._facebookSignInUseCase,
     this._sendSignInLinkUseCase,
     this._signInWithEmailLinkUseCase,
+    this._logoutUseCase,
   ) : super(AuthInitial()) {
     on<LoginRequested>(_onLoginRequested);
     on<SignUpRequested>(_onSignUpRequested);
@@ -76,7 +79,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     result.fold(
       (failure) => emit(AuthError(_mapFailureToMessage(failure))),
-      (user) => emit(AuthAuthenticated(user)),
+      (user) => emit(AuthAuthenticated(user, isNewUser: true)),
     );
   }
 
@@ -147,7 +150,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     emit(AuthLoading());
-    // TODO: Implement logout use case
+    await _logoutUseCase(const NoParams());
     emit(AuthInitial());
   }
 
@@ -156,7 +159,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     emit(AuthLoading());
-    // TODO: Implement logout use case
+    await _logoutUseCase(const NoParams());
     emit(AuthInitial());
   }
 

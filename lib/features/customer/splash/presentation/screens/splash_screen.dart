@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 import 'package:Resilio/core/theme/app_colors.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -10,6 +11,7 @@ import '../../../../../core/routing/route_names.dart';
 import '../../../../../core/usecases/usecase.dart';
 import '../../../../../l10n/app_localizations.dart';
 import '../../../onboarding/domain/usecases/check_onboarding_status_usecase.dart';
+import '../../../preferences/domain/usecases/check_preferences_completion_usecase.dart';
 
 /// Splash screen that displays branding with minimum display time
 /// Shows every time app opens, then navigates to onboarding (first time) or login
@@ -36,8 +38,18 @@ class _SplashScreenState extends State<SplashScreen> {
     try {
       // Check if onboarding is completed
       final checkOnboardingStatus = getIt<CheckOnboardingStatusUseCase>();
-      final result = await checkOnboardingStatus.call(const NoParams());
-      final onboardingCompleted = result.getOrElse(() => false);
+      final onboardingResult = await checkOnboardingStatus.call(const NoParams());
+      final onboardingCompleted = onboardingResult.getOrElse(() => false);
+
+      // Check auth status
+      final user = FirebaseAuth.instance.currentUser;
+      bool preferencesCompleted = false;
+
+      if (user != null) {
+        final checkPrefsStatus = getIt<CheckPreferencesCompletionUseCase>();
+        final prefsResult = await checkPrefsStatus.call(const NoParams());
+        preferencesCompleted = prefsResult.getOrElse(() => false);
+      }
 
       // Calculate elapsed time and ensure minimum display
       final elapsedMs = DateTime.now().difference(_startTime).inMilliseconds;
@@ -49,11 +61,15 @@ class _SplashScreenState extends State<SplashScreen> {
 
       if (!mounted) return;
 
-      // Navigate to appropriate route
-      if (onboardingCompleted) {
-        context.goNamed(RouteNames.login);
-      } else {
+      // Navigation hierarchy
+      if (!onboardingCompleted) {
         context.goNamed(RouteNames.onboarding);
+      } else if (user == null) {
+        context.goNamed(RouteNames.login);
+      } else if (!preferencesCompleted) {
+        context.goNamed(RouteNames.preferences);
+      } else {
+        context.goNamed(RouteNames.home);
       }
     } catch (e) {
       log('Error in navigation preparation: $e');

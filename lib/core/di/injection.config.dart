@@ -27,26 +27,30 @@ import 'package:Resilio/features/customer/auth/data/datasources/local/auth_local
     as _i882;
 import 'package:Resilio/features/customer/auth/data/datasources/remote/auth_remote_data_source.dart'
     as _i376;
+import 'package:Resilio/features/customer/auth/data/datasources/remote/backend_auth_data_source.dart'
+    as _i852;
 import 'package:Resilio/features/customer/auth/data/datasources/remote/firebase_auth_data_source.dart'
     as _i519;
 import 'package:Resilio/features/customer/auth/data/repositories/auth_repository_impl.dart'
     as _i474;
 import 'package:Resilio/features/customer/auth/domain/repositories/auth_repository.dart'
     as _i184;
-import 'package:Resilio/features/customer/auth/domain/services/email_link_handler.dart'
-    as _i154;
 import 'package:Resilio/features/customer/auth/domain/usecases/facebook_signin_usecase.dart'
     as _i64;
 import 'package:Resilio/features/customer/auth/domain/usecases/google_signin_usecase.dart'
     as _i671;
 import 'package:Resilio/features/customer/auth/domain/usecases/login_usecase.dart'
     as _i269;
+import 'package:Resilio/features/customer/auth/domain/usecases/logout_usecase.dart'
+    as _i104;
 import 'package:Resilio/features/customer/auth/domain/usecases/send_signin_link_usecase.dart'
     as _i438;
 import 'package:Resilio/features/customer/auth/domain/usecases/signin_with_email_link_usecase.dart'
     as _i1038;
 import 'package:Resilio/features/customer/auth/domain/usecases/signup_usecase.dart'
     as _i81;
+import 'package:Resilio/features/customer/auth/domain/usecases/sync_user_usecase.dart'
+    as _i1033;
 import 'package:Resilio/features/customer/auth/presentation/bloc/auth_bloc.dart'
     as _i829;
 import 'package:Resilio/features/customer/onboarding/data/datasources/onboarding_local_data_source.dart'
@@ -63,6 +67,24 @@ import 'package:Resilio/features/customer/onboarding/domain/usecases/get_onboard
     as _i1034;
 import 'package:Resilio/features/customer/onboarding/presentation/bloc/onboarding_bloc.dart'
     as _i858;
+import 'package:Resilio/features/customer/preferences/data/datasources/local/preference_local_data_source.dart'
+    as _i189;
+import 'package:Resilio/features/customer/preferences/data/datasources/remote/preference_remote_data_source.dart'
+    as _i726;
+import 'package:Resilio/features/customer/preferences/data/repositories/preference_repository_impl.dart'
+    as _i449;
+import 'package:Resilio/features/customer/preferences/domain/repositories/preference_repository.dart'
+    as _i337;
+import 'package:Resilio/features/customer/preferences/domain/usecases/check_preferences_completion_usecase.dart'
+    as _i420;
+import 'package:Resilio/features/customer/preferences/domain/usecases/get_preferences_usecase.dart'
+    as _i441;
+import 'package:Resilio/features/customer/preferences/domain/usecases/get_user_preferences_usecase.dart'
+    as _i226;
+import 'package:Resilio/features/customer/preferences/domain/usecases/save_user_preferences_usecase.dart'
+    as _i599;
+import 'package:Resilio/features/customer/preferences/presentation/bloc/preferences_bloc.dart'
+    as _i811;
 import 'package:shared_preferences/shared_preferences.dart' as _i460;
 
 extension GetItInjectableX on _i174.GetIt {
@@ -99,6 +121,12 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i376.AuthRemoteDataSource>(
       () => _i376.AuthRemoteDataSourceImpl(gh<_i361.Dio>()),
     );
+    gh.lazySingleton<_i852.BackendAuthDataSource>(
+      () => _i852.BackendAuthDataSource(gh<_i361.Dio>()),
+    );
+    gh.lazySingleton<_i726.PreferenceRemoteDataSource>(
+      () => _i726.PreferenceRemoteDataSource(gh<_i361.Dio>()),
+    );
     gh.lazySingleton<_i882.AuthLocalDataSource>(
       () => _i882.AuthLocalDataSourceImpl(gh<_i865.DatabaseHelper>()),
     );
@@ -108,17 +136,65 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i4.ThemeCubit>(
       () => _i4.ThemeCubit(gh<_i460.SharedPreferences>()),
     );
-    gh.lazySingleton<_i154.EmailLinkHandler>(
-      () => _i154.EmailLinkHandler(
-        gh<_i59.FirebaseAuth>(),
-        gh<_i460.SharedPreferences>(),
-      ),
-    );
-    gh.lazySingleton<_i184.AuthRepository>(
-      () => _i474.AuthRepositoryImpl(gh<_i519.FirebaseAuthDataSource>()),
+    gh.lazySingleton<_i189.PreferenceLocalDataSource>(
+      () => _i189.PreferenceLocalDataSourceImpl(gh<_i865.DatabaseHelper>()),
     );
     gh.lazySingleton<_i103.OnboardingLocalDataSource>(
       () => _i103.OnboardingLocalDataSourceImpl(gh<_i460.SharedPreferences>()),
+    );
+    gh.factory<_i1033.SyncUserUseCase>(
+      () => _i1033.SyncUserUseCase(gh<_i852.BackendAuthDataSource>()),
+    );
+    gh.lazySingleton<_i337.PreferenceRepository>(
+      () => _i449.PreferenceRepositoryImpl(
+        gh<_i726.PreferenceRemoteDataSource>(),
+        gh<_i189.PreferenceLocalDataSource>(),
+        gh<_i759.NetworkInfo>(),
+        gh<_i59.FirebaseAuth>(),
+      ),
+    );
+    gh.factory<_i420.CheckPreferencesCompletionUseCase>(
+      () => _i420.CheckPreferencesCompletionUseCase(
+        gh<_i337.PreferenceRepository>(),
+      ),
+    );
+    gh.factory<_i441.GetPreferencesUseCase>(
+      () => _i441.GetPreferencesUseCase(gh<_i337.PreferenceRepository>()),
+    );
+    gh.factory<_i226.GetUserPreferencesUseCase>(
+      () => _i226.GetUserPreferencesUseCase(gh<_i337.PreferenceRepository>()),
+    );
+    gh.factory<_i599.SaveUserPreferencesUseCase>(
+      () => _i599.SaveUserPreferencesUseCase(gh<_i337.PreferenceRepository>()),
+    );
+    gh.lazySingleton<_i687.OnboardingRepository>(
+      () =>
+          _i318.OnboardingRepositoryImpl(gh<_i103.OnboardingLocalDataSource>()),
+    );
+    gh.lazySingleton<_i184.AuthRepository>(
+      () => _i474.AuthRepositoryImpl(
+        gh<_i519.FirebaseAuthDataSource>(),
+        gh<_i852.BackendAuthDataSource>(),
+        gh<_i337.PreferenceRepository>(),
+      ),
+    );
+    gh.factory<_i723.CheckOnboardingStatusUseCase>(
+      () =>
+          _i723.CheckOnboardingStatusUseCase(gh<_i687.OnboardingRepository>()),
+    );
+    gh.factory<_i155.CompleteOnboardingUseCase>(
+      () => _i155.CompleteOnboardingUseCase(gh<_i687.OnboardingRepository>()),
+    );
+    gh.factory<_i1034.GetOnboardingPagesUseCase>(
+      () => _i1034.GetOnboardingPagesUseCase(gh<_i687.OnboardingRepository>()),
+    );
+    gh.factory<_i811.PreferencesBloc>(
+      () => _i811.PreferencesBloc(
+        gh<_i441.GetPreferencesUseCase>(),
+        gh<_i226.GetUserPreferencesUseCase>(),
+        gh<_i599.SaveUserPreferencesUseCase>(),
+        gh<_i420.CheckPreferencesCompletionUseCase>(),
+      ),
     );
     gh.factory<_i671.GoogleSignInUseCase>(
       () => _i671.GoogleSignInUseCase(gh<_i184.AuthRepository>()),
@@ -126,12 +202,11 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i269.LoginUseCase>(
       () => _i269.LoginUseCase(gh<_i184.AuthRepository>()),
     );
+    gh.factory<_i104.LogoutUseCase>(
+      () => _i104.LogoutUseCase(gh<_i184.AuthRepository>()),
+    );
     gh.factory<_i81.SignUpUseCase>(
       () => _i81.SignUpUseCase(gh<_i184.AuthRepository>()),
-    );
-    gh.lazySingleton<_i687.OnboardingRepository>(
-      () =>
-          _i318.OnboardingRepositoryImpl(gh<_i103.OnboardingLocalDataSource>()),
     );
     gh.lazySingleton<_i64.FacebookSignInUseCase>(
       () => _i64.FacebookSignInUseCase(gh<_i184.AuthRepository>()),
@@ -150,17 +225,8 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i64.FacebookSignInUseCase>(),
         gh<_i438.SendSignInLinkUseCase>(),
         gh<_i1038.SignInWithEmailLinkUseCase>(),
+        gh<_i104.LogoutUseCase>(),
       ),
-    );
-    gh.factory<_i723.CheckOnboardingStatusUseCase>(
-      () =>
-          _i723.CheckOnboardingStatusUseCase(gh<_i687.OnboardingRepository>()),
-    );
-    gh.factory<_i155.CompleteOnboardingUseCase>(
-      () => _i155.CompleteOnboardingUseCase(gh<_i687.OnboardingRepository>()),
-    );
-    gh.factory<_i1034.GetOnboardingPagesUseCase>(
-      () => _i1034.GetOnboardingPagesUseCase(gh<_i687.OnboardingRepository>()),
     );
     gh.factory<_i858.OnboardingBloc>(
       () => _i858.OnboardingBloc(

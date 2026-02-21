@@ -5,13 +5,21 @@ import 'package:injectable/injectable.dart';
 import '../../../../../core/errors/failures.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
+import '../datasources/remote/backend_auth_data_source.dart';
 import '../datasources/remote/firebase_auth_data_source.dart';
+import '../../../preferences/domain/repositories/preference_repository.dart';
 
 @LazySingleton(as: AuthRepository)
 class AuthRepositoryImpl implements AuthRepository {
   final FirebaseAuthDataSource _firebaseAuthDataSource;
+  final BackendAuthDataSource _backendDataSource;
+  final PreferenceRepository _preferenceRepository;
 
-  AuthRepositoryImpl(this._firebaseAuthDataSource);
+  AuthRepositoryImpl(
+    this._firebaseAuthDataSource,
+    this._backendDataSource,
+    this._preferenceRepository,
+  );
 
   @override
   Future<Either<Failure, UserEntity>> login({
@@ -24,7 +32,10 @@ class AuthRepositoryImpl implements AuthRepository {
         password: password,
       );
 
-      final user = _mapFirebaseUserToEntity(credential.user!);
+      // Sync user to backend
+      await _syncUserToBackend(credential.user!);
+
+      final user = await _getUserEntity(credential.user!);
       return Right(user);
     } on firebase.FirebaseAuthException catch (e) {
       return Left(_mapFirebaseError(e));
@@ -50,7 +61,11 @@ class AuthRepositoryImpl implements AuthRepository {
         await _firebaseAuthDataSource.updateDisplayName(name);
       }
 
-      final user = _mapFirebaseUserToEntity(credential.user!);
+      // Sync user to backend
+      await _syncUserToBackend(credential.user!);
+
+      // New user always has preferences as false initially
+      final user = await _getUserEntity(credential.user!, forceNotCompleted: true);
       return Right(user);
     } on firebase.FirebaseAuthException catch (e) {
       return Left(_mapFirebaseError(e));
@@ -68,7 +83,10 @@ class AuthRepositoryImpl implements AuthRepository {
         return const Left(ServerFailure('Google sign in cancelled'));
       }
 
-      final user = _mapFirebaseUserToEntity(credential.user!);
+      // Sync user to backend
+      await _syncUserToBackend(credential.user!);
+
+      final user = await _getUserEntity(credential.user!);
       return Right(user);
     } on firebase.FirebaseAuthException catch (e) {
       return Left(_mapFirebaseError(e));
@@ -86,7 +104,10 @@ class AuthRepositoryImpl implements AuthRepository {
         return const Left(ServerFailure('Facebook sign in cancelled'));
       }
 
-      final user = _mapFirebaseUserToEntity(credential.user!);
+      // Sync user to backend
+      await _syncUserToBackend(credential.user!);
+
+      final user = await _getUserEntity(credential.user!);
       return Right(user);
     } on firebase.FirebaseAuthException catch (e) {
       return Left(_mapFirebaseError(e));
@@ -129,7 +150,10 @@ class AuthRepositoryImpl implements AuthRepository {
         link: link,
       );
 
-      final user = _mapFirebaseUserToEntity(credential.user!);
+      // Sync user to backend
+      await _syncUserToBackend(credential.user!);
+
+      final user = await _getUserEntity(credential.user!);
       return Right(user);
     } on firebase.FirebaseAuthException catch (e) {
       return Left(_mapFirebaseError(e));
@@ -141,6 +165,7 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, void>> logout() async {
     try {
+      await _preferenceRepository.clearLocalData();
       await _firebaseAuthDataSource.signOut();
       return const Right(null);
     } catch (e) {
@@ -153,7 +178,7 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       final user = _firebaseAuthDataSource.currentUser;
       if (user != null) {
-        return Right(_mapFirebaseUserToEntity(user));
+        return Right(await _getUserEntity(user));
       }
       return const Right(null);
     } catch (e) {
@@ -163,17 +188,38 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Stream<UserEntity?> get authStateChanges {
-    return _firebaseAuthDataSource.authStateChanges.map(
-      (firebaseUser) => firebaseUser != null ? _mapFirebaseUserToEntity(firebaseUser) : null,
+    return _firebaseAuthDataSource.authStateChanges.asyncMap(
+      (firebaseUser) async => firebaseUser != null ? await _getUserEntity(firebaseUser) : null,
     );
   }
 
-  UserEntity _mapFirebaseUserToEntity(firebase.User firebaseUser) {
+  /// Sync Firebase user to backend database
+  /// This is called after successful Firebase authentication
+  Future<void> _syncUserToBackend(firebase.User firebaseUser) async {
+    try {
+      await _backendDataSource.syncUser(
+        firebaseUser: firebaseUser,
+      );
+    } catch (e) {
+      // Log error but don't fail authentication if backend sync fails
+      // This ensures users can still log in even if backend is temporarily down
+      print('Warning: Failed to sync user to backend: $e');
+    }
+  }
+
+  Future<UserEntity> _getUserEntity(firebase.User firebaseUser, {bool forceNotCompleted = false}) async {
+    bool isCompleted = false;
+    if (!forceNotCompleted) {
+      final result = await _preferenceRepository.hasCompletedPreferences();
+      isCompleted = result.getOrElse(() => false);
+    }
+
     return UserEntity(
       id: firebaseUser.uid,
       email: firebaseUser.email ?? '',
       name: firebaseUser.displayName ?? firebaseUser.email?.split('@').first ?? 'User',
       role: 'customer',
+      preferencesCompleted: isCompleted,
     );
   }
 

@@ -12,7 +12,6 @@ import 'package:Resilio/core/routing/route_names.dart';
 import 'package:Resilio/core/theme/app_colors.dart';
 import 'package:Resilio/core/theme/app_text_styles.dart';
 import 'package:Resilio/l10n/app_localizations.dart';
-
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -131,7 +130,11 @@ class _LoginViewState extends State<_LoginView> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthAuthenticated) {
-          context.goNamed(RouteNames.home);
+          if (state.user.preferencesCompleted) {
+            context.goNamed(RouteNames.home);
+          } else {
+            context.goNamed(RouteNames.preferences);
+          }
         } else if (state is AuthError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

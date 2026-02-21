@@ -14,10 +14,12 @@ class AuthLoading extends AuthState {}
 
 class AuthAuthenticated extends AuthState {
   final UserEntity user;
-  const AuthAuthenticated(this.user);
+  final bool isNewUser;
+  
+  const AuthAuthenticated(this.user, {this.isNewUser = false});
 
   @override
-  List<Object?> get props => [user];
+  List<Object?> get props => [user, isNewUser];
 }
 
 class AuthError extends AuthState {
