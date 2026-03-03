@@ -41,7 +41,8 @@ class AppRouter {
         path: '/preferences',
         name: RouteNames.preferences,
         builder: (context, state) {
-          final fromProfile = state.uri.queryParameters['fromProfile'] == 'true';
+          final fromProfile =
+              state.uri.queryParameters['fromProfile'] == 'true';
           return PreferencesScreen(fromProfile: fromProfile);
         },
       ),

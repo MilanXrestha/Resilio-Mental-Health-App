@@ -70,13 +70,13 @@ class AppLocalizationsNe extends AppLocalizations {
   String get forgotPassword => 'पासवर्ड बिर्सनुभयो?';
 
   @override
-  String get or => 'वा';
+  String get or => 'वा जारी राख्नुहोस्';
 
   @override
-  String get continueWithGoogle => 'गूगलसँग जारी राख्नुहोस्';
+  String get continueWithGoogle => 'गूगल';
 
   @override
-  String get continueWithFacebook => 'फेसबुकसँग जारी राख्नुहोस्';
+  String get continueWithFacebook => 'फेसबुक';
 
   @override
   String get passwordlessLogin => 'OTP लगइन';
