@@ -16,6 +16,9 @@ class AuthTokenService {
 
   /// Store a token from any provider. Call this right after sign-in.
   void setToken(String token, {AuthProvider provider = AuthProvider.superTokens}) {
+    if (token.isEmpty) {
+      throw ArgumentError('Token cannot be empty');
+    }
     _currentToken = token;
     _provider = provider;
   }

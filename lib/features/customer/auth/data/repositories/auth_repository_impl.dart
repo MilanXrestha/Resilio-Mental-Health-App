@@ -188,10 +188,40 @@ class AuthRepositoryImpl implements AuthRepository {
 
       // Extract the SuperTokens access token to authenticate our Step 3 call.
       // On mobile there are no cookies, so we pass it as Authorization: Bearer.
-      final accessToken =
-          (consumeResult['accessToken'] as Map<String, dynamic>?)?['token']
-              as String? ??
-          (consumeResult['accessToken'] as String? ?? '');
+      // Try multiple possible structures:
+      // 1. Standard ST: accessToken.token
+      // 2. Direct string: accessToken
+      // 3. Session object: session.accessToken
+      String? accessToken;
+      
+      final rawAccessToken = consumeResult['accessToken'];
+      if (rawAccessToken != null) {
+        if (rawAccessToken is Map<String, dynamic>) {
+          // Structure: { accessToken: { token: "..." } }
+          accessToken = rawAccessToken['token'] as String?;
+        } else if (rawAccessToken is String) {
+          // Structure: { accessToken: "..." }
+          accessToken = rawAccessToken;
+        }
+      }
+      
+      // Fallback: check if there's a session object
+      if (accessToken == null || accessToken.isEmpty) {
+        final session = consumeResult['session'] as Map<String, dynamic>?;
+        if (session != null) {
+          accessToken = session['accessToken'] as String? ?? 
+                       (session['token'] as String?);
+        }
+      }
+
+      if (accessToken == null || accessToken.isEmpty) {
+        print('[AuthRepository] Failed to extract token. Full response: $consumeResult');
+        throw Exception('Failed to extract access token from SuperTokens response. Status: ${consumeResult['status']}');
+      }
+
+      // Log for debugging (remove in production)
+      print('[AuthRepository] Setting SuperTokens access token: ${accessToken.substring(0, 10)}...');
+      print('[AuthRepository] Token length: ${accessToken.length}');
 
       // Store the SuperTokens access token in AuthTokenService
       _authTokenService.setToken(accessToken, provider: AuthProvider.superTokens);

@@ -26,7 +26,13 @@ class PreferenceRepositoryImpl implements PreferenceRepository {
   );
 
   // Sync getter — works for both Firebase and SuperTokens users
-  String? _getIdToken() => _authTokenService.token;
+  String? _getIdToken() {
+    final token = _authTokenService.token;
+    // Log for debugging (remove in production)
+    print('[PreferenceRepository] Token from AuthTokenService: ${token == null ? 'null' : '${token.substring(0, 10)}...'}');
+    print('[PreferenceRepository] Token is empty: ${token?.isEmpty ?? true}');
+    return token;
+  }
 
   @override
   Future<Either<Failure, List<PreferenceEntity>>> getAllPreferences() async {
@@ -57,8 +63,8 @@ class PreferenceRepositoryImpl implements PreferenceRepository {
   Future<Either<Failure, List<UserPreferenceWithDetailsEntity>>> getUserPreferences() async {
     try {
       final idToken = _getIdToken();
-      if (idToken == null) {
-        return const Left(ServerFailure('User not authenticated'));
+      if (idToken == null || idToken.isEmpty) {
+        return const Left(ServerFailure('User not authenticated. Please sign in again.'));
       }
 
       if (await _networkInfo.isConnected) {
@@ -89,8 +95,8 @@ class PreferenceRepositoryImpl implements PreferenceRepository {
   ) async {
     try {
       final idToken = _getIdToken();
-      if (idToken == null) {
-        return const Left(ServerFailure('User not authenticated'));
+      if (idToken == null || idToken.isEmpty) {
+        return const Left(ServerFailure('User not authenticated. Please sign in again.'));
       }
 
       if (!(await _networkInfo.isConnected)) {
@@ -117,7 +123,7 @@ class PreferenceRepositoryImpl implements PreferenceRepository {
   Future<Either<Failure, bool>> hasCompletedPreferences() async {
     try {
       final idToken = _getIdToken();
-      if (idToken == null) {
+      if (idToken == null || idToken.isEmpty) {
         // Fall back to cached status for ST users on first load
         final cachedStatus = await _localDataSource.getCachedCompletionStatus();
         return Right(cachedStatus ?? false);
