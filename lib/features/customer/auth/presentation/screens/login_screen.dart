@@ -69,26 +69,58 @@ class _LoginViewState extends State<_LoginView> {
     context.read<AuthBloc>().add(FacebookSignInRequested());
   }
 
-  void _showEmailLinkDialog(BuildContext context) {
+  void _onPasswordlessPressed() {
+    context.pushNamed(RouteNames.passwordlessLogin);
+  }
+
+  void _showPasswordlessDialog() {
     final l10n = AppLocalizations.of(context)!;
     final emailController = TextEditingController();
-
     showDialog(
       context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: Text(l10n.continueWithEmailLink),
-          content: Column(
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.r),
+        ),
+        insetPadding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 24.h),
+        title: Row(
+          children: [
+            Icon(
+              Icons.lock_open_rounded,
+              color: context.primaryColor,
+              size: 22.sp,
+            ),
+            SizedBox(width: 8.w),
+            Flexible(
+              child: Text(
+                l10n.passwordlessLogin,
+                style: AppTextStyles.headlineSmall,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+              ),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(l10n.enterEmailForLink),
+              Text(
+                l10n.passwordlessSubtitle,
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: context.textSecondaryColor,
+                ),
+              ),
               SizedBox(height: 16.h),
               TextField(
                 controller: emailController,
                 keyboardType: TextInputType.emailAddress,
+                autofocus: true,
                 decoration: InputDecoration(
                   labelText: l10n.email,
                   hintText: l10n.emailHint,
+                  prefixIcon: const Icon(Icons.email_outlined),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.r),
                   ),
@@ -96,31 +128,36 @@ class _LoginViewState extends State<_LoginView> {
               ),
             ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: Text(l10n.dontHaveAccount.split(' ').first == "Don't" ? 'Cancel' : 'रद्द गर्नुहोस्'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(l10n.cancel),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: context.primaryColor,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.r),
+              ),
             ),
-            ElevatedButton(
-              onPressed: () {
-                final email = emailController.text.trim();
-                if (email.isNotEmpty) {
-                  context.read<AuthBloc>().add(
-                    SendSignInLinkRequested(
-                      email: email,
-                      appUrl: 'https://resilio.page.link/email-signin',
-                    ),
-                  );
-                  Navigator.pop(dialogContext);
-                }
-              },
-              child: Text(l10n.sendLink),
-            ),
-          ],
-        );
-      },
+            onPressed: () {
+              final email = emailController.text.trim();
+              if (email.isNotEmpty) {
+                Navigator.pop(dialogContext);
+                context
+                    .read<AuthBloc>()
+                    .add(SendOtpRequested(email: email));
+              }
+            },
+            child: Text(l10n.sendOtp),
+          ),
+        ],
+      ),
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -140,13 +177,6 @@ class _LoginViewState extends State<_LoginView> {
             SnackBar(
               content: Text(state.message),
               backgroundColor: Colors.red,
-            ),
-          );
-        } else if (state is SignInLinkSent) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(l10n.emailLinkSent),
-              backgroundColor: Colors.green,
             ),
           );
         }
@@ -379,27 +409,27 @@ class _LoginViewState extends State<_LoginView> {
                             borderRadius: BorderRadius.circular(12.r),
                           ),
                         ),
-                      ),
+                       ),
 
                       SizedBox(height: 12.h),
 
-                      // Email link sign in button
+                      // Passwordless (SuperTokens OTP) button
                       OutlinedButton.icon(
-                        onPressed: () => _showEmailLinkDialog(context),
-                        icon: SvgPicture.asset(
-                          'assets/icons/svg/ic_mail.svg',
-                          width: 20.sp,
-                          height: 20.sp,
+                        onPressed: _onPasswordlessPressed,
+                        icon: Icon(
+                          Icons.lock_open_rounded,
+                          size: 20.sp,
+                          color: context.primaryColor,
                         ),
                         label: Text(
-                          l10n.continueWithEmailLink,
+                          l10n.passwordlessLogin,
                           style: AppTextStyles.buttonMedium.copyWith(
                             color: context.textPrimaryColor,
                           ),
                         ),
                         style: OutlinedButton.styleFrom(
                           padding: EdgeInsets.symmetric(vertical: 16.h),
-                          side: BorderSide(color: context.borderColor),
+                          side: BorderSide(color: context.primaryColor.withValues(alpha: 0.5)),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12.r),
                           ),

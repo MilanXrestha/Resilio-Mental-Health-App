@@ -16,4 +16,13 @@ class ApiEndpoints {
   static const String preferences = '/preferences';
   static const String preferencesMe = '/preferences/me';
   static const String preferencesMeCompleted = '/preferences/me/completed';
+
+  // SuperTokens FDI endpoints (passwordless)
+  // These are served by supertokens-node middleware at /api/v1/auth/**
+  // NOTE: baseUrl already contains /api/v1, so paths here are relative to that.
+  static const String stCreateCode  = '/auth/signinup/code';
+  static const String stConsumeCode = '/auth/signinup/code/consume';
+
+  // Our custom route: syncs ST user into Supabase after OTP verify
+  static const String passwordlessComplete = '/passwordless/complete';
 }

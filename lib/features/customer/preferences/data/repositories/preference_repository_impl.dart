@@ -1,9 +1,10 @@
 import 'package:dartz/dartz.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:injectable/injectable.dart';
 
 import 'package:Resilio/core/errors/failures.dart';
 import 'package:Resilio/core/network/network_info.dart';
+import 'package:Resilio/core/proto_generated/user.pb.dart' as proto;
+import 'package:Resilio/core/services/auth_token_service.dart';
 import '../../domain/entities/preference_entity.dart';
 import '../../domain/entities/user_preference_entity.dart';
 import '../../domain/repositories/preference_repository.dart';
@@ -15,20 +16,17 @@ class PreferenceRepositoryImpl implements PreferenceRepository {
   final PreferenceRemoteDataSource _remoteDataSource;
   final PreferenceLocalDataSource _localDataSource;
   final NetworkInfo _networkInfo;
-  final FirebaseAuth _firebaseAuth;
+  final AuthTokenService _authTokenService;
 
   PreferenceRepositoryImpl(
     this._remoteDataSource,
     this._localDataSource,
     this._networkInfo,
-    this._firebaseAuth,
+    this._authTokenService,
   );
 
-  Future<String?> _getIdToken() async {
-    final user = _firebaseAuth.currentUser;
-    if (user == null) return null;
-    return await user.getIdToken();
-  }
+  // Sync getter — works for both Firebase and SuperTokens users
+  String? _getIdToken() => _authTokenService.token;
 
   @override
   Future<Either<Failure, List<PreferenceEntity>>> getAllPreferences() async {
@@ -45,7 +43,6 @@ class PreferenceRepositoryImpl implements PreferenceRepository {
         return const Left(ServerFailure('No internet connection and no cached data available.'));
       }
     } on ServerFailure catch (e) {
-      // Fallback to cache even on server failure if we have data
       final cachedData = await _localDataSource.getCachedAllPreferences();
       if (cachedData != null) {
         return Right(cachedData.map(_mapToPreferenceEntity).toList());
@@ -59,7 +56,7 @@ class PreferenceRepositoryImpl implements PreferenceRepository {
   @override
   Future<Either<Failure, List<UserPreferenceWithDetailsEntity>>> getUserPreferences() async {
     try {
-      final idToken = await _getIdToken();
+      final idToken = _getIdToken();
       if (idToken == null) {
         return const Left(ServerFailure('User not authenticated'));
       }
@@ -91,7 +88,7 @@ class PreferenceRepositoryImpl implements PreferenceRepository {
     List<String> preferenceIds,
   ) async {
     try {
-      final idToken = await _getIdToken();
+      final idToken = _getIdToken();
       if (idToken == null) {
         return const Left(ServerFailure('User not authenticated'));
       }
@@ -105,9 +102,7 @@ class PreferenceRepositoryImpl implements PreferenceRepository {
         preferenceIds: preferenceIds,
       );
       
-      // Update local cache on successful save
       await _localDataSource.cacheUserPreferences(data);
-      // Also potentially update completion status if we know it should be true now
       await _localDataSource.cacheCompletionStatus(true);
       
       return Right(data.map(_mapToUserPreferenceWithDetails).toList());
@@ -121,9 +116,11 @@ class PreferenceRepositoryImpl implements PreferenceRepository {
   @override
   Future<Either<Failure, bool>> hasCompletedPreferences() async {
     try {
-      final idToken = await _getIdToken();
+      final idToken = _getIdToken();
       if (idToken == null) {
-        return const Left(ServerFailure('User not authenticated'));
+        // Fall back to cached status for ST users on first load
+        final cachedStatus = await _localDataSource.getCachedCompletionStatus();
+        return Right(cachedStatus ?? false);
       }
 
       if (await _networkInfo.isConnected) {
@@ -158,27 +155,28 @@ class PreferenceRepositoryImpl implements PreferenceRepository {
     }
   }
 
-  PreferenceEntity _mapToPreferenceEntity(Map<String, dynamic> json) {
+  PreferenceEntity _mapToPreferenceEntity(proto.Preference p) {
     return PreferenceEntity(
-      id: json['id'] ?? '',
-      preferenceId: json['preferenceId'] ?? '',
-      preferenceName: json['preferenceName'] ?? '',
-      preferenceDescription: json['preferenceDescription'] ?? '',
-      preferenceIcon: (json['preferenceIcon'] as String? ?? '').trim(),
-      isSvg: json['isSvg'] ?? false,
-      sortOrder: json['sortOrder'] ?? 0,
-      isActive: json['isActive'] ?? true,
+      id: p.id,
+      preferenceId: p.preferenceId,
+      preferenceName: p.preferenceName,
+      preferenceDescription: p.preferenceDescription,
+      preferenceIcon: p.preferenceIcon.trim(),
+      isSvg: p.isSvg,
+      sortOrder: p.sortOrder,
+      isActive: p.isActive,
     );
   }
 
-  UserPreferenceWithDetailsEntity _mapToUserPreferenceWithDetails(Map<String, dynamic> json) {
+  UserPreferenceWithDetailsEntity _mapToUserPreferenceWithDetails(proto.Preference p) {
+    // Note: The protobuf message structure for user preferences might need to be refined
+    // If we only return detailed preferences, we map them here.
     return UserPreferenceWithDetailsEntity(
-      id: json['id'] ?? '',
-      userId: json['userId'] ?? '',
-      preference: _mapToPreferenceEntity(json['preference'] ?? {}),
-      selectedAt: json['selectedAt'] != null ? DateTime.tryParse(json['selectedAt']) : null,
-      updatedAt: json['updatedAt'] != null ? DateTime.tryParse(json['updatedAt']) : null,
+      id: p.id,
+      userId: '', // This would need to come from elsewhere if needed
+      preference: _mapToPreferenceEntity(p),
+      selectedAt: DateTime.now(),
+      updatedAt: DateTime.now(),
     );
   }
 }
-

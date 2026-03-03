@@ -79,21 +79,35 @@ class AppLocalizationsNe extends AppLocalizations {
   String get continueWithFacebook => 'फेसबुकसँग जारी राख्नुहोस्';
 
   @override
-  String get continueWithEmailLink => 'इमेल लिंकमार्फत जारी राख्नुहोस्';
+  String get passwordlessLogin => 'OTP मार्फत जारी राख्नुहोस् (पासवर्डरहित)';
 
   @override
-  String get emailLinkSent => 'साइन-इन लिंक पठाइयो! इमेल जाँच गर्नुहोस्।';
+  String get passwordlessSubtitle =>
+      'हामी तपाईंको इमेलमा ६-अंकको कोड पठाउनेछौं। पासवर्ड चाहिँदैन।';
 
   @override
-  String get emailLinkError =>
-      'इमेल लिंक पठाउन असफल। कृपया फेरि प्रयास गर्नुहोस्।';
+  String get sendOtp => 'कोड पठाउनुहोस्';
 
   @override
-  String get enterEmailForLink =>
-      'साइन-इन लिंक प्राप्त गर्न इमेल प्रविष्ट गर्नुहोस्';
+  String get enterOtpTitle => 'प्रमाणीकरण कोड प्रविष्ट गर्नुहोस्';
 
   @override
-  String get sendLink => 'साइन-इन लिंक पठाउनुहोस्';
+  String get otpSentTo => 'हामीले ६-अंकको कोड पठायौं';
+
+  @override
+  String get verifyOtp => 'प्रमाणित गर्नुहोस् र साइन इन गर्नुहोस्';
+
+  @override
+  String get didNotReceiveOtp => 'कोड प्राप्त भएन?';
+
+  @override
+  String get resendOtp => 'पुनः पठाउनुहोस्';
+
+  @override
+  String get otpResent => 'नयाँ कोड तपाईंको इमेलमा पठाइयो।';
+
+  @override
+  String get cancel => 'रद्द गर्नुहोस्';
 
   @override
   String get dontHaveAccount => 'खाता छैन?';

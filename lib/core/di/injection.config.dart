@@ -22,6 +22,7 @@ import 'package:Resilio/core/di/injection.dart' as _i306;
 import 'package:Resilio/core/network/network_info.dart' as _i759;
 import 'package:Resilio/core/network/network_module.dart' as _i266;
 import 'package:Resilio/core/routing/navigation_service.dart' as _i39;
+import 'package:Resilio/core/services/auth_token_service.dart' as _i80;
 import 'package:Resilio/core/theme/cubit/theme_cubit.dart' as _i4;
 import 'package:Resilio/features/customer/auth/data/datasources/local/auth_local_data_source.dart'
     as _i882;
@@ -31,6 +32,8 @@ import 'package:Resilio/features/customer/auth/data/datasources/remote/backend_a
     as _i852;
 import 'package:Resilio/features/customer/auth/data/datasources/remote/firebase_auth_data_source.dart'
     as _i519;
+import 'package:Resilio/features/customer/auth/data/datasources/remote/supertokens_data_source.dart'
+    as _i667;
 import 'package:Resilio/features/customer/auth/data/repositories/auth_repository_impl.dart'
     as _i474;
 import 'package:Resilio/features/customer/auth/domain/repositories/auth_repository.dart'
@@ -43,14 +46,14 @@ import 'package:Resilio/features/customer/auth/domain/usecases/login_usecase.dar
     as _i269;
 import 'package:Resilio/features/customer/auth/domain/usecases/logout_usecase.dart'
     as _i104;
-import 'package:Resilio/features/customer/auth/domain/usecases/send_signin_link_usecase.dart'
-    as _i438;
-import 'package:Resilio/features/customer/auth/domain/usecases/signin_with_email_link_usecase.dart'
-    as _i1038;
+import 'package:Resilio/features/customer/auth/domain/usecases/send_otp_usecase.dart'
+    as _i99;
 import 'package:Resilio/features/customer/auth/domain/usecases/signup_usecase.dart'
     as _i81;
 import 'package:Resilio/features/customer/auth/domain/usecases/sync_user_usecase.dart'
     as _i1033;
+import 'package:Resilio/features/customer/auth/domain/usecases/verify_otp_usecase.dart'
+    as _i613;
 import 'package:Resilio/features/customer/auth/presentation/bloc/auth_bloc.dart'
     as _i829;
 import 'package:Resilio/features/customer/onboarding/data/datasources/onboarding_local_data_source.dart'
@@ -110,19 +113,15 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i361.Dio>(() => networkModule.dio);
     gh.lazySingleton<_i39.NavigationService>(() => _i39.NavigationService());
-    gh.lazySingleton<_i519.FirebaseAuthDataSource>(
-      () => _i519.FirebaseAuthDataSource(
-        gh<_i59.FirebaseAuth>(),
-        gh<_i116.GoogleSignIn>(),
-        gh<_i806.FacebookAuth>(),
-        gh<_i460.SharedPreferences>(),
-      ),
-    );
+    gh.lazySingleton<_i80.AuthTokenService>(() => _i80.AuthTokenService());
     gh.lazySingleton<_i376.AuthRemoteDataSource>(
       () => _i376.AuthRemoteDataSourceImpl(gh<_i361.Dio>()),
     );
     gh.lazySingleton<_i852.BackendAuthDataSource>(
       () => _i852.BackendAuthDataSource(gh<_i361.Dio>()),
+    );
+    gh.lazySingleton<_i667.SuperTokensDataSource>(
+      () => _i667.SuperTokensDataSource(gh<_i361.Dio>()),
     );
     gh.lazySingleton<_i726.PreferenceRemoteDataSource>(
       () => _i726.PreferenceRemoteDataSource(gh<_i361.Dio>()),
@@ -135,6 +134,13 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i4.ThemeCubit>(
       () => _i4.ThemeCubit(gh<_i460.SharedPreferences>()),
+    );
+    gh.lazySingleton<_i519.FirebaseAuthDataSource>(
+      () => _i519.FirebaseAuthDataSource(
+        gh<_i59.FirebaseAuth>(),
+        gh<_i116.GoogleSignIn>(),
+        gh<_i806.FacebookAuth>(),
+      ),
     );
     gh.lazySingleton<_i189.PreferenceLocalDataSource>(
       () => _i189.PreferenceLocalDataSourceImpl(gh<_i865.DatabaseHelper>()),
@@ -150,7 +156,7 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i726.PreferenceRemoteDataSource>(),
         gh<_i189.PreferenceLocalDataSource>(),
         gh<_i759.NetworkInfo>(),
-        gh<_i59.FirebaseAuth>(),
+        gh<_i80.AuthTokenService>(),
       ),
     );
     gh.factory<_i420.CheckPreferencesCompletionUseCase>(
@@ -176,6 +182,8 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i519.FirebaseAuthDataSource>(),
         gh<_i852.BackendAuthDataSource>(),
         gh<_i337.PreferenceRepository>(),
+        gh<_i667.SuperTokensDataSource>(),
+        gh<_i80.AuthTokenService>(),
       ),
     );
     gh.factory<_i723.CheckOnboardingStatusUseCase>(
@@ -205,17 +213,23 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i104.LogoutUseCase>(
       () => _i104.LogoutUseCase(gh<_i184.AuthRepository>()),
     );
+    gh.factory<_i99.SendOtpUseCase>(
+      () => _i99.SendOtpUseCase(gh<_i184.AuthRepository>()),
+    );
     gh.factory<_i81.SignUpUseCase>(
       () => _i81.SignUpUseCase(gh<_i184.AuthRepository>()),
+    );
+    gh.factory<_i613.VerifyOtpUseCase>(
+      () => _i613.VerifyOtpUseCase(gh<_i184.AuthRepository>()),
     );
     gh.lazySingleton<_i64.FacebookSignInUseCase>(
       () => _i64.FacebookSignInUseCase(gh<_i184.AuthRepository>()),
     );
-    gh.lazySingleton<_i438.SendSignInLinkUseCase>(
-      () => _i438.SendSignInLinkUseCase(gh<_i184.AuthRepository>()),
-    );
-    gh.lazySingleton<_i1038.SignInWithEmailLinkUseCase>(
-      () => _i1038.SignInWithEmailLinkUseCase(gh<_i184.AuthRepository>()),
+    gh.factory<_i858.OnboardingBloc>(
+      () => _i858.OnboardingBloc(
+        gh<_i1034.GetOnboardingPagesUseCase>(),
+        gh<_i155.CompleteOnboardingUseCase>(),
+      ),
     );
     gh.factory<_i829.AuthBloc>(
       () => _i829.AuthBloc(
@@ -223,15 +237,9 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i81.SignUpUseCase>(),
         gh<_i671.GoogleSignInUseCase>(),
         gh<_i64.FacebookSignInUseCase>(),
-        gh<_i438.SendSignInLinkUseCase>(),
-        gh<_i1038.SignInWithEmailLinkUseCase>(),
+        gh<_i99.SendOtpUseCase>(),
+        gh<_i613.VerifyOtpUseCase>(),
         gh<_i104.LogoutUseCase>(),
-      ),
-    );
-    gh.factory<_i858.OnboardingBloc>(
-      () => _i858.OnboardingBloc(
-        gh<_i1034.GetOnboardingPagesUseCase>(),
-        gh<_i155.CompleteOnboardingUseCase>(),
       ),
     );
     return this;

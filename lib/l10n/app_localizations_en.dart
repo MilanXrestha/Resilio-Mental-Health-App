@@ -78,19 +78,35 @@ class AppLocalizationsEn extends AppLocalizations {
   String get continueWithFacebook => 'Continue with Facebook';
 
   @override
-  String get continueWithEmailLink => 'Continue with Email Link';
+  String get passwordlessLogin => 'Continue with OTP (Passwordless)';
 
   @override
-  String get emailLinkSent => 'Sign-in link sent! Check your email.';
+  String get passwordlessSubtitle =>
+      'We\'ll send a 6-digit code to your email. No password needed.';
 
   @override
-  String get emailLinkError => 'Failed to send email link. Please try again.';
+  String get sendOtp => 'Send Code';
 
   @override
-  String get enterEmailForLink => 'Enter your email to receive a sign-in link';
+  String get enterOtpTitle => 'Enter Verification Code';
 
   @override
-  String get sendLink => 'Send Sign-In Link';
+  String get otpSentTo => 'We sent a 6-digit code to';
+
+  @override
+  String get verifyOtp => 'Verify & Sign In';
+
+  @override
+  String get didNotReceiveOtp => 'Didn\'t receive the code?';
+
+  @override
+  String get resendOtp => 'Resend';
+
+  @override
+  String get otpResent => 'A new code has been sent to your email.';
+
+  @override
+  String get cancel => 'Cancel';
 
   @override
   String get dontHaveAccount => 'Don\'t have an account?';

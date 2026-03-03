@@ -1,14 +1,15 @@
 import 'dart:convert';
 import 'package:injectable/injectable.dart';
-
+import 'package:protobuf/protobuf.dart';
 import '../../../../../../core/database/database_helper.dart';
+import '../../../../../../core/proto_generated/user.pb.dart';
 
 abstract class PreferenceLocalDataSource {
-  Future<void> cacheAllPreferences(List<Map<String, dynamic>> preferences);
-  Future<List<Map<String, dynamic>>?> getCachedAllPreferences();
+  Future<void> cacheAllPreferences(List<Preference> preferences);
+  Future<List<Preference>?> getCachedAllPreferences();
   
-  Future<void> cacheUserPreferences(List<Map<String, dynamic>> userPreferences);
-  Future<List<Map<String, dynamic>>?> getCachedUserPreferences();
+  Future<void> cacheUserPreferences(List<Preference> userPreferences);
+  Future<List<Preference>?> getCachedUserPreferences();
   
   Future<void> cacheCompletionStatus(bool status);
   Future<bool?> getCachedCompletionStatus();
@@ -20,42 +21,43 @@ abstract class PreferenceLocalDataSource {
 class PreferenceLocalDataSourceImpl implements PreferenceLocalDataSource {
   final DatabaseHelper _databaseHelper;
   
-  static const String _keyAllPreferences = 'all_preferences';
-  static const String _keyUserPreferences = 'user_preferences';
+  static const String _keyAllPreferences = 'all_preferences_proto';
+  static const String _keyUserPreferences = 'user_preferences_proto';
   static const String _keyCompletionStatus = 'preferences_completion_status';
 
   PreferenceLocalDataSourceImpl(this._databaseHelper);
 
   @override
-  Future<void> cacheAllPreferences(List<Map<String, dynamic>> preferences) async {
-    final bytes = utf8.encode(jsonEncode(preferences));
-    await _databaseHelper.saveToCache(_keyAllPreferences, bytes);
+  Future<void> cacheAllPreferences(List<Preference> preferences) async {
+    final response = ListPreferencesResponse(preferences: preferences);
+    await _databaseHelper.saveToCache(_keyAllPreferences, response.writeToBuffer());
   }
 
   @override
-  Future<List<Map<String, dynamic>>?> getCachedAllPreferences() async {
+  Future<List<Preference>?> getCachedAllPreferences() async {
     final bytes = await _databaseHelper.getFromCache(_keyAllPreferences);
     if (bytes != null) {
-      final jsonString = utf8.decode(bytes);
-      final List<dynamic> decoded = jsonDecode(jsonString);
-      return decoded.cast<Map<String, dynamic>>();
+      final response = ListPreferencesResponse.fromBuffer(bytes);
+      return response.preferences;
     }
     return null;
   }
 
   @override
-  Future<void> cacheUserPreferences(List<Map<String, dynamic>> userPreferences) async {
-    final bytes = utf8.encode(jsonEncode(userPreferences));
-    await _databaseHelper.saveToCache(_keyUserPreferences, bytes);
+  Future<void> cacheUserPreferences(List<Preference> userPreferences) async {
+    final response = ListPreferencesResponse(preferences: userPreferences);
+    await _databaseHelper.saveToCache(_keyUserPreferences, response.writeToBuffer());
   }
+  
+  // Wait, I see an error in the snippet above ^ 'preferences' is not defined. It should be userPreferences.
+  // I'll fix it in the final write.
 
   @override
-  Future<List<Map<String, dynamic>>?> getCachedUserPreferences() async {
+  Future<List<Preference>?> getCachedUserPreferences() async {
     final bytes = await _databaseHelper.getFromCache(_keyUserPreferences);
     if (bytes != null) {
-      final jsonString = utf8.decode(bytes);
-      final List<dynamic> decoded = jsonDecode(jsonString);
-      return decoded.cast<Map<String, dynamic>>();
+      final response = ListPreferencesResponse.fromBuffer(bytes);
+      return response.preferences;
     }
     return null;
   }
@@ -78,9 +80,6 @@ class PreferenceLocalDataSourceImpl implements PreferenceLocalDataSource {
 
   @override
   Future<void> clearCache() async {
-    // Note: DatabaseHelper.clearCache() clears the entire cache table.
-    // If we want to only clear preference-specific keys, we'd need a more granular clear method.
-    // However, following the pattern in AuthLocalDataSourceImpl:
     await _databaseHelper.clearCache();
   }
 }

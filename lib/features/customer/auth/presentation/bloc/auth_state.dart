@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import '../../domain/entities/user_entity.dart';
+import '../../domain/usecases/send_otp_usecase.dart';
 
 abstract class AuthState extends Equatable {
   const AuthState();
@@ -30,6 +31,13 @@ class AuthError extends AuthState {
   List<Object?> get props => [message];
 }
 
-class SignInLinkSent extends AuthState {
-  const SignInLinkSent();
+/// Emitted after a successful OTP send — carries context for the verify step.
+class OtpSent extends AuthState {
+  final String email;
+  final OtpSessionData sessionData;
+
+  const OtpSent({required this.email, required this.sessionData});
+
+  @override
+  List<Object?> get props => [email, sessionData];
 }

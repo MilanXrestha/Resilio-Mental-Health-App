@@ -6,9 +6,9 @@ import '../../domain/usecases/facebook_signin_usecase.dart';
 import '../../domain/usecases/google_signin_usecase.dart';
 import '../../domain/usecases/login_usecase.dart';
 import '../../domain/usecases/logout_usecase.dart';
-import '../../domain/usecases/send_signin_link_usecase.dart';
-import '../../domain/usecases/signin_with_email_link_usecase.dart';
+import '../../domain/usecases/send_otp_usecase.dart';
 import '../../domain/usecases/signup_usecase.dart';
+import '../../domain/usecases/verify_otp_usecase.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
@@ -18,8 +18,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final SignUpUseCase _signUpUseCase;
   final GoogleSignInUseCase _googleSignInUseCase;
   final FacebookSignInUseCase _facebookSignInUseCase;
-  final SendSignInLinkUseCase _sendSignInLinkUseCase;
-  final SignInWithEmailLinkUseCase _signInWithEmailLinkUseCase;
+  final SendOtpUseCase _sendOtpUseCase;
+  final VerifyOtpUseCase _verifyOtpUseCase;
   final LogoutUseCase _logoutUseCase;
 
   AuthBloc(
@@ -27,16 +27,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     this._signUpUseCase,
     this._googleSignInUseCase,
     this._facebookSignInUseCase,
-    this._sendSignInLinkUseCase,
-    this._signInWithEmailLinkUseCase,
+    this._sendOtpUseCase,
+    this._verifyOtpUseCase,
     this._logoutUseCase,
   ) : super(AuthInitial()) {
     on<LoginRequested>(_onLoginRequested);
     on<SignUpRequested>(_onSignUpRequested);
     on<GoogleSignInRequested>(_onGoogleSignInRequested);
     on<FacebookSignInRequested>(_onFacebookSignInRequested);
-    on<SendSignInLinkRequested>(_onSendSignInLinkRequested);
-    on<SignInWithEmailLinkRequested>(_onSignInWithEmailLinkRequested);
+    on<SendOtpRequested>(_onSendOtpRequested);
+    on<VerifyOtpRequested>(_onVerifyOtpRequested);
     on<LogoutRequested>(_onLogoutRequested);
     on<SignOutRequested>(_onSignOutRequested);
   }
@@ -109,41 +109,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
   }
 
-  Future<void> _onSendSignInLinkRequested(
-    SendSignInLinkRequested event,
-    Emitter<AuthState> emit,
-  ) async {
-    emit(AuthLoading());
-    final result = await _sendSignInLinkUseCase(
-      SendSignInLinkParams(
-        email: event.email,
-        appUrl: event.appUrl,
-      ),
-    );
-
-    result.fold(
-      (failure) => emit(AuthError(_mapFailureToMessage(failure))),
-      (_) => emit(const SignInLinkSent()),
-    );
-  }
-
-  Future<void> _onSignInWithEmailLinkRequested(
-    SignInWithEmailLinkRequested event,
-    Emitter<AuthState> emit,
-  ) async {
-    emit(AuthLoading());
-    final result = await _signInWithEmailLinkUseCase(
-      SignInWithEmailLinkParams(
-        email: event.email,
-        link: event.link,
-      ),
-    );
-
-    result.fold(
-      (failure) => emit(AuthError(_mapFailureToMessage(failure))),
-      (user) => emit(AuthAuthenticated(user)),
-    );
-  }
 
   Future<void> _onLogoutRequested(
     LogoutRequested event,
@@ -161,6 +126,41 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(AuthLoading());
     await _logoutUseCase(const NoParams());
     emit(AuthInitial());
+  }
+
+  // ─── SuperTokens Passwordless OTP ────────────────────────────────────────
+
+  Future<void> _onSendOtpRequested(
+    SendOtpRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+    final result = await _sendOtpUseCase(
+      SendOtpParams(email: event.email),
+    );
+    result.fold(
+      (failure) => emit(AuthError(_mapFailureToMessage(failure))),
+      (sessionData) => emit(OtpSent(email: event.email, sessionData: sessionData)),
+    );
+  }
+
+  Future<void> _onVerifyOtpRequested(
+    VerifyOtpRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+    final result = await _verifyOtpUseCase(
+      VerifyOtpParams(
+        email: event.email,
+        otp: event.otp,
+        preAuthSessionId: event.preAuthSessionId,
+        deviceId: event.deviceId,
+      ),
+    );
+    result.fold(
+      (failure) => emit(AuthError(_mapFailureToMessage(failure))),
+      (user) => emit(AuthAuthenticated(user)),
+    );
   }
 
   String _mapFailureToMessage(Failure failure) {

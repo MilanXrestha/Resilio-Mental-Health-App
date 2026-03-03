@@ -32,7 +32,26 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
             
-            <!-- Intent filter for Firebase Email Link Authentication -->
+            <!-- Intent filter for localhost email links -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="http"
+                    android:host="localhost"
+                    android:pathPrefix="/__/auth/action" />
+            </intent-filter>
+            
+            <!-- Fallback for custom scheme -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="resilioauth" />
+            </intent-filter>
+            
+            <!-- Fallback for HTTPS Firebase Auth links -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -41,6 +60,16 @@
                     android:scheme="https"
                     android:host="resilio-mental-health-app.firebaseapp.com"
                     android:pathPrefix="/__/auth/action" />
+            </intent-filter>
+            
+            <!-- Intent filter for Dynamic Links (if using Firebase Dynamic Links) -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="resilio.page.link" />
             </intent-filter>
         </activity>
 

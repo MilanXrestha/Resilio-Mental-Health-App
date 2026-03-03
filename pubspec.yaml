@@ -135,6 +135,12 @@ dev_dependencies:
   # Testing
   mockito: ^5.4.4
 
+dependency_overrides:
+  supertokens_flutter:
+    git:
+      url: https://github.com/supertokens/supertokens-flutter
+      ref: master
+
 flutter:
   uses-material-design: true
   generate: true

@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:injectable/injectable.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io' show Platform;
 
 /// Data source for Firebase Authentication operations
@@ -11,16 +11,12 @@ class FirebaseAuthDataSource {
   final FirebaseAuth _firebaseAuth;
   final GoogleSignIn _googleSignIn;
   final FacebookAuth _facebookAuth;
-  final SharedPreferences _prefs;
   bool _isInitialized = false;
-
-  static const String _pendingEmailKey = 'pending_email_link';
 
   FirebaseAuthDataSource(
     this._firebaseAuth,
     this._googleSignIn,
     this._facebookAuth,
-    this._prefs,
   );
 
   /// Initialize Google Sign In - must be called before any other methods
@@ -180,101 +176,4 @@ class FirebaseAuthDataSource {
     }
   }
 
-  // ==================== EMAIL LINK AUTHENTICATION ====================
-
-  /// Send sign-in link to email for passwordless authentication
-  Future<void> sendSignInLinkToEmail({
-    required String email,
-    String? appUrl,
-  }) async {
-    try {
-      // Use the default Firebase Auth handler URL format
-      // This avoids reCAPTCHA issues by using the standard Firebase Auth domain
-      final actionCodeSettings = ActionCodeSettings(
-        url: 'https://resilio-mental-health-app.firebaseapp.com/__/auth/action',
-        handleCodeInApp: true,
-        iOSBundleId: 'com.islington.resilio',
-        androidPackageName: 'com.islington.resilio',
-        androidInstallApp: true,
-        androidMinimumVersion: '21',
-      );
-
-      await _firebaseAuth.sendSignInLinkToEmail(
-        email: email,
-        actionCodeSettings: actionCodeSettings,
-      );
-
-      // Save email locally for later sign-in completion
-      await _prefs.setString(_pendingEmailKey, email);
-    } on FirebaseAuthException {
-      rethrow;
-    } catch (e) {
-      throw FirebaseAuthException(
-        code: 'email-link-error',
-        message: e.toString(),
-      );
-    }
-  }
-
-  /// Get the saved pending email for email link sign-in
-  String? getPendingEmail() {
-    return _prefs.getString(_pendingEmailKey);
-  }
-
-  /// Clear the saved pending email
-  Future<void> clearPendingEmail() async {
-    await _prefs.remove(_pendingEmailKey);
-  }
-
-  /// Check if the incoming link is a valid email sign-in link
-  bool isSignInWithEmailLink(String link) {
-    return _firebaseAuth.isSignInWithEmailLink(link);
-  }
-
-  /// Sign in with email link (passwordless)
-  /// If email is not provided, it will use the saved pending email
-  Future<UserCredential> signInWithEmailLink({
-    String? email,
-    required String link,
-  }) async {
-    try {
-      // Use provided email or fall back to saved pending email
-      final emailToUse = email ?? getPendingEmail();
-      
-      if (emailToUse == null || emailToUse.isEmpty) {
-        throw FirebaseAuthException(
-          code: 'email-link-no-email',
-          message: 'No email found. Please request a new sign-in link.',
-        );
-      }
-
-      final result = await _firebaseAuth.signInWithEmailLink(
-        email: emailToUse,
-        emailLink: link,
-      );
-      
-      // Clear pending email after successful sign-in
-      await clearPendingEmail();
-      
-      return result;
-    } on FirebaseAuthException {
-      rethrow;
-    } catch (e) {
-      throw FirebaseAuthException(
-        code: 'email-link-signin-error',
-        message: e.toString(),
-      );
-    }
-  }
-
-  /// Handle incoming email link from app launch
-  Future<UserCredential?> handleIncomingEmailLink(String? link) async {
-    if (link == null || link.isEmpty) return null;
-    
-    if (isSignInWithEmailLink(link)) {
-      return await signInWithEmailLink(link: link);
-    }
-    
-    return null;
-  }
 }

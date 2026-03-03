@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 
 import '../constants/api_endpoints.dart';
+import 'protobuf_interceptor.dart';
 
 @module
 abstract class NetworkModule {
@@ -12,15 +13,17 @@ abstract class NetworkModule {
         baseUrl: ApiEndpoints.baseUrl,
         connectTimeout: const Duration(seconds: 15),
         receiveTimeout: const Duration(seconds: 15),
-        contentType: 'application/json',
-        responseType: ResponseType.json,
+        responseType: ResponseType.bytes, // Important for protobuf
       ),
     );
 
-    dio.interceptors.add(LogInterceptor(
-      requestBody: true,
-      responseBody: true,
-    ));
+    dio.interceptors.addAll([
+      ProtobufInterceptor(),
+      LogInterceptor(
+        requestBody: true,
+        responseBody: true,
+      ),
+    ]);
 
     return dio;
   }

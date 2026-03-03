@@ -236,35 +236,65 @@ abstract class AppLocalizations {
   /// **'Continue with Facebook'**
   String get continueWithFacebook;
 
-  /// No description provided for @continueWithEmailLink.
+  /// No description provided for @passwordlessLogin.
   ///
   /// In en, this message translates to:
-  /// **'Continue with Email Link'**
-  String get continueWithEmailLink;
+  /// **'Continue with OTP (Passwordless)'**
+  String get passwordlessLogin;
 
-  /// No description provided for @emailLinkSent.
+  /// No description provided for @passwordlessSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Sign-in link sent! Check your email.'**
-  String get emailLinkSent;
+  /// **'We\'ll send a 6-digit code to your email. No password needed.'**
+  String get passwordlessSubtitle;
 
-  /// No description provided for @emailLinkError.
+  /// No description provided for @sendOtp.
   ///
   /// In en, this message translates to:
-  /// **'Failed to send email link. Please try again.'**
-  String get emailLinkError;
+  /// **'Send Code'**
+  String get sendOtp;
 
-  /// No description provided for @enterEmailForLink.
+  /// No description provided for @enterOtpTitle.
   ///
   /// In en, this message translates to:
-  /// **'Enter your email to receive a sign-in link'**
-  String get enterEmailForLink;
+  /// **'Enter Verification Code'**
+  String get enterOtpTitle;
 
-  /// No description provided for @sendLink.
+  /// No description provided for @otpSentTo.
   ///
   /// In en, this message translates to:
-  /// **'Send Sign-In Link'**
-  String get sendLink;
+  /// **'We sent a 6-digit code to'**
+  String get otpSentTo;
+
+  /// No description provided for @verifyOtp.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify & Sign In'**
+  String get verifyOtp;
+
+  /// No description provided for @didNotReceiveOtp.
+  ///
+  /// In en, this message translates to:
+  /// **'Didn\'t receive the code?'**
+  String get didNotReceiveOtp;
+
+  /// No description provided for @resendOtp.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend'**
+  String get resendOtp;
+
+  /// No description provided for @otpResent.
+  ///
+  /// In en, this message translates to:
+  /// **'A new code has been sent to your email.'**
+  String get otpResent;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
 
   /// No description provided for @dontHaveAccount.
   ///

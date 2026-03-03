@@ -3,10 +3,13 @@ import 'package:firebase_auth/firebase_auth.dart' as firebase;
 import 'package:injectable/injectable.dart';
 
 import '../../../../../core/errors/failures.dart';
+import '../../../../../core/services/auth_token_service.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
+import '../../domain/usecases/send_otp_usecase.dart';
 import '../datasources/remote/backend_auth_data_source.dart';
 import '../datasources/remote/firebase_auth_data_source.dart';
+import '../datasources/remote/supertokens_data_source.dart';
 import '../../../preferences/domain/repositories/preference_repository.dart';
 
 @LazySingleton(as: AuthRepository)
@@ -14,11 +17,15 @@ class AuthRepositoryImpl implements AuthRepository {
   final FirebaseAuthDataSource _firebaseAuthDataSource;
   final BackendAuthDataSource _backendDataSource;
   final PreferenceRepository _preferenceRepository;
+  final SuperTokensDataSource _superTokensDataSource;
+  final AuthTokenService _authTokenService;
 
   AuthRepositoryImpl(
     this._firebaseAuthDataSource,
     this._backendDataSource,
     this._preferenceRepository,
+    this._superTokensDataSource,
+    this._authTokenService,
   );
 
   @override
@@ -27,15 +34,19 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
   }) async {
     try {
-      final credential = await _firebaseAuthDataSource.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      final credential = await _firebaseAuthDataSource
+          .signInWithEmailAndPassword(email: email, password: password);
+
+      // Store Firebase token so preferences and other protected routes work
+      final idToken = await credential.user?.getIdToken();
+      if (idToken != null) {
+        _authTokenService.setToken(idToken, provider: AuthProvider.firebase);
+      }
 
       // Sync user to backend
-      await _syncUserToBackend(credential.user!);
+      final syncedUser = await _syncUserToBackend(credential.user!);
 
-      final user = await _getUserEntity(credential.user!);
+      final user = syncedUser ?? await _getUserEntity(credential.user!);
       return Right(user);
     } on firebase.FirebaseAuthException catch (e) {
       return Left(_mapFirebaseError(e));
@@ -51,21 +62,26 @@ class AuthRepositoryImpl implements AuthRepository {
     String? name,
   }) async {
     try {
-      final credential = await _firebaseAuthDataSource.signUpWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      final credential = await _firebaseAuthDataSource
+          .signUpWithEmailAndPassword(email: email, password: password);
 
       // Update display name if provided
       if (name != null && name.isNotEmpty) {
         await _firebaseAuthDataSource.updateDisplayName(name);
       }
 
-      // Sync user to backend
-      await _syncUserToBackend(credential.user!);
+      // Store Firebase token
+      final idToken = await credential.user?.getIdToken();
+      if (idToken != null) {
+        _authTokenService.setToken(idToken, provider: AuthProvider.firebase);
+      }
 
-      // New user always has preferences as false initially
-      final user = await _getUserEntity(credential.user!, forceNotCompleted: true);
+      // Sync user to backend
+      final syncedUser = await _syncUserToBackend(credential.user!);
+
+      final user =
+          syncedUser ??
+          await _getUserEntity(credential.user!, forceNotCompleted: true);
       return Right(user);
     } on firebase.FirebaseAuthException catch (e) {
       return Left(_mapFirebaseError(e));
@@ -83,10 +99,16 @@ class AuthRepositoryImpl implements AuthRepository {
         return const Left(ServerFailure('Google sign in cancelled'));
       }
 
-      // Sync user to backend
-      await _syncUserToBackend(credential.user!);
+      // Store Firebase token
+      final idToken = await credential.user?.getIdToken();
+      if (idToken != null) {
+        _authTokenService.setToken(idToken, provider: AuthProvider.firebase);
+      }
 
-      final user = await _getUserEntity(credential.user!);
+      // Sync user to backend
+      final syncedUser = await _syncUserToBackend(credential.user!);
+
+      final user = syncedUser ?? await _getUserEntity(credential.user!);
       return Right(user);
     } on firebase.FirebaseAuthException catch (e) {
       return Left(_mapFirebaseError(e));
@@ -104,10 +126,16 @@ class AuthRepositoryImpl implements AuthRepository {
         return const Left(ServerFailure('Facebook sign in cancelled'));
       }
 
-      // Sync user to backend
-      await _syncUserToBackend(credential.user!);
+      // Store Firebase token
+      final idToken = await credential.user?.getIdToken();
+      if (idToken != null) {
+        _authTokenService.setToken(idToken, provider: AuthProvider.firebase);
+      }
 
-      final user = await _getUserEntity(credential.user!);
+      // Sync user to backend
+      final syncedUser = await _syncUserToBackend(credential.user!);
+
+      final user = syncedUser ?? await _getUserEntity(credential.user!);
       return Right(user);
     } on firebase.FirebaseAuthException catch (e) {
       return Left(_mapFirebaseError(e));
@@ -116,58 +144,89 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
-  @override
-  Future<Either<Failure, void>> sendSignInLinkToEmail({
-    required String email,
-    required String appUrl,
-  }) async {
-    try {
-      await _firebaseAuthDataSource.sendSignInLinkToEmail(
-        email: email,
-        appUrl: appUrl,
-      );
-      return const Right(null);
-    } on firebase.FirebaseAuthException catch (e) {
-      return Left(_mapFirebaseError(e));
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
-    }
-  }
-
-  @override
-  bool isSignInWithEmailLink(String link) {
-    return _firebaseAuthDataSource.isSignInWithEmailLink(link);
-  }
-
-  @override
-  Future<Either<Failure, UserEntity>> signInWithEmailLink({
-    required String email,
-    required String link,
-  }) async {
-    try {
-      final credential = await _firebaseAuthDataSource.signInWithEmailLink(
-        email: email,
-        link: link,
-      );
-
-      // Sync user to backend
-      await _syncUserToBackend(credential.user!);
-
-      final user = await _getUserEntity(credential.user!);
-      return Right(user);
-    } on firebase.FirebaseAuthException catch (e) {
-      return Left(_mapFirebaseError(e));
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
-    }
-  }
 
   @override
   Future<Either<Failure, void>> logout() async {
     try {
       await _preferenceRepository.clearLocalData();
       await _firebaseAuthDataSource.signOut();
+      _authTokenService.clear();
       return const Right(null);
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  // ─── SuperTokens Passwordless ───────────────────────────────────────────────
+
+  @override
+  Future<Either<Failure, OtpSessionData>> sendOtp({
+    required String email,
+  }) async {
+    try {
+      final session = await _superTokensDataSource.createCode(email: email);
+      return Right(session);
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, UserEntity>> verifyOtp({
+    required String email,
+    required String otp,
+    required String preAuthSessionId,
+    required String deviceId,
+  }) async {
+    try {
+      // Step 1: verify OTP with SuperTokens — response contains the access token
+      final consumeResult = await _superTokensDataSource.consumeCode(
+        preAuthSessionId: preAuthSessionId,
+        deviceId: deviceId,
+        userInputCode: otp,
+      );
+
+      // Extract the SuperTokens access token to authenticate our Step 3 call.
+      // On mobile there are no cookies, so we pass it as Authorization: Bearer.
+      final accessToken =
+          (consumeResult['accessToken'] as Map<String, dynamic>?)?['token']
+              as String? ??
+          (consumeResult['accessToken'] as String? ?? '');
+
+      // Store the SuperTokens access token in AuthTokenService
+      _authTokenService.setToken(accessToken, provider: AuthProvider.superTokens);
+
+      // Step 2: sync user into our Supabase DB
+      try {
+        final backendData = await _superTokensDataSource
+            .completePasswordlessLogin(
+          email: email,
+          accessToken: accessToken,
+        );
+        final u = backendData['user'] as Map<String, dynamic>?;
+        if (u != null) {
+          return Right(UserEntity(
+            id: u['id'] as String? ?? email,
+            email: u['email'] as String? ?? email,
+            name: (u['display_name'] as String?)?.isNotEmpty == true
+                ? u['display_name'] as String
+                : email.split('@').first,
+            role: u['user_role'] as String? ?? 'customer',
+            preferencesCompleted:
+                (u['preferences_completed'] as bool?) ?? false,
+          ));
+        }
+      } catch (_) {
+        // Backend sync failed — return minimal entity so login still succeeds
+      }
+
+      return Right(UserEntity(
+        id: email,
+        email: email,
+        name: email.split('@').first,
+        role: 'customer',
+        preferencesCompleted: false,
+      ));
     } catch (e) {
       return Left(ServerFailure(e.toString()));
     }
@@ -189,25 +248,42 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Stream<UserEntity?> get authStateChanges {
     return _firebaseAuthDataSource.authStateChanges.asyncMap(
-      (firebaseUser) async => firebaseUser != null ? await _getUserEntity(firebaseUser) : null,
+      (firebaseUser) async =>
+          firebaseUser != null ? await _getUserEntity(firebaseUser) : null,
     );
   }
 
   /// Sync Firebase user to backend database
-  /// This is called after successful Firebase authentication
-  Future<void> _syncUserToBackend(firebase.User firebaseUser) async {
+  /// Returns UserEntity from backend
+  Future<UserEntity?> _syncUserToBackend(firebase.User firebaseUser) async {
     try {
-      await _backendDataSource.syncUser(
+      final backendUser = await _backendDataSource.syncUser(
         firebaseUser: firebaseUser,
       );
+
+      return UserEntity(
+        id: backendUser.id,
+        email: backendUser.email,
+        name: backendUser.displayName.isNotEmpty
+            ? backendUser.displayName
+            : (backendUser.username.isNotEmpty ? backendUser.username : 'User'),
+        role: backendUser.userRole.isNotEmpty
+            ? backendUser.userRole
+            : 'customer',
+        preferencesCompleted: backendUser.preferencesCompleted,
+      );
     } catch (e) {
-      // Log error but don't fail authentication if backend sync fails
-      // This ensures users can still log in even if backend is temporarily down
       print('Warning: Failed to sync user to backend: $e');
+      return null;
     }
   }
 
-  Future<UserEntity> _getUserEntity(firebase.User firebaseUser, {bool forceNotCompleted = false}) async {
+  Future<UserEntity> _getUserEntity(
+    firebase.User firebaseUser, {
+    bool forceNotCompleted = false,
+  }) async {
+    // If we have a backend sync, we should ideally use that.
+    // This is a fallback or for when we don't want to sync.
     bool isCompleted = false;
     if (!forceNotCompleted) {
       final result = await _preferenceRepository.hasCompletedPreferences();
@@ -217,38 +293,41 @@ class AuthRepositoryImpl implements AuthRepository {
     return UserEntity(
       id: firebaseUser.uid,
       email: firebaseUser.email ?? '',
-      name: firebaseUser.displayName ?? firebaseUser.email?.split('@').first ?? 'User',
+      name:
+          firebaseUser.displayName ??
+          firebaseUser.email?.split('@').first ??
+          'User',
       role: 'customer',
       preferencesCompleted: isCompleted,
     );
   }
+}
 
-  Failure _mapFirebaseError(firebase.FirebaseAuthException e) {
-    switch (e.code) {
-      case 'user-not-found':
-        return const ServerFailure('No user found with this email');
-      case 'wrong-password':
-        return const ServerFailure('Incorrect password');
-      case 'invalid-email':
-        return const ServerFailure('Invalid email address');
-      case 'user-disabled':
-        return const ServerFailure('This account has been disabled');
-      case 'email-already-in-use':
-        return const ServerFailure('An account already exists with this email');
-      case 'weak-password':
-        return const ServerFailure('Password is too weak');
-      case 'invalid-credential':
-        return const ServerFailure('Invalid credentials');
-      case 'account-exists-with-different-credential':
-        return const ServerFailure(
-          'An account already exists with this email using a different sign-in method',
-        );
-      case 'operation-not-allowed':
-        return const ServerFailure(
-          'Facebook sign-in is not enabled in Firebase Authentication',
-        );
-      default:
-        return ServerFailure(e.message ?? 'Authentication failed');
-    }
+Failure _mapFirebaseError(firebase.FirebaseAuthException e) {
+  switch (e.code) {
+    case 'user-not-found':
+      return const ServerFailure('No user found with this email');
+    case 'wrong-password':
+      return const ServerFailure('Incorrect password');
+    case 'invalid-email':
+      return const ServerFailure('Invalid email address');
+    case 'user-disabled':
+      return const ServerFailure('This account has been disabled');
+    case 'email-already-in-use':
+      return const ServerFailure('An account already exists with this email');
+    case 'weak-password':
+      return const ServerFailure('Password is too weak');
+    case 'invalid-credential':
+      return const ServerFailure('Invalid credentials');
+    case 'account-exists-with-different-credential':
+      return const ServerFailure(
+        'An account already exists with this email using a different sign-in method',
+      );
+    case 'operation-not-allowed':
+      return const ServerFailure(
+        'Facebook sign-in is not enabled in Firebase Authentication',
+      );
+    default:
+      return ServerFailure(e.message ?? 'Authentication failed');
   }
 }

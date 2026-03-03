@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import '../../../../../core/errors/failures.dart';
 import '../entities/user_entity.dart';
+import '../../domain/usecases/send_otp_usecase.dart';
 
 abstract class AuthRepository {
   /// Login with email and password
@@ -22,19 +23,16 @@ abstract class AuthRepository {
   /// Sign in with Facebook
   Future<Either<Failure, UserEntity>> signInWithFacebook();
 
-  /// Send sign-in link to email for passwordless authentication
-  Future<Either<Failure, void>> sendSignInLinkToEmail({
-    required String email,
-    required String appUrl,
-  });
+  /// Send OTP to email (SuperTokens passwordless)
+  Future<Either<Failure, OtpSessionData>> sendOtp({required String email});
 
-  /// Check if the incoming link is a valid email sign-in link
-  bool isSignInWithEmailLink(String link);
-
-  /// Sign in with email link (passwordless)
-  Future<Either<Failure, UserEntity>> signInWithEmailLink({
+  /// Verify OTP and sign in (SuperTokens passwordless)
+  /// [preAuthSessionId] and [deviceId] are returned from sendOtp.
+  Future<Either<Failure, UserEntity>> verifyOtp({
     required String email,
-    required String link,
+    required String otp,
+    required String preAuthSessionId,
+    required String deviceId,
   });
 
   /// Sign out

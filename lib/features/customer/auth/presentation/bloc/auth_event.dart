@@ -36,33 +36,35 @@ class GoogleSignInRequested extends AuthEvent {}
 
 class FacebookSignInRequested extends AuthEvent {}
 
-class SendSignInLinkRequested extends AuthEvent {
-  final String email;
-  final String appUrl;
-
-  const SendSignInLinkRequested({
-    required this.email,
-    required this.appUrl,
-  });
-
-  @override
-  List<Object?> get props => [email, appUrl];
-}
-
-class SignInWithEmailLinkRequested extends AuthEvent {
-  final String email;
-  final String link;
-
-  const SignInWithEmailLinkRequested({
-    required this.email,
-    required this.link,
-  });
-
-  @override
-  List<Object?> get props => [email, link];
-}
 
 class LogoutRequested extends AuthEvent {}
 
 // Alias for LogoutRequested (used in some screens)
 class SignOutRequested extends AuthEvent {}
+
+/// Passwordless OTP: Step 1 — send OTP code to [email]
+class SendOtpRequested extends AuthEvent {
+  final String email;
+  const SendOtpRequested({required this.email});
+
+  @override
+  List<Object?> get props => [email];
+}
+
+/// Passwordless OTP: Step 2 — verify the code the user typed
+class VerifyOtpRequested extends AuthEvent {
+  final String email;
+  final String otp;
+  final String preAuthSessionId;
+  final String deviceId;
+
+  const VerifyOtpRequested({
+    required this.email,
+    required this.otp,
+    required this.preAuthSessionId,
+    required this.deviceId,
+  });
+
+  @override
+  List<Object?> get props => [email, otp, preAuthSessionId, deviceId];
+}

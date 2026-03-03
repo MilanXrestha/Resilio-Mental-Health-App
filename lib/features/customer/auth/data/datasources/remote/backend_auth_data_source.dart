@@ -1,46 +1,46 @@
+import 'dart:typed_data';
 import 'package:dio/dio.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase;
 import 'package:injectable/injectable.dart';
 
 import '../../../../../../core/constants/api_endpoints.dart';
 import '../../../../../../core/errors/failures.dart';
+import '../../../../../../core/proto_generated/user.pb.dart';
 
-/// Data source for backend API communication
-/// Syncs Firebase authenticated users to backend database
+/// Data source for backend API communication using Protocol Buffers
 @LazySingleton()
 class BackendAuthDataSource {
   final Dio _dio;
 
   BackendAuthDataSource(this._dio);
 
-  /// Sync Firebase user to backend
-  /// This should be called after successful Firebase authentication
-  Future<Map<String, dynamic>> syncUser({
-    required User firebaseUser,
+  /// Sync Firebase user to backend using Protobuf
+  Future<User> syncUser({
+    required firebase.User firebaseUser,
     String? fcmToken,
   }) async {
     try {
       final idToken = await firebaseUser.getIdToken();
       
+      final request = SyncUserRequest(
+        firebaseUid: firebaseUser.uid,
+        email: firebaseUser.email ?? '',
+        displayName: firebaseUser.displayName ?? '',
+        photoUrl: firebaseUser.photoURL ?? '',
+      );
+
       final response = await _dio.post(
         ApiEndpoints.syncUser,
-        data: {
-          'uid': firebaseUser.uid,
-          'email': firebaseUser.email,
-          'displayName': firebaseUser.displayName,
-          'photoUrl': firebaseUser.photoURL,
-          'fcmToken': fcmToken,
-        },
+        data: request, // Interceptor will handle conversion to bytes
         options: Options(
           headers: {
-            'Authorization': 'Bearer $idToken',
-            'Content-Type': 'application/json',
+            // No Authorization header needed for sync endpoint (public)
           },
         ),
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        return response.data as Map<String, dynamic>;
+        return User.fromBuffer(response.data as Uint8List);
       } else {
         throw ServerFailure('Failed to sync user: ${response.statusCode}');
       }
@@ -53,8 +53,8 @@ class BackendAuthDataSource {
     }
   }
 
-  /// Get current user profile from backend
-  Future<Map<String, dynamic>> getUserProfile({
+  /// Get current user profile from backend using Protobuf
+  Future<User> getUserProfile({
     required String idToken,
   }) async {
     try {
@@ -63,12 +63,13 @@ class BackendAuthDataSource {
         options: Options(
           headers: {
             'Authorization': 'Bearer $idToken',
+            'Accept': 'application/x-protobuf',
           },
         ),
       );
 
       if (response.statusCode == 200) {
-        return response.data as Map<String, dynamic>;
+        return User.fromBuffer(response.data as Uint8List);
       } else {
         throw ServerFailure('Failed to get user profile: ${response.statusCode}');
       }
@@ -81,10 +82,10 @@ class BackendAuthDataSource {
     }
   }
 
-  /// Update user profile in backend
-  Future<Map<String, dynamic>> updateUserProfile({
+  /// Update user profile in backend using Protobuf
+  Future<User> updateUserProfile({
     required String idToken,
-    required Map<String, dynamic> updates,
+    required UpdateUserRequest updates,
   }) async {
     try {
       final response = await _dio.patch(
@@ -93,13 +94,12 @@ class BackendAuthDataSource {
         options: Options(
           headers: {
             'Authorization': 'Bearer $idToken',
-            'Content-Type': 'application/json',
           },
         ),
       );
 
       if (response.statusCode == 200) {
-        return response.data as Map<String, dynamic>;
+        return User.fromBuffer(response.data as Uint8List);
       } else {
         throw ServerFailure('Failed to update profile: ${response.statusCode}');
       }
