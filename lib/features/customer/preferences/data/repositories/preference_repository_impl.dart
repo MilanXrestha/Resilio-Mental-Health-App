@@ -25,14 +25,8 @@ class PreferenceRepositoryImpl implements PreferenceRepository {
     this._authTokenService,
   );
 
-  // Sync getter — works for both Firebase and SuperTokens users
-  String? _getIdToken() {
-    final token = _authTokenService.token;
-    // Log for debugging (remove in production)
-    print('[PreferenceRepository] Token from AuthTokenService: ${token == null ? 'null' : '${token.substring(0, 10)}...'}');
-    print('[PreferenceRepository] Token is empty: ${token?.isEmpty ?? true}');
-    return token;
-  }
+  /// Retrieves authentication token from AuthTokenService
+  String? _getIdToken() => _authTokenService.token;
 
   @override
   Future<Either<Failure, List<PreferenceEntity>>> getAllPreferences() async {

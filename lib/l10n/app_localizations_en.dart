@@ -69,16 +69,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get forgotPassword => 'Forgot Password?';
 
   @override
-  String get or => 'OR';
+  String get or => 'OR CONTINUE WITH';
 
   @override
-  String get continueWithGoogle => 'Continue with Google';
+  String get continueWithGoogle => 'Google';
 
   @override
-  String get continueWithFacebook => 'Continue with Facebook';
+  String get continueWithFacebook => 'Facebook';
 
   @override
-  String get passwordlessLogin => 'Continue with OTP (Passwordless)';
+  String get passwordlessLogin => 'OTP Login';
 
   @override
   String get passwordlessSubtitle =>
@@ -103,7 +103,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get resendOtp => 'Resend';
 
   @override
+  String resendOtpIn(Object seconds) {
+    return 'Resend in ${seconds}s';
+  }
+
+  @override
   String get otpResent => 'A new code has been sent to your email.';
+
+  @override
+  String get newCodeSent => 'New code sent! Check your inbox.';
+
+  @override
+  String get securedBy => 'Secured by SuperTokens';
 
   @override
   String get cancel => 'Cancel';
@@ -113,6 +124,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get alreadyHaveAccount => 'Already have an account?';
+
+  @override
+  String get backToLogin => 'Back to Login';
+
+  @override
+  String get changeEmail => 'Change Email';
 
   @override
   String get onboardingTitle1 => 'Welcome to Resilio';

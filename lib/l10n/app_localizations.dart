@@ -221,25 +221,25 @@ abstract class AppLocalizations {
   /// No description provided for @or.
   ///
   /// In en, this message translates to:
-  /// **'OR'**
+  /// **'OR CONTINUE WITH'**
   String get or;
 
   /// No description provided for @continueWithGoogle.
   ///
   /// In en, this message translates to:
-  /// **'Continue with Google'**
+  /// **'Google'**
   String get continueWithGoogle;
 
   /// No description provided for @continueWithFacebook.
   ///
   /// In en, this message translates to:
-  /// **'Continue with Facebook'**
+  /// **'Facebook'**
   String get continueWithFacebook;
 
   /// No description provided for @passwordlessLogin.
   ///
   /// In en, this message translates to:
-  /// **'Continue with OTP (Passwordless)'**
+  /// **'OTP Login'**
   String get passwordlessLogin;
 
   /// No description provided for @passwordlessSubtitle.
@@ -284,11 +284,29 @@ abstract class AppLocalizations {
   /// **'Resend'**
   String get resendOtp;
 
+  /// No description provided for @resendOtpIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend in {seconds}s'**
+  String resendOtpIn(Object seconds);
+
   /// No description provided for @otpResent.
   ///
   /// In en, this message translates to:
   /// **'A new code has been sent to your email.'**
   String get otpResent;
+
+  /// No description provided for @newCodeSent.
+  ///
+  /// In en, this message translates to:
+  /// **'New code sent! Check your inbox.'**
+  String get newCodeSent;
+
+  /// No description provided for @securedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Secured by SuperTokens'**
+  String get securedBy;
 
   /// No description provided for @cancel.
   ///
@@ -307,6 +325,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Already have an account?'**
   String get alreadyHaveAccount;
+
+  /// No description provided for @backToLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Login'**
+  String get backToLogin;
+
+  /// No description provided for @changeEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Email'**
+  String get changeEmail;
 
   /// No description provided for @onboardingTitle1.
   ///

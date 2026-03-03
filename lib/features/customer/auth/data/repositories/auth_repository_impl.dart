@@ -186,26 +186,20 @@ class AuthRepositoryImpl implements AuthRepository {
         userInputCode: otp,
       );
 
-      // Extract the SuperTokens access token to authenticate our Step 3 call.
-      // On mobile there are no cookies, so we pass it as Authorization: Bearer.
-      // Try multiple possible structures:
-      // 1. Standard ST: accessToken.token
-      // 2. Direct string: accessToken
-      // 3. Session object: session.accessToken
+      // Extract SuperTokens access token from response
+      // Supports multiple response structures for compatibility
       String? accessToken;
       
       final rawAccessToken = consumeResult['accessToken'];
       if (rawAccessToken != null) {
         if (rawAccessToken is Map<String, dynamic>) {
-          // Structure: { accessToken: { token: "..." } }
           accessToken = rawAccessToken['token'] as String?;
         } else if (rawAccessToken is String) {
-          // Structure: { accessToken: "..." }
           accessToken = rawAccessToken;
         }
       }
       
-      // Fallback: check if there's a session object
+      // Fallback: check session object if accessToken not found
       if (accessToken == null || accessToken.isEmpty) {
         final session = consumeResult['session'] as Map<String, dynamic>?;
         if (session != null) {
@@ -215,15 +209,9 @@ class AuthRepositoryImpl implements AuthRepository {
       }
 
       if (accessToken == null || accessToken.isEmpty) {
-        print('[AuthRepository] Failed to extract token. Full response: $consumeResult');
-        throw Exception('Failed to extract access token from SuperTokens response. Status: ${consumeResult['status']}');
+        throw Exception('Failed to extract access token from SuperTokens response');
       }
 
-      // Log for debugging (remove in production)
-      print('[AuthRepository] Setting SuperTokens access token: ${accessToken.substring(0, 10)}...');
-      print('[AuthRepository] Token length: ${accessToken.length}');
-
-      // Store the SuperTokens access token in AuthTokenService
       _authTokenService.setToken(accessToken, provider: AuthProvider.superTokens);
 
       // Step 2: sync user into our Supabase DB

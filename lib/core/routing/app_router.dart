@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/customer/auth/domain/usecases/send_otp_usecase.dart';
 import '../../features/customer/auth/presentation/screens/login_screen.dart';
-import '../../features/customer/auth/presentation/screens/otp_verification_screen.dart';
 import '../../features/customer/auth/presentation/screens/passwordless_login_screen.dart';
 import '../../features/customer/auth/presentation/screens/sign_up_screen.dart';
 import '../../features/customer/home/presentation/screens/home_screen.dart';
@@ -50,17 +49,6 @@ class AppRouter {
         path: '/home',
         name: RouteNames.home,
         builder: (context, state) => const HomeScreen(),
-      ),
-      GoRoute(
-        path: '/otp-verification',
-        name: RouteNames.otpVerification,
-        builder: (context, state) {
-          final extra = state.extra as Map<String, dynamic>;
-          return OtpVerificationScreen(
-            email: extra['email'] as String,
-            sessionData: extra['sessionData'] as OtpSessionData,
-          );
-        },
       ),
       GoRoute(
         path: '/passwordless-login',

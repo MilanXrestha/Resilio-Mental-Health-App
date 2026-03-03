@@ -79,7 +79,7 @@ class AppLocalizationsNe extends AppLocalizations {
   String get continueWithFacebook => 'फेसबुकसँग जारी राख्नुहोस्';
 
   @override
-  String get passwordlessLogin => 'OTP मार्फत जारी राख्नुहोस् (पासवर्डरहित)';
+  String get passwordlessLogin => 'OTP लगइन';
 
   @override
   String get passwordlessSubtitle =>
@@ -104,7 +104,18 @@ class AppLocalizationsNe extends AppLocalizations {
   String get resendOtp => 'पुनः पठाउनुहोस्';
 
   @override
+  String resendOtpIn(Object seconds) {
+    return '$seconds सेकेन्डमा पुनः पठाउनुहोस्';
+  }
+
+  @override
   String get otpResent => 'नयाँ कोड तपाईंको इमेलमा पठाइयो।';
+
+  @override
+  String get newCodeSent => 'नयाँ कोड पठाइयो! आफ्नो इनबक्स जाँच गर्नुहोस्।';
+
+  @override
+  String get securedBy => 'SuperTokens द्वारा सुरक्षित';
 
   @override
   String get cancel => 'रद्द गर्नुहोस्';
@@ -114,6 +125,12 @@ class AppLocalizationsNe extends AppLocalizations {
 
   @override
   String get alreadyHaveAccount => 'पहिले नै खाता छ?';
+
+  @override
+  String get backToLogin => 'लगइनमा फर्कनुहोस्';
+
+  @override
+  String get changeEmail => 'इमेल परिवर्तन गर्नुहोस्';
 
   @override
   String get onboardingTitle1 => 'Resilio मा स्वागत छ';

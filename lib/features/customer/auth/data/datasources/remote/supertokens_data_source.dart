@@ -80,24 +80,11 @@ class SuperTokensDataSource {
       final body = response.data as Map<String, dynamic>;
       final status = body['status'] as String?;
 
-      // Log the response for debugging (remove in production)
-      print('[SuperTokens ✅] consumeCode response status: $status');
-      print('[SuperTokens ✅] Full response keys: ${body.keys.join(', ')}');
-      
       // Extract access token from response header (SuperTokens mobile pattern)
       final accessTokenFromHeader = response.headers.value('st-access-token');
-      print('[SuperTokens ✅] st-access-token header present: ${accessTokenFromHeader != null}');
       if (accessTokenFromHeader != null) {
-        print('[SuperTokens ✅] st-access-token length: ${accessTokenFromHeader.length}');
-        print('[SuperTokens ✅] First 20 chars: ${accessTokenFromHeader.substring(0, 20)}...');
-        // Add it to the body so existing code works
         body['accessToken'] = accessTokenFromHeader;
-        print('[SuperTokens ✅] Added accessToken to response body');
-      } else {
-        print('[SuperTokens ❌] WARNING: No st-access-token header found!');
       }
-      
-      print('[SuperTokens ✅] Final accessToken in body: ${body.containsKey('accessToken')}');
 
       if (status == 'INCORRECT_USER_INPUT_CODE_ERROR') {
         final remaining = body['maximumCodeInputAttempts'] as int? ?? 0;
