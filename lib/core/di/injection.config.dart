@@ -68,14 +68,24 @@ import 'package:Resilio/features/customer/categories/presentation/bloc/category_
     as _i542;
 import 'package:Resilio/features/customer/dashboard/data/datasources/remote/dashboard_remote_data_source.dart'
     as _i774;
+import 'package:Resilio/features/customer/dashboard/data/datasources/remote/quote_remote_data_source.dart'
+    as _i927;
 import 'package:Resilio/features/customer/dashboard/data/repositories/dashboard_repository_impl.dart'
     as _i920;
+import 'package:Resilio/features/customer/dashboard/data/repositories/quote_repository_impl.dart'
+    as _i1025;
 import 'package:Resilio/features/customer/dashboard/domain/repositories/dashboard_repository.dart'
     as _i637;
+import 'package:Resilio/features/customer/dashboard/domain/repositories/quote_repository.dart'
+    as _i610;
 import 'package:Resilio/features/customer/dashboard/domain/usecases/get_dashboard_user_profile_usecase.dart'
     as _i426;
+import 'package:Resilio/features/customer/dashboard/domain/usecases/quote_usecases.dart'
+    as _i970;
 import 'package:Resilio/features/customer/dashboard/presentation/bloc/dashboard_bloc.dart'
     as _i32;
+import 'package:Resilio/features/customer/dashboard/presentation/bloc/quote_bloc.dart'
+    as _i505;
 import 'package:Resilio/features/customer/main/presentation/cubit/main_screen_cubit.dart'
     as _i26;
 import 'package:Resilio/features/customer/onboarding/data/datasources/onboarding_local_data_source.dart'
@@ -140,6 +150,12 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i774.DashboardRemoteDataSource>(
       () => _i774.DashboardRemoteDataSourceImpl(gh<_i361.Dio>()),
     );
+    gh.lazySingleton<_i927.QuoteRemoteDataSource>(
+      () => _i927.QuoteRemoteDataSourceImpl(gh<_i361.Dio>()),
+    );
+    gh.lazySingleton<_i610.QuoteRepository>(
+      () => _i1025.QuoteRepositoryImpl(gh<_i927.QuoteRemoteDataSource>()),
+    );
     gh.lazySingleton<_i376.AuthRemoteDataSource>(
       () => _i376.AuthRemoteDataSourceImpl(gh<_i361.Dio>()),
     );
@@ -154,6 +170,15 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i726.PreferenceRemoteDataSource>(
       () => _i726.PreferenceRemoteDataSource(gh<_i361.Dio>()),
+    );
+    gh.lazySingleton<_i970.GetFeaturedQuotes>(
+      () => _i970.GetFeaturedQuotes(gh<_i610.QuoteRepository>()),
+    );
+    gh.lazySingleton<_i970.GetQuoteById>(
+      () => _i970.GetQuoteById(gh<_i610.QuoteRepository>()),
+    );
+    gh.lazySingleton<_i970.ListQuotes>(
+      () => _i970.ListQuotes(gh<_i610.QuoteRepository>()),
     );
     gh.lazySingleton<_i637.DashboardRepository>(
       () =>
@@ -219,6 +244,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i687.OnboardingRepository>(
       () =>
           _i318.OnboardingRepositoryImpl(gh<_i103.OnboardingLocalDataSource>()),
+    );
+    gh.factory<_i505.QuoteBloc>(
+      () => _i505.QuoteBloc(gh<_i970.GetFeaturedQuotes>()),
     );
     gh.factory<_i542.CategoryBloc>(
       () => _i542.CategoryBloc(gh<_i1053.GetCategoriesUseCase>()),

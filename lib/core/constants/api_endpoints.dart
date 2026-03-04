@@ -20,6 +20,10 @@ class ApiEndpoints {
   // Categories
   static const String categories = '/categories';
 
+  // Quotes
+  static const String quotes = '/quotes';
+  static const String quotesFeatured = '/quotes/featured';
+
   // SuperTokens FDI endpoints (passwordless)
   // These are served by supertokens-node middleware at /api/v1/auth/**
   // NOTE: baseUrl already contains /api/v1, so paths here are relative to that.

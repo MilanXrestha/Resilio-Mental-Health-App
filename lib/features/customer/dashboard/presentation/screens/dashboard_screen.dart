@@ -5,8 +5,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../../../core/di/injection.dart';
+import '../../../../../core/theme/app_colors.dart';
 import '../../domain/entities/user_profile_entity.dart';
+import '../../domain/entities/quote_entity.dart';
 import '../bloc/dashboard_bloc.dart';
+import '../bloc/quote_bloc.dart';
+import '../widgets/featured_quotes_widget.dart';
 
 class DashboardScreen extends StatelessWidget {
   final VoidCallback onViewAllCategories;
@@ -20,8 +24,11 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => getIt<DashboardBloc>()..add(LoadDashboard(userId)),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => getIt<DashboardBloc>()..add(LoadDashboard(userId))),
+        BlocProvider(create: (_) => getIt<QuoteBloc>()..add(const LoadFeaturedQuotes(limit: 10))),
+      ],
       child: _DashboardView(onViewAllCategories: onViewAllCategories),
     );
   }
@@ -78,38 +85,55 @@ class _DashboardView extends StatelessWidget {
 
         return Scaffold(
           body: SafeArea(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+            child: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Header section
+                  // Header section with profile and greeting
                   _buildHeader(context, profile, greeting),
                   
                   const SizedBox(height: 24),
                   
+                  // Featured quotes carousel
+                  BlocBuilder<QuoteBloc, QuoteState>(
+                    builder: (context, quoteState) {
+                      List<QuoteEntity> featuredQuotes = [];
+                      
+                      if (quoteState is QuoteLoaded) {
+                        featuredQuotes = quoteState.quotes;
+                      }
+                      
+                      return FeaturedQuotesWidget(
+                        featuredQuotes: featuredQuotes,
+                        theme: Theme.of(context),
+                        isDarkMode: Theme.of(context).brightness == Brightness.dark,
+                      );
+                    },
+                  ),
+                  
+                  const SizedBox(height: 24),
+                  
                   // Dashboard content placeholder
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Welcome to your dashboard',
-                            style: Theme.of(context).textTheme.titleLarge,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'This is where your dashboard content will appear',
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
-                          const SizedBox(height: 16),
-                          ElevatedButton(
-                            onPressed: onViewAllCategories,
-                            child: const Text('View All Categories'),
-                          ),
-                        ],
-                      ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.w),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Welcome to your dashboard',
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'This is where your dashboard content will appear',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: onViewAllCategories,
+                          child: const Text('View All Categories'),
+                        ),
+                      ],
                     ),
                   ),
                 ],
