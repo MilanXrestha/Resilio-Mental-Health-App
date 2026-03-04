@@ -190,4 +190,19 @@ class AppLocalizationsNe extends AppLocalizations {
   @override
   String get signInToContinue =>
       'तपाईंको मानसिक स्वास्थ्य यात्राको लागि लगइन गर्नुहोस्';
+
+  @override
+  String get alertDialogTitle => 'Confirm';
+
+  @override
+  String get confirm => 'Confirm';
+
+  @override
+  String get exitAppTitle => 'Exit App';
+
+  @override
+  String get exitAppMessage => 'Do you really want to exit the app?';
+
+  @override
+  String get exitButton => 'Exit';
 }

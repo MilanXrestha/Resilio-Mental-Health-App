@@ -57,5 +57,11 @@
   "themeDark": "Dark",
   "languageEnglish": "English",
   "languageNepali": "नेपाली",
-  "signInToContinue": "Sign in to continue your wellness journey"
+  "signInToContinue": "Sign in to continue your wellness journey",
+  "alertDialogTitle": "Confirm",
+  "cancel": "Cancel",
+  "confirm": "Confirm",
+  "exitAppTitle": "Exit App",
+  "exitAppMessage": "Do you really want to exit the app?",
+  "exitButton": "Exit"
 }

@@ -445,6 +445,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sign in to continue your wellness journey'**
   String get signInToContinue;
+
+  /// No description provided for @alertDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get alertDialogTitle;
+
+  /// No description provided for @confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get confirm;
+
+  /// No description provided for @exitAppTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit App'**
+  String get exitAppTitle;
+
+  /// No description provided for @exitAppMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you really want to exit the app?'**
+  String get exitAppMessage;
+
+  /// No description provided for @exitButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit'**
+  String get exitButton;
 }
 
 class _AppLocalizationsDelegate

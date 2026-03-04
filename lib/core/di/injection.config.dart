@@ -56,6 +56,8 @@ import 'package:Resilio/features/customer/auth/domain/usecases/verify_otp_usecas
     as _i613;
 import 'package:Resilio/features/customer/auth/presentation/bloc/auth_bloc.dart'
     as _i829;
+import 'package:Resilio/features/customer/main/presentation/cubit/main_screen_cubit.dart'
+    as _i26;
 import 'package:Resilio/features/customer/onboarding/data/datasources/onboarding_local_data_source.dart'
     as _i103;
 import 'package:Resilio/features/customer/onboarding/data/repositories/onboarding_repository_impl.dart'
@@ -104,6 +106,7 @@ extension GetItInjectableX on _i174.GetIt {
       () => registerModule.prefs,
       preResolve: true,
     );
+    gh.factory<_i26.MainScreenCubit>(() => _i26.MainScreenCubit());
     gh.lazySingleton<_i865.DatabaseHelper>(() => _i865.DatabaseHelper());
     gh.lazySingleton<_i59.FirebaseAuth>(() => registerModule.firebaseAuth);
     gh.lazySingleton<_i116.GoogleSignIn>(() => registerModule.googleSignIn);

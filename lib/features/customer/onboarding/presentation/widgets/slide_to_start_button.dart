@@ -34,6 +34,12 @@ class _SlideToStartButtonState extends State<SlideToStartButton>
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
 
+  // Arrow animation controller
+  late AnimationController _arrowController;
+  late Animation<double> _arrow1Animation;
+  late Animation<double> _arrow2Animation;
+  late Animation<double> _arrow3Animation;
+
   @override
   void initState() {
     super.initState();
@@ -44,6 +50,43 @@ class _SlideToStartButtonState extends State<SlideToStartButton>
 
     _pulseAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+
+    // Initialize arrow animation controller
+    _arrowController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat();
+
+    // Staggered animations for each arrow
+    _arrow1Animation = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 0.3, end: 1.0), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.3), weight: 1),
+    ]).animate(
+      CurvedAnimation(
+        parent: _arrowController,
+        curve: const Interval(0.0, 0.6, curve: Curves.easeInOut),
+      ),
+    );
+
+    _arrow2Animation = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 0.3, end: 1.0), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.3), weight: 1),
+    ]).animate(
+      CurvedAnimation(
+        parent: _arrowController,
+        curve: const Interval(0.2, 0.8, curve: Curves.easeInOut),
+      ),
+    );
+
+    _arrow3Animation = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 0.3, end: 1.0), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.3), weight: 1),
+    ]).animate(
+      CurvedAnimation(
+        parent: _arrowController,
+        curve: const Interval(0.4, 1.0, curve: Curves.easeInOut),
+      ),
     );
 
     // Measure thumb size after the first frame.
@@ -78,7 +121,7 @@ class _SlideToStartButtonState extends State<SlideToStartButton>
 
     // 4.w margin on each side of the thumb → total 8.w reserved.
     final newMaxDrag =
-        (outerBox.size.width - thumbBox.size.width - 8.w).clamp(0.0, double.infinity);
+    (outerBox.size.width - thumbBox.size.width - 8.w).clamp(0.0, double.infinity);
 
     if (newMaxDrag != _maxDrag) {
       setState(() => _maxDrag = newMaxDrag);
@@ -88,6 +131,7 @@ class _SlideToStartButtonState extends State<SlideToStartButton>
   @override
   void dispose() {
     _pulseController.dispose();
+    _arrowController.dispose();
     super.dispose();
   }
 
@@ -140,33 +184,21 @@ class _SlideToStartButtonState extends State<SlideToStartButton>
             // Hard clip so the translating thumb is always within bounds.
             clipBehavior: Clip.hardEdge,
             children: [
-              // Background hint arrows on the right.
+              // Animated background hint arrows on the right.
               Positioned(
                 right: 20.w,
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.chevron_right,
-                      color: widget.isDarkMode
-                          ? Colors.white.withValues(alpha: 0.3)
-                          : Colors.grey.shade400,
-                      size: 20.sp,
-                    ),
-                    Icon(
-                      Icons.chevron_right,
-                      color: widget.isDarkMode
-                          ? Colors.white.withValues(alpha: 0.4)
-                          : Colors.grey.shade500,
-                      size: 20.sp,
-                    ),
-                    Icon(
-                      Icons.chevron_right,
-                      color: widget.isDarkMode
-                          ? Colors.white.withValues(alpha: 0.5)
-                          : Colors.grey.shade600,
-                      size: 20.sp,
-                    ),
-                  ],
+                child: AnimatedBuilder(
+                  animation: _arrowController,
+                  builder: (context, _) {
+                    return Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildAnimatedArrow(_arrow1Animation.value),
+                        _buildAnimatedArrow(_arrow2Animation.value),
+                        _buildAnimatedArrow(_arrow3Animation.value),
+                      ],
+                    );
+                  },
                 ),
               ),
 
@@ -219,6 +251,20 @@ class _SlideToStartButtonState extends State<SlideToStartButton>
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildAnimatedArrow(double opacity) {
+    return Transform.translate(
+      // Subtle horizontal movement based on opacity
+      offset: Offset((1 - opacity) * -4, 0),
+      child: Icon(
+        Icons.chevron_right,
+        color: widget.isDarkMode
+            ? Colors.white.withValues(alpha: opacity * 0.6)
+            : Colors.grey.shade600.withValues(alpha: opacity),
+        size: 20.sp,
       ),
     );
   }

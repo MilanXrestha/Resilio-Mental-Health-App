@@ -188,4 +188,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get signInToContinue => 'Sign in to continue your wellness journey';
+
+  @override
+  String get alertDialogTitle => 'Confirm';
+
+  @override
+  String get confirm => 'Confirm';
+
+  @override
+  String get exitAppTitle => 'Exit App';
+
+  @override
+  String get exitAppMessage => 'Do you really want to exit the app?';
+
+  @override
+  String get exitButton => 'Exit';
 }

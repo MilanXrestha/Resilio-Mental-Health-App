@@ -58,4 +58,10 @@
   "languageEnglish": "English",
   "languageNepali": "नेपाली",
   "signInToContinue": "तपाईंको मानसिक स्वास्थ्य यात्राको लागि लगइन गर्नुहोस्"
+  "alertDialogTitle": "पुष्टि गर्नुहोस्",
+  "cancel": "रद्द गर्नुहोस्",
+  "confirm": "पुष्टि गर्नुहोस्",
+  "exitAppTitle": "एप बन्द गर्नुहोस्",
+  "exitAppMessage": "के तपाईं साँच्चै एप बन्द गर्न चाहनुहुन्छ?",
+  "exitButton": "बन्द गर्नुहोस्"
 }

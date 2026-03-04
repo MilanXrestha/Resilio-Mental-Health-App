@@ -5,7 +5,7 @@ import '../../features/customer/auth/domain/usecases/send_otp_usecase.dart';
 import '../../features/customer/auth/presentation/screens/login_screen.dart';
 import '../../features/customer/auth/presentation/screens/passwordless_login_screen.dart';
 import '../../features/customer/auth/presentation/screens/sign_up_screen.dart';
-import '../../features/customer/home/presentation/screens/home_screen.dart';
+import '../../features/customer/main/presentation/screens/main_screen.dart';
 import '../../features/customer/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/customer/preferences/presentation/screens/preferences_screen.dart';
 import '../../features/customer/splash/presentation/screens/splash_screen.dart';
@@ -49,7 +49,7 @@ class AppRouter {
       GoRoute(
         path: '/home',
         name: RouteNames.home,
-        builder: (context, state) => const HomeScreen(),
+        builder: (context, state) => const MainScreen(),
       ),
       GoRoute(
         path: '/passwordless-login',

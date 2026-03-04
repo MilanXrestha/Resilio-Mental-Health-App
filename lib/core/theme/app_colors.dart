@@ -6,28 +6,47 @@ import 'color_model.dart';
 /// Extension to get colors easily without context
 extension ColorContext on BuildContext {
   bool get isDarkMode => Theme.of(this).brightness == Brightness.dark;
-  
+
   // Common
   Color get primaryColor => AppColors.primary.of(this);
+
   Color get errorColor => AppColors.error.of(this);
+
   Color get accentBlueColor => AppColors.accentBlue.of(this);
-  
+
   // Background
   Color get backgroundColor => AppColors.background.of(this);
+
   Color get surfaceColor => AppColors.surface.of(this);
-  
+
   // Text
   Color get textPrimaryColor => AppColors.textPrimary.of(this);
+
   Color get textSecondaryColor => AppColors.textSecondary.of(this);
+
   Color get textHintColor => AppColors.textHint.of(this);
-  
+
   // Status
   Color get successColor => AppColors.success.of(this);
+
   Color get warningColor => AppColors.warning.of(this);
-  
+
   // Border
   Color get borderColor => AppColors.border.of(this);
+
   Color get dividerColor => AppColors.divider.of(this);
+
+  // ─── Bottom Nav Bar ───
+  Color get navBarBackgroundColor => AppColors.navBarBackground.of(this);
+
+  Color get navBarChipColor => AppColors.navBarChip.of(this);
+
+  Color get navBarUnselectedIconBgColor =>
+      AppColors.navBarUnselectedIconBg.of(this);
+
+  Color get navBarSelectedIconColor => AppColors.navBarSelectedIcon.of(this);
+
+  Color get navBarBorderColor => AppColors.navBarBorder.of(this);
 }
 
 class AppColors {
@@ -61,7 +80,6 @@ class AppColors {
   static const overlay = AppColor.all(Color(0x42000000));
 
   // ==================== BACKGROUND ====================
-  // Clean white with subtle warmth
   static const background = AppColor(
     Color(0xFFFAFAF9), // light - warm white (stone-50)
     Color(0xFF121212), // dark
@@ -80,7 +98,7 @@ class AppColors {
 
   static const textSecondary = AppColor(
     Color(0xFF57534E), // light - warm gray (stone-600)
-    Color(0xB3FFFFFF), // dark
+    Color(0xB3FFFFFF), // dark - white 70%
   );
 
   static const textHint = AppColor(
@@ -108,5 +126,36 @@ class AppColors {
   static const divider = AppColor(
     Color(0xFFF5F5F4), // light - stone-100
     Color(0xFF303030), // dark
+  );
+
+  // ==================== BOTTOM NAV BAR ====================
+  static const navBarBackground = AppColor(
+    Color(0xFFFFFFFF), // light - pure white
+    Color(0xFF121212), // dark - deep black
+  );
+
+  static const navBarChip = AppColor(
+    Color(0xFFF0F0F0), // light - light gray
+    Color(0xFF1E1E1E), // dark - dark gray
+  );
+
+  static const navBarUnselectedIconBg = AppColor(
+    Color(0xFFE8E8E8), // light - soft gray
+    Color(0xFF262626), // dark - charcoal
+  );
+
+  static const navBarSelectedIcon = AppColor(
+    Color(0xFFFFFFFF), // light - white icon on primary bg
+    Color(0xFF000000), // dark - black icon on primary bg
+  );
+
+  static const navBarBorder = AppColor(
+    Color(0xFFE0E0E0), // light - subtle border
+    Color(0xFF2A2A2A), // dark - subtle border
+  );
+
+  static const navBarShadow = AppColor(
+    Color(0x14000000), // light - 8% black
+    Color(0x66000000), // dark - 40% black
   );
 }
