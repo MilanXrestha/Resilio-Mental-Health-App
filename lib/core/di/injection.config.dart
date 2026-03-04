@@ -56,6 +56,26 @@ import 'package:Resilio/features/customer/auth/domain/usecases/verify_otp_usecas
     as _i613;
 import 'package:Resilio/features/customer/auth/presentation/bloc/auth_bloc.dart'
     as _i829;
+import 'package:Resilio/features/customer/categories/data/datasources/remote/category_remote_data_source.dart'
+    as _i748;
+import 'package:Resilio/features/customer/categories/data/repositories/category_repository_impl.dart'
+    as _i626;
+import 'package:Resilio/features/customer/categories/domain/repositories/category_repository.dart'
+    as _i429;
+import 'package:Resilio/features/customer/categories/domain/usecases/get_categories_usecase.dart'
+    as _i1053;
+import 'package:Resilio/features/customer/categories/presentation/bloc/category_bloc.dart'
+    as _i542;
+import 'package:Resilio/features/customer/dashboard/data/datasources/remote/dashboard_remote_data_source.dart'
+    as _i774;
+import 'package:Resilio/features/customer/dashboard/data/repositories/dashboard_repository_impl.dart'
+    as _i920;
+import 'package:Resilio/features/customer/dashboard/domain/repositories/dashboard_repository.dart'
+    as _i637;
+import 'package:Resilio/features/customer/dashboard/domain/usecases/get_dashboard_user_profile_usecase.dart'
+    as _i426;
+import 'package:Resilio/features/customer/dashboard/presentation/bloc/dashboard_bloc.dart'
+    as _i32;
 import 'package:Resilio/features/customer/main/presentation/cubit/main_screen_cubit.dart'
     as _i26;
 import 'package:Resilio/features/customer/onboarding/data/datasources/onboarding_local_data_source.dart'
@@ -117,8 +137,14 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i361.Dio>(() => networkModule.dio);
     gh.lazySingleton<_i39.NavigationService>(() => _i39.NavigationService());
     gh.lazySingleton<_i80.AuthTokenService>(() => _i80.AuthTokenService());
+    gh.lazySingleton<_i774.DashboardRemoteDataSource>(
+      () => _i774.DashboardRemoteDataSourceImpl(gh<_i361.Dio>()),
+    );
     gh.lazySingleton<_i376.AuthRemoteDataSource>(
       () => _i376.AuthRemoteDataSourceImpl(gh<_i361.Dio>()),
+    );
+    gh.lazySingleton<_i748.CategoryRemoteDataSource>(
+      () => _i748.CategoryRemoteDataSourceImpl(gh<_i361.Dio>()),
     );
     gh.lazySingleton<_i852.BackendAuthDataSource>(
       () => _i852.BackendAuthDataSource(gh<_i361.Dio>()),
@@ -128,6 +154,10 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i726.PreferenceRemoteDataSource>(
       () => _i726.PreferenceRemoteDataSource(gh<_i361.Dio>()),
+    );
+    gh.lazySingleton<_i637.DashboardRepository>(
+      () =>
+          _i920.DashboardRepositoryImpl(gh<_i774.DashboardRemoteDataSource>()),
     );
     gh.lazySingleton<_i882.AuthLocalDataSource>(
       () => _i882.AuthLocalDataSourceImpl(gh<_i865.DatabaseHelper>()),
@@ -147,6 +177,12 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i189.PreferenceLocalDataSource>(
       () => _i189.PreferenceLocalDataSourceImpl(gh<_i865.DatabaseHelper>()),
+    );
+    gh.lazySingleton<_i429.CategoryRepository>(
+      () => _i626.CategoryRepositoryImpl(gh<_i748.CategoryRemoteDataSource>()),
+    );
+    gh.lazySingleton<_i1053.GetCategoriesUseCase>(
+      () => _i1053.GetCategoriesUseCase(gh<_i429.CategoryRepository>()),
     );
     gh.lazySingleton<_i103.OnboardingLocalDataSource>(
       () => _i103.OnboardingLocalDataSourceImpl(gh<_i460.SharedPreferences>()),
@@ -176,9 +212,19 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i599.SaveUserPreferencesUseCase>(
       () => _i599.SaveUserPreferencesUseCase(gh<_i337.PreferenceRepository>()),
     );
+    gh.factory<_i426.GetDashboardUserProfileUseCase>(
+      () =>
+          _i426.GetDashboardUserProfileUseCase(gh<_i637.DashboardRepository>()),
+    );
     gh.lazySingleton<_i687.OnboardingRepository>(
       () =>
           _i318.OnboardingRepositoryImpl(gh<_i103.OnboardingLocalDataSource>()),
+    );
+    gh.factory<_i542.CategoryBloc>(
+      () => _i542.CategoryBloc(gh<_i1053.GetCategoriesUseCase>()),
+    );
+    gh.factory<_i32.DashboardBloc>(
+      () => _i32.DashboardBloc(gh<_i426.GetDashboardUserProfileUseCase>()),
     );
     gh.lazySingleton<_i184.AuthRepository>(
       () => _i474.AuthRepositoryImpl(

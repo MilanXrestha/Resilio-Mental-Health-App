@@ -1,6 +1,9 @@
 import 'dart:developer';
 import 'dart:math' as math;
 
+import 'package:Resilio/features/customer/categories/presentation/screens/categories_screen.dart';
+import 'package:Resilio/features/customer/dashboard/presentation/screens/dashboard_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -11,10 +14,8 @@ import '../../../../../common/widgets/exit_alert_dialog_widget.dart';
 import '../../../../../core/di/injection.dart';
 import '../../../../../l10n/app_localizations.dart';
 import '../cubit/main_screen_cubit.dart';
-import '../screens/user_dashboard_screen.dart';
 import '../screens/explore_screen.dart';
 import '../screens/shorts_screen.dart';
-import '../screens/category_screen.dart';
 import '../screens/favorite_screen.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
 
@@ -44,12 +45,16 @@ class _MainScreenViewState extends State<_MainScreenView>
   late Animation<Offset> _navBarOffset;
   late PageController _pageController;
   late List<Widget> _screens;
+  String? _userId;
 
   static const int _totalTabs = 5;
 
   @override
   void initState() {
     super.initState();
+
+    // Get current user ID
+    _userId = FirebaseAuth.instance.currentUser?.uid ?? '';
 
     _pageController = PageController(initialPage: 0);
 
@@ -58,15 +63,13 @@ class _MainScreenViewState extends State<_MainScreenView>
       duration: const Duration(milliseconds: 300),
     );
 
-    _navBarOffset = Tween<Offset>(
-      begin: Offset.zero,
-      end: const Offset(0, 2.0),
-    ).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeInOut,
-      ),
-    );
+    _navBarOffset = Tween<Offset>(begin: Offset.zero, end: const Offset(0, 2.0))
+        .animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: Curves.easeInOut,
+          ),
+        );
 
     _updateScreens();
   }
@@ -74,14 +77,13 @@ class _MainScreenViewState extends State<_MainScreenView>
   void _updateScreens() {
     _screens = [
       _KeepAlivePage(
-        child: UserDashboardScreen(
+        child: DashboardScreen(
           onViewAllCategories: _onViewAllCategories,
+          userId: _userId ?? '',
         ),
       ),
       _KeepAlivePage(
-        child: ExploreScreen(
-          onSearchActiveChanged: _handleSearchActiveChanged,
-        ),
+        child: ExploreScreen(onSearchActiveChanged: _handleSearchActiveChanged),
       ),
       const _KeepAlivePage(child: ShortsScreen()),
       _KeepAlivePage(
@@ -274,8 +276,10 @@ class _MainScreenViewState extends State<_MainScreenView>
                                 ? Alignment.centerLeft
                                 : Alignment.centerRight,
                             child: Opacity(
-                              opacity: (1.0 - value.abs() * 0.5)
-                                  .clamp(0.0, 1.0),
+                              opacity: (1.0 - value.abs() * 0.5).clamp(
+                                0.0,
+                                1.0,
+                              ),
                               child: _screens[index],
                             ),
                           );
