@@ -6,10 +6,10 @@ import '../../../../../../core/errors/failures.dart';
 import '../../../../../../core/proto_generated/user.pb.dart';
 import '../../../domain/entities/user_profile_entity.dart';
 
-/// Remote data source for dashboard operations - uses Node.js backend API
 abstract class DashboardRemoteDataSource {
   /// Gets user profile from backend API
-  Future<UserProfile?> getUserProfile(String userId, String idToken);
+  /// Authorization header is added automatically by AuthInterceptor
+  Future<UserProfile?> getUserProfile();
 }
 
 @LazySingleton(as: DashboardRemoteDataSource)
@@ -19,13 +19,13 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
   DashboardRemoteDataSourceImpl(this._dio);
 
   @override
-  Future<UserProfile?> getUserProfile(String userId, String idToken) async {
+  Future<UserProfile?> getUserProfile() async {
     try {
+      // Auth interceptor will add Authorization header automatically
       final response = await _dio.get(
         ApiEndpoints.me,
         options: Options(
           headers: {
-            'Authorization': 'Bearer $idToken',
             'Accept': 'application/x-protobuf',
             'X-Protobuf-Message-Type': 'User',
           },
@@ -34,23 +34,27 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
       );
 
       if (response.statusCode == 200 && response.data != null) {
-        // Parse protobuf User response from backend
         final bytes = response.data as List<int>;
         final user = User.fromBuffer(bytes);
-        
+
         return UserProfile(
           uid: user.id,
-          firstName: user.displayName.isNotEmpty ? user.displayName : (user.username.isNotEmpty ? user.username : 'User'),
+          firstName: user.displayName.isNotEmpty
+              ? user.displayName
+              : (user.username.isNotEmpty ? user.username : 'User'),
           lastName: '',
           email: user.email,
-          profilePictureUrl: user.photoUrl,
+          profilePictureUrl: user.photoUrl.isNotEmpty ? user.photoUrl : null,
         );
       }
 
       return null;
     } on DioException catch (e) {
       if (e.response?.statusCode == 401 || e.response?.statusCode == 403) {
-        throw NetworkFailure('Unauthorized access');
+        throw const NetworkFailure('Unauthorized access');
+      }
+      if (e.response?.statusCode == 404) {
+        throw const NetworkFailure('User profile not found');
       }
       throw NetworkFailure('Failed to fetch user profile: ${e.message}');
     } catch (e) {

@@ -19,6 +19,7 @@ import 'package:internet_connection_checker/internet_connection_checker.dart'
     as _i973;
 import 'package:Resilio/core/database/database_helper.dart' as _i865;
 import 'package:Resilio/core/di/injection.dart' as _i306;
+import 'package:Resilio/core/network/auth_interceptor.dart' as _i251;
 import 'package:Resilio/core/network/network_info.dart' as _i759;
 import 'package:Resilio/core/network/network_module.dart' as _i266;
 import 'package:Resilio/core/routing/navigation_service.dart' as _i39;
@@ -144,17 +145,10 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i973.InternetConnectionChecker>(
       () => externalModule.connectionChecker,
     );
-    gh.lazySingleton<_i361.Dio>(() => networkModule.dio);
     gh.lazySingleton<_i39.NavigationService>(() => _i39.NavigationService());
     gh.lazySingleton<_i80.AuthTokenService>(() => _i80.AuthTokenService());
-    gh.lazySingleton<_i774.DashboardRemoteDataSource>(
-      () => _i774.DashboardRemoteDataSourceImpl(gh<_i361.Dio>()),
-    );
-    gh.lazySingleton<_i927.QuoteRemoteDataSource>(
-      () => _i927.QuoteRemoteDataSourceImpl(gh<_i361.Dio>()),
-    );
-    gh.lazySingleton<_i610.QuoteRepository>(
-      () => _i1025.QuoteRepositoryImpl(gh<_i927.QuoteRemoteDataSource>()),
+    gh.lazySingleton<_i361.Dio>(
+      () => networkModule.dio(gh<_i80.AuthTokenService>()),
     );
     gh.lazySingleton<_i376.AuthRemoteDataSource>(
       () => _i376.AuthRemoteDataSourceImpl(gh<_i361.Dio>()),
@@ -171,21 +165,11 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i726.PreferenceRemoteDataSource>(
       () => _i726.PreferenceRemoteDataSource(gh<_i361.Dio>()),
     );
-    gh.lazySingleton<_i970.GetFeaturedQuotes>(
-      () => _i970.GetFeaturedQuotes(gh<_i610.QuoteRepository>()),
-    );
-    gh.lazySingleton<_i970.GetQuoteById>(
-      () => _i970.GetQuoteById(gh<_i610.QuoteRepository>()),
-    );
-    gh.lazySingleton<_i970.ListQuotes>(
-      () => _i970.ListQuotes(gh<_i610.QuoteRepository>()),
-    );
-    gh.lazySingleton<_i637.DashboardRepository>(
-      () =>
-          _i920.DashboardRepositoryImpl(gh<_i774.DashboardRemoteDataSource>()),
-    );
     gh.lazySingleton<_i882.AuthLocalDataSource>(
       () => _i882.AuthLocalDataSourceImpl(gh<_i865.DatabaseHelper>()),
+    );
+    gh.factory<_i251.AuthInterceptor>(
+      () => _i251.AuthInterceptor(gh<_i80.AuthTokenService>()),
     );
     gh.lazySingleton<_i759.NetworkInfo>(
       () => _i759.NetworkInfoImpl(gh<_i973.InternetConnectionChecker>()),
@@ -212,6 +196,15 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i103.OnboardingLocalDataSource>(
       () => _i103.OnboardingLocalDataSourceImpl(gh<_i460.SharedPreferences>()),
     );
+    gh.lazySingleton<_i774.DashboardRemoteDataSource>(
+      () => _i774.DashboardRemoteDataSourceImpl(gh<_i361.Dio>()),
+    );
+    gh.lazySingleton<_i927.QuoteRemoteDataSource>(
+      () => _i927.QuoteRemoteDataSourceImpl(gh<_i361.Dio>()),
+    );
+    gh.lazySingleton<_i610.QuoteRepository>(
+      () => _i1025.QuoteRepositoryImpl(gh<_i927.QuoteRemoteDataSource>()),
+    );
     gh.factory<_i1033.SyncUserUseCase>(
       () => _i1033.SyncUserUseCase(gh<_i852.BackendAuthDataSource>()),
     );
@@ -237,22 +230,25 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i599.SaveUserPreferencesUseCase>(
       () => _i599.SaveUserPreferencesUseCase(gh<_i337.PreferenceRepository>()),
     );
-    gh.factory<_i426.GetDashboardUserProfileUseCase>(
-      () =>
-          _i426.GetDashboardUserProfileUseCase(gh<_i637.DashboardRepository>()),
-    );
     gh.lazySingleton<_i687.OnboardingRepository>(
       () =>
           _i318.OnboardingRepositoryImpl(gh<_i103.OnboardingLocalDataSource>()),
     );
-    gh.factory<_i505.QuoteBloc>(
-      () => _i505.QuoteBloc(gh<_i970.GetFeaturedQuotes>()),
+    gh.lazySingleton<_i970.GetFeaturedQuotes>(
+      () => _i970.GetFeaturedQuotes(gh<_i610.QuoteRepository>()),
+    );
+    gh.lazySingleton<_i970.GetQuoteById>(
+      () => _i970.GetQuoteById(gh<_i610.QuoteRepository>()),
+    );
+    gh.lazySingleton<_i970.ListQuotes>(
+      () => _i970.ListQuotes(gh<_i610.QuoteRepository>()),
+    );
+    gh.lazySingleton<_i637.DashboardRepository>(
+      () =>
+          _i920.DashboardRepositoryImpl(gh<_i774.DashboardRemoteDataSource>()),
     );
     gh.factory<_i542.CategoryBloc>(
       () => _i542.CategoryBloc(gh<_i1053.GetCategoriesUseCase>()),
-    );
-    gh.factory<_i32.DashboardBloc>(
-      () => _i32.DashboardBloc(gh<_i426.GetDashboardUserProfileUseCase>()),
     );
     gh.lazySingleton<_i184.AuthRepository>(
       () => _i474.AuthRepositoryImpl(
@@ -299,8 +295,21 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i613.VerifyOtpUseCase>(
       () => _i613.VerifyOtpUseCase(gh<_i184.AuthRepository>()),
     );
+    gh.factory<_i426.GetDashboardUserProfileUseCase>(
+      () =>
+          _i426.GetDashboardUserProfileUseCase(gh<_i637.DashboardRepository>()),
+    );
+    gh.factory<_i505.QuoteBloc>(
+      () => _i505.QuoteBloc(gh<_i970.GetFeaturedQuotes>()),
+    );
     gh.lazySingleton<_i64.FacebookSignInUseCase>(
       () => _i64.FacebookSignInUseCase(gh<_i184.AuthRepository>()),
+    );
+    gh.factory<_i32.DashboardBloc>(
+      () => _i32.DashboardBloc(
+        gh<_i426.GetDashboardUserProfileUseCase>(),
+        gh<_i80.AuthTokenService>(),
+      ),
     );
     gh.factory<_i858.OnboardingBloc>(
       () => _i858.OnboardingBloc(

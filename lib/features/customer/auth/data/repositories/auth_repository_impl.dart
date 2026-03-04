@@ -21,12 +21,12 @@ class AuthRepositoryImpl implements AuthRepository {
   final AuthTokenService _authTokenService;
 
   AuthRepositoryImpl(
-    this._firebaseAuthDataSource,
-    this._backendDataSource,
-    this._preferenceRepository,
-    this._superTokensDataSource,
-    this._authTokenService,
-  );
+      this._firebaseAuthDataSource,
+      this._backendDataSource,
+      this._preferenceRepository,
+      this._superTokensDataSource,
+      this._authTokenService,
+      );
 
   @override
   Future<Either<Failure, UserEntity>> login({
@@ -40,7 +40,11 @@ class AuthRepositoryImpl implements AuthRepository {
       // Store Firebase token so preferences and other protected routes work
       final idToken = await credential.user?.getIdToken();
       if (idToken != null) {
-        _authTokenService.setToken(idToken, provider: AuthProvider.firebase);
+        _authTokenService.setToken(
+          idToken,
+          provider: AuthProvider.firebase,
+          userId: credential.user!.uid,
+        );
       }
 
       // Sync user to backend
@@ -73,7 +77,11 @@ class AuthRepositoryImpl implements AuthRepository {
       // Store Firebase token
       final idToken = await credential.user?.getIdToken();
       if (idToken != null) {
-        _authTokenService.setToken(idToken, provider: AuthProvider.firebase);
+        _authTokenService.setToken(
+          idToken,
+          provider: AuthProvider.firebase,
+          userId: credential.user!.uid,
+        );
       }
 
       // Sync user to backend
@@ -81,7 +89,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
       final user =
           syncedUser ??
-          await _getUserEntity(credential.user!, forceNotCompleted: true);
+              await _getUserEntity(credential.user!, forceNotCompleted: true);
       return Right(user);
     } on firebase.FirebaseAuthException catch (e) {
       return Left(_mapFirebaseError(e));
@@ -102,7 +110,11 @@ class AuthRepositoryImpl implements AuthRepository {
       // Store Firebase token
       final idToken = await credential.user?.getIdToken();
       if (idToken != null) {
-        _authTokenService.setToken(idToken, provider: AuthProvider.firebase);
+        _authTokenService.setToken(
+          idToken,
+          provider: AuthProvider.firebase,
+          userId: credential.user!.uid,
+        );
       }
 
       // Sync user to backend
@@ -129,7 +141,11 @@ class AuthRepositoryImpl implements AuthRepository {
       // Store Firebase token
       final idToken = await credential.user?.getIdToken();
       if (idToken != null) {
-        _authTokenService.setToken(idToken, provider: AuthProvider.firebase);
+        _authTokenService.setToken(
+          idToken,
+          provider: AuthProvider.firebase,
+          userId: credential.user!.uid,
+        );
       }
 
       // Sync user to backend
@@ -143,7 +159,6 @@ class AuthRepositoryImpl implements AuthRepository {
       return Left(ServerFailure(e.toString()));
     }
   }
-
 
   @override
   Future<Either<Failure, void>> logout() async {
@@ -187,9 +202,8 @@ class AuthRepositoryImpl implements AuthRepository {
       );
 
       // Extract SuperTokens access token from response
-      // Supports multiple response structures for compatibility
       String? accessToken;
-      
+
       final rawAccessToken = consumeResult['accessToken'];
       if (rawAccessToken != null) {
         if (rawAccessToken is Map<String, dynamic>) {
@@ -198,45 +212,58 @@ class AuthRepositoryImpl implements AuthRepository {
           accessToken = rawAccessToken;
         }
       }
-      
+
       // Fallback: check session object if accessToken not found
       if (accessToken == null || accessToken.isEmpty) {
         final session = consumeResult['session'] as Map<String, dynamic>?;
         if (session != null) {
-          accessToken = session['accessToken'] as String? ?? 
-                       (session['token'] as String?);
+          accessToken =
+              session['accessToken'] as String? ?? (session['token'] as String?);
         }
       }
 
       if (accessToken == null || accessToken.isEmpty) {
-        throw Exception('Failed to extract access token from SuperTokens response');
+        throw Exception(
+            'Failed to extract access token from SuperTokens response');
       }
 
-      _authTokenService.setToken(accessToken, provider: AuthProvider.superTokens);
+      // Store token with provider info (userId will be set after backend sync)
+      _authTokenService.setToken(
+        accessToken,
+        provider: AuthProvider.superTokens,
+      );
 
       // Step 2: sync user into our Supabase DB
       try {
-        final backendData = await _superTokensDataSource
-            .completePasswordlessLogin(
+        final backendData =
+        await _superTokensDataSource.completePasswordlessLogin(
           email: email,
           accessToken: accessToken,
         );
         final u = backendData['user'] as Map<String, dynamic>?;
         if (u != null) {
+          final userId = u['id'] as String? ?? email;
+
+          // Store user ID in auth service
+          _authTokenService.setUserId(userId);
+
           return Right(UserEntity(
-            id: u['id'] as String? ?? email,
+            id: userId,
             email: u['email'] as String? ?? email,
             name: (u['display_name'] as String?)?.isNotEmpty == true
                 ? u['display_name'] as String
                 : email.split('@').first,
             role: u['user_role'] as String? ?? 'customer',
-            preferencesCompleted:
-                (u['preferences_completed'] as bool?) ?? false,
+            preferencesCompleted: (u['preferences_completed'] as bool?) ?? false,
           ));
         }
-      } catch (_) {
+      } catch (e) {
         // Backend sync failed — return minimal entity so login still succeeds
+        print('Backend sync failed: $e');
       }
+
+      // Store email as user ID fallback
+      _authTokenService.setUserId(email);
 
       return Right(UserEntity(
         id: email,
@@ -266,8 +293,8 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Stream<UserEntity?> get authStateChanges {
     return _firebaseAuthDataSource.authStateChanges.asyncMap(
-      (firebaseUser) async =>
-          firebaseUser != null ? await _getUserEntity(firebaseUser) : null,
+          (firebaseUser) async =>
+      firebaseUser != null ? await _getUserEntity(firebaseUser) : null,
     );
   }
 
@@ -278,6 +305,9 @@ class AuthRepositoryImpl implements AuthRepository {
       final backendUser = await _backendDataSource.syncUser(
         firebaseUser: firebaseUser,
       );
+
+      // Update userId in auth service
+      _authTokenService.setUserId(backendUser.id);
 
       return UserEntity(
         id: backendUser.id,
@@ -297,11 +327,9 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   Future<UserEntity> _getUserEntity(
-    firebase.User firebaseUser, {
-    bool forceNotCompleted = false,
-  }) async {
-    // If we have a backend sync, we should ideally use that.
-    // This is a fallback or for when we don't want to sync.
+      firebase.User firebaseUser, {
+        bool forceNotCompleted = false,
+      }) async {
     bool isCompleted = false;
     if (!forceNotCompleted) {
       final result = await _preferenceRepository.hasCompletedPreferences();
@@ -311,8 +339,7 @@ class AuthRepositoryImpl implements AuthRepository {
     return UserEntity(
       id: firebaseUser.uid,
       email: firebaseUser.email ?? '',
-      name:
-          firebaseUser.displayName ??
+      name: firebaseUser.displayName ??
           firebaseUser.email?.split('@').first ??
           'User',
       role: 'customer',

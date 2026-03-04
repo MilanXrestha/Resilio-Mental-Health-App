@@ -13,17 +13,17 @@ class DashboardRepositoryImpl implements DashboardRepository {
   DashboardRepositoryImpl(this._remoteDataSource);
 
   @override
-  Future<Either<Failure, UserProfile>> getUserProfile(String userId, String idToken) async {
+  Future<Either<Failure, UserProfile>> getUserProfile() async {
     try {
-      final profileData = await _remoteDataSource.getUserProfile(userId, idToken);
-      
+      final profileData = await _remoteDataSource.getUserProfile();
+
       if (profileData != null) {
         return Right(profileData);
       } else {
-        return Left(ServerFailure('User profile not found'));
+        return const Left(ServerFailure('User profile not found'));
       }
-    } on NetworkFailure {
-      return const Left(NetworkFailure('Failed to fetch user profile'));
+    } on NetworkFailure catch (e) {
+      return Left(e);
     } catch (e) {
       return Left(ServerFailure('Failed to fetch user profile: $e'));
     }

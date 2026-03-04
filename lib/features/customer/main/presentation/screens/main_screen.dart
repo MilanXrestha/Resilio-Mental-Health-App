@@ -3,7 +3,6 @@ import 'dart:math' as math;
 
 import 'package:Resilio/features/customer/categories/presentation/screens/categories_screen.dart';
 import 'package:Resilio/features/customer/dashboard/presentation/screens/dashboard_screen.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -45,16 +44,12 @@ class _MainScreenViewState extends State<_MainScreenView>
   late Animation<Offset> _navBarOffset;
   late PageController _pageController;
   late List<Widget> _screens;
-  String? _userId;
 
   static const int _totalTabs = 5;
 
   @override
   void initState() {
     super.initState();
-
-    // Get current user ID
-    _userId = FirebaseAuth.instance.currentUser?.uid ?? '';
 
     _pageController = PageController(initialPage: 0);
 
@@ -77,10 +72,7 @@ class _MainScreenViewState extends State<_MainScreenView>
   void _updateScreens() {
     _screens = [
       _KeepAlivePage(
-        child: DashboardScreen(
-          onViewAllCategories: _onViewAllCategories,
-          userId: _userId ?? '',
-        ),
+        child: DashboardScreen(onViewAllCategories: _onViewAllCategories),
       ),
       _KeepAlivePage(
         child: ExploreScreen(onSearchActiveChanged: _handleSearchActiveChanged),
@@ -117,7 +109,6 @@ class _MainScreenViewState extends State<_MainScreenView>
     final cubit = context.read<MainScreenCubit>();
     cubit.changeTab(index);
 
-    // Animate PageView to the tapped tab
     _pageController.animateToPage(
       index,
       duration: const Duration(milliseconds: 350),
@@ -208,7 +199,6 @@ class _MainScreenViewState extends State<_MainScreenView>
     if (cubit.state.isSearchActive) return false;
 
     if (notification is UserScrollNotification) {
-      // Only handle vertical scroll, ignore horizontal (PageView swipe)
       if (notification.metrics.axis == Axis.vertical) {
         if (notification.direction == ScrollDirection.reverse &&
             cubit.state.isNavBarVisible) {
@@ -248,7 +238,6 @@ class _MainScreenViewState extends State<_MainScreenView>
             extendBody: true,
             body: Stack(
               children: [
-                // Instagram-style PageView with card effect
                 NotificationListener<ScrollNotification>(
                   onNotification: _handleScrollNotification,
                   child: AnimatedBuilder(
@@ -260,7 +249,6 @@ class _MainScreenViewState extends State<_MainScreenView>
                         physics: const BouncingScrollPhysics(),
                         itemCount: _totalTabs,
                         itemBuilder: (context, index) {
-                          // Card transform effect
                           double value = 0.0;
                           if (_pageController.position.haveDimensions) {
                             value = (index - (_pageController.page ?? 0));
@@ -269,7 +257,7 @@ class _MainScreenViewState extends State<_MainScreenView>
 
                           return Transform(
                             transform: Matrix4.identity()
-                              ..setEntry(3, 2, 0.001) // perspective
+                              ..setEntry(3, 2, 0.001)
                               ..rotateY(value * math.pi / 2)
                               ..scale(1.0 - value.abs() * 0.15),
                             alignment: value >= 0
@@ -288,7 +276,6 @@ class _MainScreenViewState extends State<_MainScreenView>
                     },
                   ),
                 ),
-                // Bottom Nav Bar
                 Positioned(
                   left: 16.w,
                   right: 16.w,
@@ -310,7 +297,6 @@ class _MainScreenViewState extends State<_MainScreenView>
   }
 }
 
-/// Keeps each tab alive so it doesn't rebuild when swiping back.
 class _KeepAlivePage extends StatefulWidget {
   final Widget child;
 

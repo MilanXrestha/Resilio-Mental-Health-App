@@ -2,8 +2,8 @@ import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../../core/errors/failures.dart';
-import '../../domain/entities/user_profile_entity.dart';
-import '../../domain/repositories/dashboard_repository.dart';
+import '../entities/user_profile_entity.dart';
+import '../repositories/dashboard_repository.dart';
 
 @injectable
 class GetDashboardUserProfileUseCase {
@@ -11,7 +11,7 @@ class GetDashboardUserProfileUseCase {
 
   GetDashboardUserProfileUseCase(this._repository);
 
-  Future<Either<Failure, UserProfile>> call(String userId, String idToken) async {
-    return await _repository.getUserProfile(userId, idToken);
+  Future<Either<Failure, UserProfile>> call() {
+    return _repository.getUserProfile();
   }
 }
