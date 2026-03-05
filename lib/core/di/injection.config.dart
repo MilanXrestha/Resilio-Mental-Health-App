@@ -95,6 +95,14 @@ import 'package:Resilio/features/customer/dashboard/presentation/bloc/dashboard_
     as _i32;
 import 'package:Resilio/features/customer/dashboard/presentation/bloc/quote_bloc.dart'
     as _i505;
+import 'package:Resilio/features/customer/images/data/datasources/remote/image_remote_data_source.dart'
+    as _i739;
+import 'package:Resilio/features/customer/images/data/repositories/image_repository_impl.dart'
+    as _i76;
+import 'package:Resilio/features/customer/images/domain/repositories/image_repository.dart'
+    as _i674;
+import 'package:Resilio/features/customer/images/presentation/bloc/image_bloc.dart'
+    as _i277;
 import 'package:Resilio/features/customer/main/presentation/cubit/main_screen_cubit.dart'
     as _i26;
 import 'package:Resilio/features/customer/onboarding/data/datasources/onboarding_local_data_source.dart'
@@ -244,6 +252,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i610.QuoteRepository>(
       () => _i1025.QuoteRepositoryImpl(gh<_i927.QuoteRemoteDataSource>()),
     );
+    gh.lazySingleton<_i739.ImageRemoteDataSource>(
+      () => _i739.ImageRemoteDataSourceImpl(gh<_i361.Dio>()),
+    );
     gh.factory<_i1033.SyncUserUseCase>(
       () => _i1033.SyncUserUseCase(gh<_i852.BackendAuthDataSource>()),
     );
@@ -301,6 +312,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i542.CategoryBloc>(
       () => _i542.CategoryBloc(gh<_i1053.GetCategoriesUseCase>()),
     );
+    gh.lazySingleton<_i674.ImageRepository>(
+      () => _i76.ImageRepositoryImpl(gh<_i739.ImageRemoteDataSource>()),
+    );
     gh.lazySingleton<_i184.AuthRepository>(
       () => _i474.AuthRepositoryImpl(
         gh<_i519.FirebaseAuthDataSource>(),
@@ -322,6 +336,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i1034.GetOnboardingPagesUseCase>(
       () => _i1034.GetOnboardingPagesUseCase(gh<_i687.OnboardingRepository>()),
+    );
+    gh.factory<_i277.ImageBloc>(
+      () => _i277.ImageBloc(gh<_i674.ImageRepository>()),
     );
     gh.factory<_i811.PreferencesBloc>(
       () => _i811.PreferencesBloc(

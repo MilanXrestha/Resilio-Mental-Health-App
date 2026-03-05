@@ -12,6 +12,7 @@ import '../../features/customer/video/domain/entities/video_entity.dart';
 import '../../features/customer/video/presentation/screens/shorts_player_screen.dart';
 import '../../features/customer/video/presentation/screens/long_video_player_screen.dart';
 import '../../features/customer/tips/presentation/screens/tips_screen.dart';
+import '../../features/customer/images/presentation/screens/images_screen.dart';
 import '../../features/customer/main/presentation/screens/main_screen.dart';
 import '../../features/customer/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/customer/preferences/presentation/screens/preferences_screen.dart';
@@ -107,6 +108,11 @@ class AppRouter {
         path: '/tips',
         name: 'tips',
         builder: (context, state) => const TipsScreen(),
+      ),
+      GoRoute(
+        path: '/images',
+        name: RouteNames.images,
+        builder: (context, state) => const ImagesScreen(),
       ),
     ],
   );

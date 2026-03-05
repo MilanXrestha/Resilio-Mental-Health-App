@@ -29,6 +29,11 @@ class ApiEndpoints {
   static const String tipsFeatured = '/tips/featured';
   static const String tipsByType = '/tips/type';
 
+  // Images
+  static const String images = '/images';
+  static const String imagesFeatured = '/images/featured';
+  static const String imagesByType = '/images/type';
+
   // Audio
   static const String audio = '/audio';
   static const String audioFeatured = '/audio/featured';

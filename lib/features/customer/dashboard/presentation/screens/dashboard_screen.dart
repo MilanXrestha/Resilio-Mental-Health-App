@@ -26,6 +26,8 @@ import '../../../tips/domain/entities/tip_entity.dart';
 import '../../../tips/presentation/bloc/tip_bloc.dart';
 import '../../../tips/presentation/bloc/tip_event.dart';
 import '../../../tips/presentation/bloc/tip_state.dart';
+import '../../../images/presentation/bloc/image_bloc.dart';
+import '../../../images/presentation/bloc/image_event.dart';
 import '../../domain/entities/user_profile_entity.dart';
 import '../../domain/entities/quote_entity.dart';
 import '../bloc/dashboard_bloc.dart';
@@ -35,6 +37,7 @@ import '../widgets/audio_card_widget.dart';
 import '../widgets/category_card_widget.dart';
 import '../widgets/short_video_card_widget.dart';
 import '../widgets/long_video_card_widget.dart';
+import '../../../images/presentation/widgets/images_section_widget.dart';
 
 class DashboardScreen extends StatelessWidget {
   final VoidCallback onViewAllCategories;
@@ -78,6 +81,11 @@ class DashboardScreen extends StatelessWidget {
         BlocProvider(
           create: (_) =>
           getIt<TipBloc>()..add(const LoadFeaturedTips(limit: 6)),
+        ),
+        // Images bloc
+        BlocProvider(
+          create: (_) =>
+          getIt<ImageBloc>()..add(const LoadFeaturedImages(limit: 6)),
         ),
       ],
       child: _DashboardView(onViewAllCategories: onViewAllCategories),
@@ -170,6 +178,9 @@ class _DashboardView extends StatelessWidget {
                     context
                         .read<TipBloc>()
                         .add(const LoadFeaturedTips(limit: 6));
+                    context
+                        .read<ImageBloc>()
+                        .add(const LoadFeaturedImages(limit: 6));
                   },
                   color: context.primaryColor,
                   child: SingleChildScrollView(
@@ -203,6 +214,11 @@ class _DashboardView extends StatelessWidget {
 
                         // 5.5 ─ Tips Section
                         const _TipsSection(),
+
+                        SizedBox(height: 36.h),
+
+                        // 5.6 ─ Images Section
+                        const ImagesSection(),
 
                         SizedBox(height: 36.h),
 
