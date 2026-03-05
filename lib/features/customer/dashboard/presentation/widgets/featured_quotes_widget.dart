@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -7,17 +8,10 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/theme_extension.dart';
 import '../../domain/entities/quote_entity.dart';
-import 'dart:developer';
 
-/// A widget that displays a carousel of featured quotes with auto-scrolling and navigation.
 class FeaturedQuotesWidget extends StatefulWidget {
-  /// The list of featured quotes to display.
   final List<QuoteEntity> featuredQuotes;
-
-  /// The app's theme data for consistent styling.
   final ThemeData theme;
-
-  /// Indicates whether dark mode is enabled.
   final bool isDarkMode;
 
   const FeaturedQuotesWidget({
@@ -28,284 +22,305 @@ class FeaturedQuotesWidget extends StatefulWidget {
   });
 
   @override
-  FeaturedQuotesWidgetState createState() => FeaturedQuotesWidgetState();
+  State<FeaturedQuotesWidget> createState() => _FeaturedQuotesWidgetState();
 }
 
-class FeaturedQuotesWidgetState extends State<FeaturedQuotesWidget> {
-  // Current index of the displayed quote in the PageView.
-  int _currentQuoteIndex = 0;
-
-  // Controller for the PageView to handle manual and auto-scrolling.
-  final PageController _pageController = PageController();
-
-  // Timer for auto-scrolling quotes every 10 seconds.
+class _FeaturedQuotesWidgetState extends State<FeaturedQuotesWidget> {
+  // ── State ────────────────────────────────────────────────────────────────
+  int _currentIndex = 0;
+  double _currentPage = 0;
+  late final PageController _pageController;
   Timer? _autoScrollTimer;
+
+  // Calming wellness gradients
+  static const _gradients = <List<Color>>[
+    [Color(0xFF0D9488), Color(0xFF0F766E)], // Teal
+    [Color(0xFF6366F1), Color(0xFF4F46E5)], // Indigo
+    [Color(0xFF8B5CF6), Color(0xFF7C3AED)], // Purple
+    [Color(0xFF0EA5E9), Color(0xFF0284C7)], // Sky
+    [Color(0xFF059669), Color(0xFF047857)], // Emerald
+    [Color(0xFFD97706), Color(0xFFB45309)], // Amber
+    [Color(0xFFDB2777), Color(0xFFBE185D)], // Pink
+    [Color(0xFF7C3AED), Color(0xFF6D28D9)], // Violet
+  ];
+
+  // ── Lifecycle ────────────────────────────────────────────────────────────
 
   @override
   void initState() {
     super.initState();
-    // Validate and initialize auto-scrolling if quotes are valid.
-    if (widget.featuredQuotes.isNotEmpty && widget.featuredQuotes.every((quote) => quote.quoteText.isNotEmpty)) {
-      log('FeaturedQuotesWidget received valid featuredQuotes: ${widget.featuredQuotes.map((q) => q.quoteText).toList()}');
-      _startAutoScroll();
-    } else {
-      log('Warning: FeaturedQuotesWidget received invalid or empty featuredQuotes: '
-          'count=${widget.featuredQuotes.length}, '
-          'types=${widget.featuredQuotes.map((q) => q.runtimeType).toList()}, '
-          'valid=${widget.featuredQuotes.every((quote) => quote.quoteText.isNotEmpty)}');
-    }
-  }
-
-  /// Starts the auto-scrolling timer for the quote carousel.
-  void _startAutoScroll() {
-    _autoScrollTimer?.cancel();
-    if (widget.featuredQuotes.isNotEmpty) {
-      _autoScrollTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
-        if (mounted && _pageController.hasClients) {
-          setState(() {
-            // Move to the next quote, looping back to the start if at the end.
-            _currentQuoteIndex = (_currentQuoteIndex + 1) % widget.featuredQuotes.length;
-            _pageController.animateToPage(
-              _currentQuoteIndex,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-            );
-          });
-        }
-      });
-    }
+    _pageController = PageController(viewportFraction: 0.86);
+    _pageController.addListener(_onScroll);
+    if (_validQuotes) _startAutoScroll();
   }
 
   @override
-  void didUpdateWidget(FeaturedQuotesWidget oldWidget) {
+  void didUpdateWidget(covariant FeaturedQuotesWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Reset the carousel if the featured quotes list changes.
-    if (widget.featuredQuotes != oldWidget.featuredQuotes || widget.featuredQuotes.length != oldWidget.featuredQuotes.length) {
-      setState(() {
-        _currentQuoteIndex = 0;
-      });
-      if (_pageController.hasClients) {
-        _pageController.jumpToPage(0);
-      }
-      if (widget.featuredQuotes.isNotEmpty && widget.featuredQuotes.every((quote) => quote.quoteText.isNotEmpty)) {
-        _startAutoScroll();
-      } else {
-        log('Warning: Updated featuredQuotes invalid or empty: '
-            'count=${widget.featuredQuotes.length}, '
-            'types=${widget.featuredQuotes.map((q) => q.runtimeType).toList()}');
-      }
+    if (widget.featuredQuotes.length != oldWidget.featuredQuotes.length) {
+      _currentIndex = 0;
+      _currentPage = 0;
+      if (_pageController.hasClients) _pageController.jumpToPage(0);
+      _validQuotes ? _startAutoScroll() : _autoScrollTimer?.cancel();
     }
   }
 
   @override
   void dispose() {
-    // Clean up timer and page controller to prevent memory leaks.
     _autoScrollTimer?.cancel();
-    _pageController.dispose();
+    _pageController
+      ..removeListener(_onScroll)
+      ..dispose();
     super.dispose();
   }
 
+  // ── Helpers ──────────────────────────────────────────────────────────────
+
+  bool get _validQuotes =>
+      widget.featuredQuotes.isNotEmpty &&
+          widget.featuredQuotes.every((q) => q.quoteText.isNotEmpty);
+
+  void _onScroll() {
+    if (!mounted) return;
+    final page = _pageController.page;
+    if (page != null) setState(() => _currentPage = page);
+  }
+
+  void _startAutoScroll() {
+    _autoScrollTimer?.cancel();
+    _autoScrollTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (!mounted || !_pageController.hasClients) return;
+      final next = (_currentIndex + 1) % widget.featuredQuotes.length;
+      _pageController.animateToPage(
+        next,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeOutCubic,
+      );
+    });
+  }
+
+  // ── Build ────────────────────────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
-    // Check if there are valid quotes to display.
-    final surfaceColor = widget.isDarkMode 
-        ? AppColors.surface.of(context) 
-        : AppColors.surface.of(context);
-    final textPrimaryColor = widget.isDarkMode 
-        ? AppColors.textPrimary.of(context) 
-        : AppColors.textPrimary.of(context);
-    final textSecondaryColor = widget.isDarkMode 
-        ? AppColors.textSecondary.of(context) 
-        : AppColors.textSecondary.of(context);
-    
-    return widget.featuredQuotes.isNotEmpty && widget.featuredQuotes.every((quote) => quote.quoteText.isNotEmpty)
-        ? Column(
+    if (!_validQuotes) return const SizedBox.shrink();
+
+    return Column(
       children: [
-        // Quote carousel container.
+        // ── Carousel ────────────────────────────────────────────────
         SizedBox(
-          height: 160.h,
-          child: Card(
-            elevation: 6,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16.r),
-            ),
-            child: Container(
-              decoration: BoxDecoration(
-                // Use solid background from AppColors
-                color: surfaceColor,
-                borderRadius: BorderRadius.circular(16.r),
-                boxShadow: [
-                  // Bottom shadow for depth.
-                  BoxShadow(
-                    color: Colors.black.withAlpha(26), // 0.1 opacity
-                    blurRadius: 6.r,
-                    spreadRadius: 1.r,
-                    offset: Offset(0, 2.h),
-                  ),
-                  // Top shadow for enhanced visual effect.
-                  BoxShadow(
-                    color: Colors.black.withAlpha(26), // 0.1 opacity
-                    blurRadius: 6.r,
-                    spreadRadius: 1.r,
-                    offset: Offset(0, -2.h),
-                  ),
-                ],
-              ),
-              child: PageView.builder(
-                controller: _pageController,
-                itemCount: widget.featuredQuotes.length,
-                onPageChanged: (index) {
-                  // Update current index for worm indicator.
-                  setState(() => _currentQuoteIndex = index);
-                },
-                itemBuilder: (context, index) {
-                  final quote = widget.featuredQuotes[index];
-                  return InkWell(
-                    // Navigate to quote detail screen on tap.
-                    onTap: () {
-                      // TODO: Navigate to quote detail if needed
-                      // For now, we'll just show a snackbar
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('"${quote.quoteText}" - ${quote.author}'),
-                          duration: const Duration(seconds: 2),
-                        ),
-                      );
-                    },
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 16.w,
-                        vertical: 12.h,
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          // Quote text with quotation marks.
-                          RichText(
-                            textAlign: TextAlign.center,
-                            maxLines: 3,
-                            overflow: TextOverflow.ellipsis,
-                            text: TextSpan(
-                              children: [
-                                TextSpan(
-                                  text: '"',
-                                  style: TextStyle(
-                                    fontFamily: 'PlayfairDisplay',
-                                    fontSize: 18.sp,
-                                    color: textPrimaryColor,
-                                    fontStyle: FontStyle.italic,
-                                    fontWeight: FontWeight.w500,
-                                    height: 1.0,
-                                  ),
-                                ),
-                                TextSpan(
-                                  text: quote.quoteText,
-                                  style: widget.theme.textTheme.bodyLarge?.copyWith(
-                                    fontSize: 14.sp,
-                                    fontFamily: 'Poppins',
-                                    color: textPrimaryColor,
-                                    fontStyle: FontStyle.italic,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                TextSpan(
-                                  text: '"',
-                                  style: TextStyle(
-                                    fontFamily: 'PlayfairDisplay',
-                                    fontSize: 18.sp,
-                                    color: textPrimaryColor,
-                                    fontStyle: FontStyle.italic,
-                                    fontWeight: FontWeight.w500,
-                                    height: 1.0,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          SizedBox(height: 12.h),
-                          // Author name and optional icon.
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              if (quote.authorIconUrl != null)
-                                Padding(
-                                  padding: EdgeInsets.only(right: 8.w),
-                                  child: Container(
-                                    child: CircleAvatar(
-                                      radius: 20.r,
-                                      backgroundImage: CachedNetworkImageProvider(quote.authorIconUrl!),
-                                      backgroundColor: widget.theme.colorScheme.surfaceContainerHighest,
-                                    ),
-                                  ),
-                                ),
-                              Flexible(
-                                child: Text(
-                                  quote.author,
-                                  style: widget.theme.textTheme.bodyMedium?.copyWith(
-                                    fontFamily: 'Poppins',
-                                    color: textSecondaryColor,
-                                    fontSize: 14.sp,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
+          height: 230.h,
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: widget.featuredQuotes.length,
+            onPageChanged: (i) => setState(() => _currentIndex = i),
+            itemBuilder: (context, index) {
+              final quote = widget.featuredQuotes[index];
+              final colors = _gradients[index % _gradients.length];
+
+              // Scale: current card = 1.0, adjacent cards = 0.92
+              final diff = (_currentPage - index).abs();
+              final scale = (1 - diff * 0.08).clamp(0.92, 1.0);
+
+              return TweenAnimationBuilder<double>(
+                tween: Tween(begin: scale, end: scale),
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOut,
+                builder: (_, value, child) =>
+                    Transform.scale(scale: value, child: child),
+                child: _QuoteCard(
+                  quote: quote,
+                  gradientColors: colors,
+                ),
+              );
+            },
           ),
         ),
-        SizedBox(height: 12.h),
-        // Indicator for the current quote in the carousel.
+
+        SizedBox(height: 16.h),
+
+        // ── Dots ────────────────────────────────────────────────────
         SmoothPageIndicator(
           controller: _pageController,
           count: widget.featuredQuotes.length,
           effect: ExpandingDotsEffect(
             dotHeight: 6.h,
             dotWidth: 6.w,
-            expansionFactor: 3,
+            expansionFactor: 3.5,
             spacing: 6.w,
-            activeDotColor: widget.theme.colorScheme.primary,
-            dotColor: textSecondaryColor.withValues(alpha: 0.3),
+            activeDotColor: AppColors.primary.of(context),
+            dotColor: AppColors.textSecondary.of(context).withOpacity(0.25),
           ),
         ),
       ],
-    )
-        : Container(
-      // Empty state when no valid quotes are available.
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: surfaceColor,
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(26), // 0.1 opacity
-            blurRadius: 6.r,
-            offset: Offset(0, 2.h),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SINGLE QUOTE CARD
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _QuoteCard extends StatelessWidget {
+  final QuoteEntity quote;
+  final List<Color> gradientColors;
+
+  const _QuoteCard({
+    required this.quote,
+    required this.gradientColors,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 6.h),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24.r),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: gradientColors,
           ),
-          // Top shadow for empty state container.
-          BoxShadow(
-            color: Colors.black.withAlpha(26), // 0.1 opacity
-            blurRadius: 6.r,
-            offset: Offset(0, -2.h),
-          ),
-        ],
-      ),
-      child: Text(
-        'No featured quotes available. Try refreshing or checking your preferences.',
-        style: widget.theme.textTheme.bodyMedium?.copyWith(
-          fontFamily: 'Poppins',
-          color: textSecondaryColor,
-          fontSize: 13.sp,
+          boxShadow: [
+            BoxShadow(
+              color: gradientColors.first.withOpacity(0.40),
+              blurRadius: 20.r,
+              offset: Offset(0, 10.h),
+            ),
+          ],
         ),
-        textAlign: TextAlign.center,
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(24.r),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: () {
+              // TODO: open quote detail
+            },
+            splashColor: Colors.white10,
+            highlightColor: Colors.white10,
+            child: Stack(
+              children: [
+                // Decorative circles
+                Positioned(
+                  top: -30.h,
+                  right: -20.w,
+                  child: _circle(100.w, 0.08),
+                ),
+                Positioned(
+                  bottom: -40.h,
+                  left: -25.w,
+                  child: _circle(120.w, 0.06),
+                ),
+
+                // Content
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 24.w,
+                    vertical: 22.h,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Quote icon
+                      Icon(
+                        Icons.format_quote_rounded,
+                        size: 30.sp,
+                        color: Colors.white.withOpacity(0.45),
+                      ),
+
+                      SizedBox(height: 10.h),
+
+                      // Quote text
+                      Flexible(
+                        child: Text(
+                          quote.quoteText,
+                          textAlign: TextAlign.center,
+                          maxLines: 4,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontFamily: 'PlayfairDisplay',
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600,
+                            fontStyle: FontStyle.italic,
+                            color: Colors.white,
+                            height: 1.5,
+                          ),
+                        ),
+                      ),
+
+                      SizedBox(height: 16.h),
+
+                      // Divider
+                      Container(
+                        width: 36.w,
+                        height: 2.h,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.35),
+                          borderRadius: BorderRadius.circular(1.r),
+                        ),
+                      ),
+
+                      SizedBox(height: 14.h),
+
+                      // Author row
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          if (quote.authorIconUrl != null) ...[
+                            Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.4),
+                                  width: 1.5.w,
+                                ),
+                              ),
+                              child: CircleAvatar(
+                                radius: 14.r,
+                                backgroundColor:
+                                Colors.white.withOpacity(0.15),
+                                backgroundImage: CachedNetworkImageProvider(
+                                  quote.authorIconUrl!,
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 10.w),
+                          ],
+                          Flexible(
+                            child: Text(
+                              '— ${quote.author}',
+                              style: TextStyle(
+                                fontFamily: 'Poppins',
+                                fontSize: 13.sp,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white.withOpacity(0.85),
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _circle(double size, double opacity) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.white.withOpacity(opacity),
       ),
     );
   }

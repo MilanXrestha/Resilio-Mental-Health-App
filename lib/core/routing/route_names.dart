@@ -6,4 +6,7 @@ class RouteNames {
   static const String preferences = 'preferences';
   static const String home = 'home';
   static const String passwordlessLogin = 'passwordlessLogin';
+  static const String mediaPlayer = 'mediaPlayer';
+  static const String shortsPlayer = 'shortsPlayer';
+  static const String longVideoPlayer = 'longVideoPlayer';
 }

@@ -30,8 +30,8 @@ class AuthInterceptor extends Interceptor {
   void onError(DioException err, ErrorInterceptorHandler handler) {
     // Handle 401 errors - token might be expired
     if (err.response?.statusCode == 401) {
-      // You could emit an event or clear the token here
-      // _authTokenService.clear();
+      // Clear the expired token so user can re-authenticate
+      _authTokenService.clear();
     }
     handler.next(err);
   }

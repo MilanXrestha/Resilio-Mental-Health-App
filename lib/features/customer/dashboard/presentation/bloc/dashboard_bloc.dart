@@ -37,7 +37,9 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     final result = await _getUserProfileUseCase();
 
     result.fold(
-          (failure) => emit(DashboardError(failure.message)),
+          (failure) {
+        emit(DashboardError(failure.message));
+      },
           (userProfile) {
         final greeting = _getGreeting();
         emit(DashboardLoaded(

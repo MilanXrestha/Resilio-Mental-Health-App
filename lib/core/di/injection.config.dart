@@ -25,6 +25,14 @@ import 'package:Resilio/core/network/network_module.dart' as _i266;
 import 'package:Resilio/core/routing/navigation_service.dart' as _i39;
 import 'package:Resilio/core/services/auth_token_service.dart' as _i80;
 import 'package:Resilio/core/theme/cubit/theme_cubit.dart' as _i4;
+import 'package:Resilio/features/customer/audio/data/datasources/audio_remote_datasource.dart'
+    as _i343;
+import 'package:Resilio/features/customer/audio/data/repositories/audio_repository_impl.dart'
+    as _i591;
+import 'package:Resilio/features/customer/audio/domain/repositories/audio_repository.dart'
+    as _i164;
+import 'package:Resilio/features/customer/audio/presentation/bloc/audio_bloc.dart'
+    as _i171;
 import 'package:Resilio/features/customer/auth/data/datasources/local/auth_local_data_source.dart'
     as _i882;
 import 'package:Resilio/features/customer/auth/data/datasources/remote/auth_remote_data_source.dart'
@@ -121,6 +129,16 @@ import 'package:Resilio/features/customer/preferences/domain/usecases/save_user_
     as _i599;
 import 'package:Resilio/features/customer/preferences/presentation/bloc/preferences_bloc.dart'
     as _i811;
+import 'package:Resilio/features/customer/video/data/datasources/remote/video_remote_data_source.dart'
+    as _i1067;
+import 'package:Resilio/features/customer/video/data/repositories/video_repository_impl.dart'
+    as _i503;
+import 'package:Resilio/features/customer/video/domain/repositories/video_repository.dart'
+    as _i81;
+import 'package:Resilio/features/customer/video/presentation/bloc/long_video/long_video_bloc.dart'
+    as _i599;
+import 'package:Resilio/features/customer/video/presentation/bloc/short_video/short_video_bloc.dart'
+    as _i329;
 import 'package:shared_preferences/shared_preferences.dart' as _i460;
 
 extension GetItInjectableX on _i174.GetIt {
@@ -155,6 +173,12 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i748.CategoryRemoteDataSource>(
       () => _i748.CategoryRemoteDataSourceImpl(gh<_i361.Dio>()),
+    );
+    gh.lazySingleton<_i1067.VideoRemoteDataSource>(
+      () => _i1067.VideoRemoteDataSourceImpl(gh<_i361.Dio>()),
+    );
+    gh.lazySingleton<_i343.AudioRemoteDataSource>(
+      () => _i343.AudioRemoteDataSource(gh<_i361.Dio>()),
     );
     gh.lazySingleton<_i852.BackendAuthDataSource>(
       () => _i852.BackendAuthDataSource(gh<_i361.Dio>()),
@@ -216,6 +240,9 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i80.AuthTokenService>(),
       ),
     );
+    gh.lazySingleton<_i81.VideoRepository>(
+      () => _i503.VideoRepositoryImpl(gh<_i1067.VideoRemoteDataSource>()),
+    );
     gh.factory<_i420.CheckPreferencesCompletionUseCase>(
       () => _i420.CheckPreferencesCompletionUseCase(
         gh<_i337.PreferenceRepository>(),
@@ -229,6 +256,15 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i599.SaveUserPreferencesUseCase>(
       () => _i599.SaveUserPreferencesUseCase(gh<_i337.PreferenceRepository>()),
+    );
+    gh.lazySingleton<_i164.AudioRepository>(
+      () => _i591.AudioRepositoryImpl(gh<_i343.AudioRemoteDataSource>()),
+    );
+    gh.factory<_i599.LongVideoBloc>(
+      () => _i599.LongVideoBloc(gh<_i81.VideoRepository>()),
+    );
+    gh.factory<_i329.ShortVideoBloc>(
+      () => _i329.ShortVideoBloc(gh<_i81.VideoRepository>()),
     );
     gh.lazySingleton<_i687.OnboardingRepository>(
       () =>
@@ -258,6 +294,9 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i667.SuperTokensDataSource>(),
         gh<_i80.AuthTokenService>(),
       ),
+    );
+    gh.lazySingleton<_i171.AudioBloc>(
+      () => _i171.AudioBloc(gh<_i164.AudioRepository>()),
     );
     gh.factory<_i723.CheckOnboardingStatusUseCase>(
       () =>
