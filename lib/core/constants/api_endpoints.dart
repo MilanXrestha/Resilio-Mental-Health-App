@@ -24,6 +24,11 @@ class ApiEndpoints {
   static const String quotes = '/quotes';
   static const String quotesFeatured = '/quotes/featured';
 
+  // Tips
+  static const String tips = '/tips';
+  static const String tipsFeatured = '/tips/featured';
+  static const String tipsByType = '/tips/type';
+
   // Audio
   static const String audio = '/audio';
   static const String audioFeatured = '/audio/featured';

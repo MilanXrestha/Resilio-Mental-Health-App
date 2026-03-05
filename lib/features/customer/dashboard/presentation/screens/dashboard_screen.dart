@@ -22,6 +22,10 @@ import '../../../video/presentation/bloc/short_video/short_video_state.dart';
 import '../../../video/presentation/bloc/long_video/long_video_bloc.dart';
 import '../../../video/presentation/bloc/long_video/long_video_event.dart';
 import '../../../video/presentation/bloc/long_video/long_video_state.dart';
+import '../../../tips/domain/entities/tip_entity.dart';
+import '../../../tips/presentation/bloc/tip_bloc.dart';
+import '../../../tips/presentation/bloc/tip_event.dart';
+import '../../../tips/presentation/bloc/tip_state.dart';
 import '../../domain/entities/user_profile_entity.dart';
 import '../../domain/entities/quote_entity.dart';
 import '../bloc/dashboard_bloc.dart';
@@ -69,6 +73,11 @@ class DashboardScreen extends StatelessWidget {
         BlocProvider(
           create: (_) =>
           getIt<LongVideoBloc>()..add(const LoadLongVideos(limit: 10)),
+        ),
+        // Tips bloc
+        BlocProvider(
+          create: (_) =>
+          getIt<TipBloc>()..add(const LoadFeaturedTips(limit: 6)),
         ),
       ],
       child: _DashboardView(onViewAllCategories: onViewAllCategories),
@@ -158,6 +167,9 @@ class _DashboardView extends StatelessWidget {
                     context
                         .read<LongVideoBloc>()
                         .add(const LoadLongVideos(limit: 10));
+                    context
+                        .read<TipBloc>()
+                        .add(const LoadFeaturedTips(limit: 6));
                   },
                   color: context.primaryColor,
                   child: SingleChildScrollView(
@@ -186,6 +198,11 @@ class _DashboardView extends StatelessWidget {
 
                         // 4 ─ Short Videos (9:16 horizontal scroll)
                         const _ShortVideosSection(),
+
+                        SizedBox(height: 36.h),
+
+                        // 5.5 ─ Tips Section
+                        const _TipsSection(),
 
                         SizedBox(height: 36.h),
 
@@ -790,9 +807,8 @@ class _LongVideosSection extends StatelessWidget {
               ),
             ),
             SizedBox(height: 16.h),
-            // ✅ CHANGED: Horizontal scrollable list instead of vertical
             SizedBox(
-              height: 260.h,
+              height: 280.h,
               child: ListView.separated(
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
                 scrollDirection: Axis.horizontal,
@@ -802,7 +818,7 @@ class _LongVideosSection extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final video = longVideos[index];
                   return SizedBox(
-                    width: 320.w, // ✅ Fixed width for horizontal scroll
+                    width: 320.w,
                     child: LongVideoCardWidget(
                       video: video,
                       onTap: () {
@@ -822,6 +838,377 @@ class _LongVideosSection extends StatelessWidget {
     );
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 5.5 – TIPS SECTION (GRID)
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _TipsSection extends StatelessWidget {
+  const _TipsSection();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<TipBloc, TipState>(
+      builder: (context, state) {
+        if (state is TipError) {
+          return Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            child: Container(
+              padding: EdgeInsets.all(16.w),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Text(
+                '❌ Tips Error: ${state.message}',
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 14.sp,
+                  color: Colors.red.shade700,
+                ),
+              ),
+            ),
+          );
+        }
+
+        List<TipEntity> tips = [];
+        if (state is TipLoaded) {
+          tips = state.tips;
+        }
+
+        if (tips.isEmpty) {
+          return Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            child: Container(
+              padding: EdgeInsets.all(16.w),
+              decoration: BoxDecoration(
+                color: Colors.orange.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Text(
+                '⚠️ No tips available',
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 14.sp,
+                  color: Colors.orange.shade800,
+                ),
+              ),
+            ),
+          );
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Wellness Tips',
+                          style: TextStyle(
+                            fontFamily: 'PlayfairDisplay',
+                            fontSize: 20.sp,
+                            fontWeight: FontWeight.bold,
+                            color: context.textPrimaryColor,
+                          ),
+                        ),
+                        SizedBox(height: 4.h),
+                        Text(
+                          'Quick advice for daily wellness',
+                          style: TextStyle(
+                            fontFamily: 'Poppins',
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w400,
+                            color: context.textSecondaryColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  _SeeAllButton(
+                    onTap: () => context.push('/tips'),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 16.h),
+            SizedBox(
+              height: 280.h,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                itemCount: tips.length > 6 ? 6 : tips.length,
+                itemBuilder: (context, index) {
+                  final tip = tips[index];
+                  return SizedBox(
+                    width: 260.w,
+                    child: Padding(
+                      padding: EdgeInsets.only(right: 16.w),
+                      child: _buildTipCard(context, tip),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildTipCard(BuildContext context, TipEntity tip) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16.r),
+      ),
+      child: InkWell(
+        onTap: () => _showTipDetail(context, tip),
+        borderRadius: BorderRadius.circular(16.r),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                _getGradientColorForType(context, tip.tipType),
+                _getGradientColorForType(context, tip.tipType).withOpacity(0.7),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(16.r),
+          ),
+          padding: EdgeInsets.all(16.w),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Type badge
+              Expanded(
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(20.r),
+                  ),
+                  child: Text(
+                    tip.tipTypeString,
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 10.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+              SizedBox(height: 8.h),
+              // Title
+              Text(
+                tip.title,
+                style: TextStyle(
+                  fontFamily: 'PlayfairDisplay',
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              SizedBox(height: 4.h),
+              // Author
+              Text(
+                tip.author.isNotEmpty ? tip.author : 'Unknown',
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white.withOpacity(0.8),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showTipDetail(BuildContext context, TipEntity tip) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _TipDetailSheet(tip: tip),
+    );
+  }
+
+  Color _getGradientColorForType(BuildContext context, TipType tipType) {
+    switch (tipType) {
+      case TipType.relationshipBooster:
+        return const Color(0xFFFF6B6B);
+      case TipType.lettingGo:
+        return const Color(0xFF4ECDC4);
+      case TipType.communication:
+        return const Color(0xFFFFE66D);
+      case TipType.selfCare:
+        return const Color(0xFF95E1D3);
+      case TipType.mindfulness:
+        return const Color(0xFFA8E6CF);
+      case TipType.general:
+        return context.primaryColor;
+      case TipType.unknown:
+        return Colors.grey.shade600;
+    }
+  }
+}
+
+class _TipDetailSheet extends StatelessWidget {
+  final TipEntity tip;
+
+  const _TipDetailSheet({required this.tip});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            _getGradientColorForType(context, tip.tipType),
+            _getGradientColorForType(context, tip.tipType).withOpacity(0.85),
+          ],
+        ),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: EdgeInsets.all(24.w),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 40.w,
+              height: 4.h,
+              margin: EdgeInsets.only(bottom: 20.h),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.5),
+                borderRadius: BorderRadius.circular(2.r),
+              ),
+            ),
+          ),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(20.r),
+            ),
+            child: Text(
+              tip.tipTypeString,
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ),
+          SizedBox(height: 16.h),
+          Text(
+            tip.title,
+            style: TextStyle(
+              fontFamily: 'PlayfairDisplay',
+              fontSize: 26.sp,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          SizedBox(height: 16.h),
+          Text(
+            tip.tipText,
+            style: TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 15.sp,
+              fontWeight: FontWeight.w400,
+              color: Colors.white.withOpacity(0.95),
+              height: 1.6,
+            ),
+          ),
+          if (tip.author.isNotEmpty) ...[
+            SizedBox(height: 24.h),
+            Divider(color: Colors.white.withOpacity(0.3)),
+            SizedBox(height: 16.h),
+            Row(
+              children: [
+                if (tip.authorIconUrl.isNotEmpty) ...[
+                  CircleAvatar(
+                    radius: 20.r,
+                    backgroundImage: NetworkImage(tip.authorIconUrl),
+                    onBackgroundImageError: (_, __) => null,
+                  ),
+                  SizedBox(width: 12.w),
+                ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        tip.author,
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Text(
+                        'Wellness Expert',
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w400,
+                          color: Colors.white.withOpacity(0.7),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+          SizedBox(height: 24.h),
+        ],
+      ),
+    );
+  }
+
+  Color _getGradientColorForType(BuildContext context, TipType tipType) {
+    switch (tipType) {
+      case TipType.relationshipBooster:
+        return const Color(0xFFFF6B6B);
+      case TipType.lettingGo:
+        return const Color(0xFF4ECDC4);
+      case TipType.communication:
+        return const Color(0xFFFFE66D);
+      case TipType.selfCare:
+        return const Color(0xFF95E1D3);
+      case TipType.mindfulness:
+        return const Color(0xFFA8E6CF);
+      case TipType.general:
+        return context.primaryColor;
+      case TipType.unknown:
+        return Colors.grey.shade600;
+    }
+  }
+}
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 6 – CATEGORIES SECTION

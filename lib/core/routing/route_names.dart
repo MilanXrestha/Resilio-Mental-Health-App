@@ -9,4 +9,5 @@ class RouteNames {
   static const String mediaPlayer = 'mediaPlayer';
   static const String shortsPlayer = 'shortsPlayer';
   static const String longVideoPlayer = 'longVideoPlayer';
+  static const String tips = 'tips';
 }

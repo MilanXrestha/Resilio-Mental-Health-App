@@ -11,6 +11,7 @@ import '../../features/customer/audio/presentation/screens/media_player_screen.d
 import '../../features/customer/video/domain/entities/video_entity.dart';
 import '../../features/customer/video/presentation/screens/shorts_player_screen.dart';
 import '../../features/customer/video/presentation/screens/long_video_player_screen.dart';
+import '../../features/customer/tips/presentation/screens/tips_screen.dart';
 import '../../features/customer/main/presentation/screens/main_screen.dart';
 import '../../features/customer/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/customer/preferences/presentation/screens/preferences_screen.dart';
@@ -101,6 +102,11 @@ class AppRouter {
           final videoEntity = video as VideoEntity;
           return LongVideoPlayerScreen(video: videoEntity);
         },
+      ),
+      GoRoute(
+        path: '/tips',
+        name: 'tips',
+        builder: (context, state) => const TipsScreen(),
       ),
     ],
   );

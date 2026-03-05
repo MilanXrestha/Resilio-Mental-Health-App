@@ -129,6 +129,14 @@ import 'package:Resilio/features/customer/preferences/domain/usecases/save_user_
     as _i599;
 import 'package:Resilio/features/customer/preferences/presentation/bloc/preferences_bloc.dart'
     as _i811;
+import 'package:Resilio/features/customer/tips/data/datasources/remote/tip_remote_data_source.dart'
+    as _i482;
+import 'package:Resilio/features/customer/tips/data/repositories/tip_repository_impl.dart'
+    as _i543;
+import 'package:Resilio/features/customer/tips/domain/repositories/tip_repository.dart'
+    as _i871;
+import 'package:Resilio/features/customer/tips/presentation/bloc/tip_bloc.dart'
+    as _i1035;
 import 'package:Resilio/features/customer/video/data/datasources/remote/video_remote_data_source.dart'
     as _i1067;
 import 'package:Resilio/features/customer/video/data/repositories/video_repository_impl.dart'
@@ -168,6 +176,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i361.Dio>(
       () => networkModule.dio(gh<_i80.AuthTokenService>()),
     );
+    gh.lazySingleton<_i482.TipRemoteDataSource>(
+      () => _i482.TipRemoteDataSourceImpl(gh<_i361.Dio>()),
+    );
     gh.lazySingleton<_i376.AuthRemoteDataSource>(
       () => _i376.AuthRemoteDataSourceImpl(gh<_i361.Dio>()),
     );
@@ -188,6 +199,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i726.PreferenceRemoteDataSource>(
       () => _i726.PreferenceRemoteDataSource(gh<_i361.Dio>()),
+    );
+    gh.lazySingleton<_i871.TipRepository>(
+      () => _i543.TipRepositoryImpl(gh<_i482.TipRemoteDataSource>()),
     );
     gh.lazySingleton<_i882.AuthLocalDataSource>(
       () => _i882.AuthLocalDataSourceImpl(gh<_i865.DatabaseHelper>()),
@@ -211,6 +225,7 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i189.PreferenceLocalDataSource>(
       () => _i189.PreferenceLocalDataSourceImpl(gh<_i865.DatabaseHelper>()),
     );
+    gh.factory<_i1035.TipBloc>(() => _i1035.TipBloc(gh<_i871.TipRepository>()));
     gh.lazySingleton<_i429.CategoryRepository>(
       () => _i626.CategoryRepositoryImpl(gh<_i748.CategoryRemoteDataSource>()),
     );
