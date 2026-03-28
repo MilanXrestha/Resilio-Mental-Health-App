@@ -57,7 +57,7 @@ class DashboardScreen extends StatelessWidget {
         ),
         BlocProvider(
           create: (_) =>
-          getIt<QuoteBloc>()..add(const LoadFeaturedQuotes(limit: 10)),
+          getIt<QuoteBloc>()..add(const LoadFeaturedQuotes(limit: 4)),
         ),
         BlocProvider(
           create: (_) =>
@@ -65,7 +65,7 @@ class DashboardScreen extends StatelessWidget {
         ),
         BlocProvider(
           create: (_) =>
-          getIt<AudioBloc>()..add(const LoadFeaturedAudio(limit: 6)),
+          getIt<AudioBloc>()..add(const LoadFeaturedAudio(limit: 10)),
         ),
         // Short videos bloc
         BlocProvider(
@@ -80,12 +80,12 @@ class DashboardScreen extends StatelessWidget {
         // Tips bloc
         BlocProvider(
           create: (_) =>
-          getIt<TipBloc>()..add(const LoadFeaturedTips(limit: 6)),
+          getIt<TipBloc>()..add(const LoadFeaturedTips(limit: 10)),
         ),
         // Images bloc
         BlocProvider(
           create: (_) =>
-          getIt<ImageBloc>()..add(const LoadFeaturedImages(limit: 6)),
+          getIt<ImageBloc>()..add(const LoadFeaturedImages(limit: 10)),
         ),
       ],
       child: _DashboardView(onViewAllCategories: onViewAllCategories),
@@ -164,11 +164,11 @@ class _DashboardView extends StatelessWidget {
                         .add(const RefreshDashboard());
                     context
                         .read<QuoteBloc>()
-                        .add(const LoadFeaturedQuotes(limit: 10));
+                        .add(const LoadFeaturedQuotes(limit: 6));
                     context.read<CategoryBloc>().add(LoadCategoriesEvent());
                     context
                         .read<AudioBloc>()
-                        .add(const LoadFeaturedAudio(limit: 6));
+                        .add(const LoadFeaturedAudio(limit: 10));
                     context
                         .read<ShortVideoBloc>()
                         .add(const LoadShortVideos(limit: 10));
@@ -177,10 +177,10 @@ class _DashboardView extends StatelessWidget {
                         .add(const LoadLongVideos(limit: 10));
                     context
                         .read<TipBloc>()
-                        .add(const LoadFeaturedTips(limit: 6));
+                        .add(const LoadFeaturedTips(limit: 10));
                     context
                         .read<ImageBloc>()
-                        .add(const LoadFeaturedImages(limit: 6));
+                        .add(const LoadFeaturedImages(limit: 10));
                   },
                   color: context.primaryColor,
                   child: SingleChildScrollView(
@@ -201,6 +201,13 @@ class _DashboardView extends StatelessWidget {
                         _FeaturedSection(),
 
                         SizedBox(height: 36.h),
+
+                        // 6 ─ Categories
+                        _CategoriesSection(
+                          onViewAll: onViewAllCategories,
+                        ),
+
+                        SizedBox(height: 40.h),
 
                         // 3 ─ Featured Audio
                         const _FeaturedAudioSection(),
@@ -227,12 +234,7 @@ class _DashboardView extends StatelessWidget {
 
                         SizedBox(height: 36.h),
 
-                        // 6 ─ Categories
-                        _CategoriesSection(
-                          onViewAll: onViewAllCategories,
-                        ),
 
-                        SizedBox(height: 40.h),
                       ],
                     ),
                   ),
@@ -263,35 +265,41 @@ class _Header extends StatelessWidget {
       child: Row(
         children: [
           // ── Avatar ─────────────────────────────────────────────────
-          Container(
-            padding: EdgeInsets.all(2.5.w),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [
-                  context.primaryColor,
-                  context.primaryColor.withOpacity(0.4),
+          InkWell(
+            onTap: () {
+              context.pushNamed(RouteNames.settings);
+            },
+            borderRadius: BorderRadius.circular(30.r),
+            child: Container(
+              padding: EdgeInsets.all(2.5.w),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [
+                    context.primaryColor,
+                    context.primaryColor.withOpacity(0.4),
+                  ],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: context.primaryColor.withOpacity(0.2),
+                    blurRadius: 14.r,
+                    offset: Offset(0, 4.h),
+                  ),
                 ],
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: context.primaryColor.withOpacity(0.2),
-                  blurRadius: 14.r,
-                  offset: Offset(0, 4.h),
-                ),
-              ],
-            ),
-            child: CircleAvatar(
-              radius: 26.r,
-              backgroundColor: context.surfaceColor,
-              backgroundImage: _avatarImage,
-              child: _avatarImage == null
-                  ? Icon(
-                Icons.person_rounded,
-                size: 26.sp,
-                color: context.primaryColor,
-              )
-                  : null,
+              child: CircleAvatar(
+                radius: 26.r,
+                backgroundColor: context.surfaceColor,
+                backgroundImage: _avatarImage,
+                child: _avatarImage == null
+                    ? Icon(
+                        Icons.person_rounded,
+                        size: 26.sp,
+                        color: context.primaryColor,
+                      )
+                    : null,
+              ),
             ),
           ),
 

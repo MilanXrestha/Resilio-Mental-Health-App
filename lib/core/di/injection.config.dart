@@ -95,6 +95,16 @@ import 'package:Resilio/features/customer/dashboard/presentation/bloc/dashboard_
     as _i32;
 import 'package:Resilio/features/customer/dashboard/presentation/bloc/quote_bloc.dart'
     as _i505;
+import 'package:Resilio/features/customer/explore/data/datasources/explore_local_data_source.dart'
+    as _i223;
+import 'package:Resilio/features/customer/explore/data/repositories/explore_repository_impl.dart'
+    as _i923;
+import 'package:Resilio/features/customer/explore/domain/repositories/explore_repository.dart'
+    as _i694;
+import 'package:Resilio/features/customer/explore/domain/usecases/explore_usecases.dart'
+    as _i772;
+import 'package:Resilio/features/customer/explore/presentation/bloc/explore_bloc.dart'
+    as _i241;
 import 'package:Resilio/features/customer/images/data/datasources/remote/image_remote_data_source.dart'
     as _i739;
 import 'package:Resilio/features/customer/images/data/repositories/image_repository_impl.dart'
@@ -137,6 +147,14 @@ import 'package:Resilio/features/customer/preferences/domain/usecases/save_user_
     as _i599;
 import 'package:Resilio/features/customer/preferences/presentation/bloc/preferences_bloc.dart'
     as _i811;
+import 'package:Resilio/features/customer/settings/data/datasources/settings_local_data_source.dart'
+    as _i786;
+import 'package:Resilio/features/customer/settings/data/repositories/settings_repository_impl.dart'
+    as _i736;
+import 'package:Resilio/features/customer/settings/domain/repositories/settings_repository.dart'
+    as _i648;
+import 'package:Resilio/features/customer/settings/presentation/bloc/settings_bloc.dart'
+    as _i733;
 import 'package:Resilio/features/customer/tips/data/datasources/remote/tip_remote_data_source.dart'
     as _i482;
 import 'package:Resilio/features/customer/tips/data/repositories/tip_repository_impl.dart'
@@ -181,6 +199,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i39.NavigationService>(() => _i39.NavigationService());
     gh.lazySingleton<_i80.AuthTokenService>(() => _i80.AuthTokenService());
+    gh.lazySingleton<_i772.SearchExploreItems>(
+      () => _i772.SearchExploreItems(),
+    );
     gh.lazySingleton<_i361.Dio>(
       () => networkModule.dio(gh<_i80.AuthTokenService>()),
     );
@@ -189,6 +210,11 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i376.AuthRemoteDataSource>(
       () => _i376.AuthRemoteDataSourceImpl(gh<_i361.Dio>()),
+    );
+    gh.lazySingleton<_i786.SettingsLocalDataSource>(
+      () => _i786.SettingsLocalDataSourceImpl(
+        prefs: gh<_i460.SharedPreferences>(),
+      ),
     );
     gh.lazySingleton<_i748.CategoryRemoteDataSource>(
       () => _i748.CategoryRemoteDataSourceImpl(gh<_i361.Dio>()),
@@ -208,6 +234,11 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i726.PreferenceRemoteDataSource>(
       () => _i726.PreferenceRemoteDataSource(gh<_i361.Dio>()),
     );
+    gh.lazySingleton<_i648.SettingsRepository>(
+      () => _i736.SettingsRepositoryImpl(
+        localDataSource: gh<_i786.SettingsLocalDataSource>(),
+      ),
+    );
     gh.lazySingleton<_i871.TipRepository>(
       () => _i543.TipRepositoryImpl(gh<_i482.TipRemoteDataSource>()),
     );
@@ -219,6 +250,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i759.NetworkInfo>(
       () => _i759.NetworkInfoImpl(gh<_i973.InternetConnectionChecker>()),
+    );
+    gh.lazySingleton<_i223.ExploreLocalDataSource>(
+      () => _i223.ExploreLocalDataSourceImpl(gh<_i460.SharedPreferences>()),
     );
     gh.lazySingleton<_i4.ThemeCubit>(
       () => _i4.ThemeCubit(gh<_i460.SharedPreferences>()),
@@ -232,6 +266,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i189.PreferenceLocalDataSource>(
       () => _i189.PreferenceLocalDataSourceImpl(gh<_i865.DatabaseHelper>()),
+    );
+    gh.lazySingleton<_i733.SettingsBloc>(
+      () => _i733.SettingsBloc(repository: gh<_i648.SettingsRepository>()),
     );
     gh.factory<_i1035.TipBloc>(() => _i1035.TipBloc(gh<_i871.TipRepository>()));
     gh.lazySingleton<_i429.CategoryRepository>(
@@ -255,8 +292,25 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i739.ImageRemoteDataSource>(
       () => _i739.ImageRemoteDataSourceImpl(gh<_i361.Dio>()),
     );
+    gh.lazySingleton<_i694.ExploreRepository>(
+      () => _i923.ExploreRepositoryImpl(
+        gh<_i343.AudioRemoteDataSource>(),
+        gh<_i1067.VideoRemoteDataSource>(),
+        gh<_i927.QuoteRemoteDataSource>(),
+        gh<_i482.TipRemoteDataSource>(),
+        gh<_i739.ImageRemoteDataSource>(),
+        gh<_i748.CategoryRemoteDataSource>(),
+        gh<_i223.ExploreLocalDataSource>(),
+      ),
+    );
     gh.factory<_i1033.SyncUserUseCase>(
       () => _i1033.SyncUserUseCase(gh<_i852.BackendAuthDataSource>()),
+    );
+    gh.lazySingleton<_i772.GetAllExploreItems>(
+      () => _i772.GetAllExploreItems(gh<_i694.ExploreRepository>()),
+    );
+    gh.lazySingleton<_i772.ManageRecentSearches>(
+      () => _i772.ManageRecentSearches(gh<_i694.ExploreRepository>()),
     );
     gh.lazySingleton<_i337.PreferenceRepository>(
       () => _i449.PreferenceRepositoryImpl(
@@ -314,6 +368,13 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i674.ImageRepository>(
       () => _i76.ImageRepositoryImpl(gh<_i739.ImageRemoteDataSource>()),
+    );
+    gh.factory<_i241.ExploreBloc>(
+      () => _i241.ExploreBloc(
+        gh<_i772.GetAllExploreItems>(),
+        gh<_i772.SearchExploreItems>(),
+        gh<_i772.ManageRecentSearches>(),
+      ),
     );
     gh.lazySingleton<_i184.AuthRepository>(
       () => _i474.AuthRepositoryImpl(

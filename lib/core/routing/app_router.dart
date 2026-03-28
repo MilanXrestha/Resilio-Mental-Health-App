@@ -13,9 +13,11 @@ import '../../features/customer/video/presentation/screens/shorts_player_screen.
 import '../../features/customer/video/presentation/screens/long_video_player_screen.dart';
 import '../../features/customer/tips/presentation/screens/tips_screen.dart';
 import '../../features/customer/images/presentation/screens/images_screen.dart';
+import '../../features/customer/explore/presentation/screens/explore_screen.dart';
 import '../../features/customer/main/presentation/screens/main_screen.dart';
 import '../../features/customer/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/customer/preferences/presentation/screens/preferences_screen.dart';
+import '../../features/customer/settings/presentation/screens/settings_screen.dart';
 import '../../features/customer/splash/presentation/screens/splash_screen.dart';
 import '../di/injection.dart';
 import 'navigation_service.dart';
@@ -113,6 +115,16 @@ class AppRouter {
         path: '/images',
         name: RouteNames.images,
         builder: (context, state) => const ImagesScreen(),
+      ),
+      GoRoute(
+        path: '/explore',
+        name: RouteNames.explore,
+        builder: (context, state) => const ExploreScreen(),
+      ),
+      GoRoute(
+        path: '/settings',
+        name: RouteNames.settings,
+        builder: (context, state) => const SettingsScreen(),
       ),
     ],
   );

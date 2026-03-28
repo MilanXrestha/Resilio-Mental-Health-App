@@ -12,7 +12,7 @@ class LoadFeaturedQuotes extends QuoteEvent {
   final List<String>? preferenceIds;
 
   const LoadFeaturedQuotes({
-    this.limit = 10,
+    this.limit = 4,
     this.preferenceIds,
   });
 

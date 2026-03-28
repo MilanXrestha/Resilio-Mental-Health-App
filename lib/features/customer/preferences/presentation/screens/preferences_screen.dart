@@ -359,7 +359,7 @@ class _PreferencesViewState extends State<PreferencesView> {
                           crossAxisCount: 2,
                           crossAxisSpacing: 12.w,
                           mainAxisSpacing: 12.h,
-                          childAspectRatio: 1.5,
+                          childAspectRatio: 1.6,
                         ),
                         delegate: SliverChildBuilderDelegate(
                           (context, index) {

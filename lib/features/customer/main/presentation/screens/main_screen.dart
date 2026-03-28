@@ -13,10 +13,10 @@ import '../../../../../common/widgets/exit_alert_dialog_widget.dart';
 import '../../../../../core/di/injection.dart';
 import '../../../../../l10n/app_localizations.dart';
 import '../cubit/main_screen_cubit.dart';
-import '../screens/explore_screen.dart';
 import '../screens/shorts_screen.dart';
 import '../screens/favorite_screen.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
+import '../../../explore/presentation/screens/explore_screen.dart';
 
 class MainScreen extends StatelessWidget {
   const MainScreen({super.key});
@@ -74,9 +74,7 @@ class _MainScreenViewState extends State<_MainScreenView>
       _KeepAlivePage(
         child: DashboardScreen(onViewAllCategories: _onViewAllCategories),
       ),
-      _KeepAlivePage(
-        child: ExploreScreen(onSearchActiveChanged: _handleSearchActiveChanged),
-      ),
+      const _KeepAlivePage(child: ExploreScreen()),
       const _KeepAlivePage(child: ShortsScreen()),
       _KeepAlivePage(
         child: CategoryScreen(

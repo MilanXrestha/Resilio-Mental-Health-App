@@ -11,4 +11,6 @@ class RouteNames {
   static const String longVideoPlayer = 'longVideoPlayer';
   static const String tips = 'tips';
   static const String images = 'images';
+  static const String explore = 'explore';
+  static const String settings = 'settings';
 }
