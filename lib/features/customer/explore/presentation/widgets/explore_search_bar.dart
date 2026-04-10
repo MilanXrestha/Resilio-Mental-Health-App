@@ -65,66 +65,96 @@ class _ExploreSearchBarState extends State<ExploreSearchBar> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       height: 56.h,
       decoration: BoxDecoration(
-        color: context.surfaceColor,
-        borderRadius: BorderRadius.circular(28.r),
-        border: Border.all(
-          color: _isFocused
-              ? context.primaryColor
-              : context.borderColor.withOpacity(0.3),
-          width: _isFocused ? 2.w : 1.5.w,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: _isFocused
-                ? context.primaryColor.withOpacity(0.1)
-                : Colors.black.withOpacity(0.05),
-            blurRadius: _isFocused ? 12.r : 8.r,
-            offset: Offset(0, _isFocused ? 4.h : 2.h),
-          ),
-        ],
+        color: isDarkMode ? const Color(0xFF121212) : const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.circular(24.r),
+        boxShadow: isDarkMode
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 6.r,
+                  offset: Offset(0, 2.h),
+                ),
+              ],
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Search icon
+          // Left icon: back arrow when focused, search icon otherwise
           Padding(
-            padding: EdgeInsets.only(left: 16.w),
-            child: Icon(
-              Icons.search_rounded,
-              size: 24.sp,
-              color: _isFocused
-                  ? context.primaryColor
-                  : context.textSecondaryColor,
+            padding: EdgeInsets.only(left: 4.w),
+            child: IconButton(
+              icon: _isFocused
+                  ? Icon(
+                      Icons.chevron_left,
+                      size: 30.sp,
+                      color: isDarkMode
+                          ? Colors.grey.shade400
+                          : Colors.grey.shade700,
+                    )
+                  : Icon(
+                      Icons.search_rounded,
+                      size: 22.sp,
+                      color: isDarkMode
+                          ? Colors.grey.shade400
+                          : Colors.grey.shade700,
+                    ),
+              onPressed: _isFocused
+                  ? () {
+                      _focusNode.unfocus();
+                      widget.onClear?.call();
+                    }
+                  : () => _focusNode.requestFocus(),
             ),
           ),
 
           // Text field
           Expanded(
-            child: TextField(
-              controller: _controller,
-              focusNode: _focusNode,
-              onChanged: widget.onChanged,
-              onSubmitted: (_) => widget.onSubmitted?.call(),
-              style: TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 15.sp,
-                fontWeight: FontWeight.w500,
-                color: context.textPrimaryColor,
-              ),
-              decoration: InputDecoration(
-                hintText: 'Search meditations, videos, quotes...',
-                hintStyle: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 15.sp,
-                  fontWeight: FontWeight.w400,
-                  color: context.textSecondaryColor.withOpacity(0.7),
+            child: Theme(
+              data: Theme.of(context).copyWith(
+                inputDecorationTheme: const InputDecorationTheme(
+                  filled: false,
+                  border: InputBorder.none,
                 ),
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 12.w,
-                  vertical: 16.h,
+              ),
+              child: TextField(
+                controller: _controller,
+                focusNode: _focusNode,
+                onChanged: (v) {
+                  setState(() {});
+                  widget.onChanged(v);
+                },
+                onSubmitted: (_) => widget.onSubmitted?.call(),
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w400,
+                  color: isDarkMode ? Colors.white : Colors.black87,
+                ),
+                decoration: InputDecoration(
+                  hintText: 'Search content...',
+                  hintStyle: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w400,
+                    color: isDarkMode
+                        ? Colors.grey.shade500
+                        : Colors.grey.shade600,
+                  ),
+                  filled: false,
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  disabledBorder: InputBorder.none,
+                  errorBorder: InputBorder.none,
+                  contentPadding:
+                      EdgeInsets.symmetric(vertical: 12.h, horizontal: 4.w),
+                  isDense: true,
                 ),
               ),
             ),
@@ -132,76 +162,38 @@ class _ExploreSearchBarState extends State<ExploreSearchBar> {
 
           // Clear button
           if (_controller.text.isNotEmpty)
-            GestureDetector(
-              onTap: () {
+            IconButton(
+              iconSize: 20.sp,
+              icon: Icon(
+                Icons.close_rounded,
+                color:
+                    isDarkMode ? Colors.grey.shade400 : Colors.grey.shade700,
+              ),
+              onPressed: () {
                 _controller.clear();
+                setState(() {});
                 widget.onClear?.call();
               },
-              child: Padding(
-                padding: EdgeInsets.all(8.w),
-                child: Container(
-                  padding: EdgeInsets.all(4.w),
-                  decoration: BoxDecoration(
-                    color: context.textSecondaryColor.withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.close_rounded,
-                    size: 18.sp,
-                    color: context.textSecondaryColor,
-                  ),
-                ),
-              ),
             ),
 
           // Filter button
           GestureDetector(
             onTap: widget.onFilterTap,
             child: Container(
-              margin: EdgeInsets.only(right: 8.w),
-              padding: EdgeInsets.all(10.w),
+              margin: EdgeInsets.only(right: 12.w),
+              padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
                 color: widget.activeFilterCount > 0
                     ? context.primaryColor
                     : context.primaryColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(16.r),
+                borderRadius: BorderRadius.circular(12.r),
               ),
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Icon(
-                    Icons.tune_rounded,
-                    size: 22.sp,
-                    color: widget.activeFilterCount > 0
-                        ? Colors.white
-                        : context.primaryColor,
-                  ),
-                  if (widget.activeFilterCount > 0)
-                    Positioned(
-                      top: -6.h,
-                      right: -6.w,
-                      child: Container(
-                        padding: EdgeInsets.all(4.w),
-                        decoration: BoxDecoration(
-                          color: context.errorColor,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: context.surfaceColor,
-                            width: 1.5.w,
-                          ),
-                        ),
-                        child: Text(
-                          '${widget.activeFilterCount}',
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 9.sp,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
+              child: Icon(
+                Icons.tune_rounded,
+                size: 20.sp,
+                color: widget.activeFilterCount > 0
+                    ? Colors.white
+                    : context.primaryColor,
               ),
             ),
           ),

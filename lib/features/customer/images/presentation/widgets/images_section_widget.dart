@@ -3,7 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../../core/routing/route_names.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../dashboard/presentation/widgets/section_header_widget.dart';
 import '../../domain/entities/image_entity.dart';
 import '../bloc/image_bloc.dart';
 import '../bloc/image_state.dart';
@@ -65,41 +67,10 @@ class ImagesSection extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Inspirational Images',
-                          style: TextStyle(
-                            fontFamily: 'PlayfairDisplay',
-                            fontSize: 20.sp,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black,
-                          ),
-                        ),
-                        SizedBox(height: 4.h),
-                        Text(
-                          'Beautiful wallpapers for your wellness journey',
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 13.sp,
-                            fontWeight: FontWeight.w400,
-                            color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  _SeeAllButton(
-                    onTap: () => context.push('/images'),
-                  ),
-                ],
-              ),
+            SectionHeaderWidget(
+              title: 'Inspirational Images',
+              subtitle: 'Beautiful wallpapers for your wellness journey',
+              onSeeAll: () => context.push('/images'),
             ),
             SizedBox(height: 16.h),
             SizedBox(
@@ -127,105 +98,154 @@ class ImagesSection extends StatelessWidget {
   }
 
   Widget _buildImageCard(BuildContext context, ImageEntity image) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      width: 150.w,
+      height: 220.h,
+      margin: EdgeInsets.only(right: 11.w),
+      decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16.r),
-      ),
-      child: InkWell(
-        onTap: () => _showImageDetail(context, image),
-        borderRadius: BorderRadius.circular(16.r),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16.r),
+        color: isDarkMode ? context.surfaceColor : context.backgroundColor,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 12.r,
+            offset: Offset(0, 6.h),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Image
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
-                  child: Image.network(
-                    image.thumbnailUrl.isNotEmpty ? image.thumbnailUrl : image.imageUrl,
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Container(
-                        color: Colors.grey.shade200,
-                        child: Center(
-                          child: CircularProgressIndicator(
-                            value: loadingProgress.expectedTotalBytes != null
-                                ? loadingProgress.cumulativeBytesLoaded /
-                                    loadingProgress.expectedTotalBytes!
-                                : null,
-                            strokeWidth: 2,
-                          ),
-                        ),
-                      );
-                    },
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: Colors.grey.shade200,
-                        child: Icon(
-                          Icons.image_not_supported_outlined,
-                          size: 32.r,
-                          color: Colors.grey.shade400,
-                        ),
-                      );
-                    },
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16.r),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Image
+            Image.network(
+              image.thumbnailUrl.isNotEmpty ? image.thumbnailUrl : image.imageUrl,
+              fit: BoxFit.cover,
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return Container(
+                  color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      value: loadingProgress.expectedTotalBytes != null
+                          ? loadingProgress.cumulativeBytesLoaded /
+                              loadingProgress.expectedTotalBytes!
+                          : null,
+                      strokeWidth: 2,
+                    ),
                   ),
+                );
+              },
+              errorBuilder: (_, __, ___) => Container(
+                color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
+                child: Icon(
+                  Icons.image_not_supported_outlined,
+                  size: 32.r,
+                  color: Colors.grey.shade400,
                 ),
               ),
-              
-              // Info section
-              Container(
-                padding: EdgeInsets.all(12.w),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.vertical(bottom: Radius.circular(16.r)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      image.title,
-                      style: TextStyle(
-                        fontFamily: 'Poppins',
-                        fontSize: 13.sp,
-                        fontWeight: FontWeight.w600,
-                        color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    SizedBox(height: 4.h),
-                    Row(
-                      children: [
-                        Container(
-                          padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-                          decoration: BoxDecoration(
-                            color: _getTypeColor(context, image.imageType).withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(10.r),
-                          ),
-                          child: Text(
-                            image.imageTypeString,
-                            style: TextStyle(
-                              fontFamily: 'Poppins',
-                              fontSize: 9.sp,
-                              fontWeight: FontWeight.w500,
-                              color: _getTypeColor(context, image.imageType),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+            ),
+
+            // Gradient Overlay for text readability
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    Colors.transparent,
+                    Colors.black.withOpacity(0.4),
+                    Colors.black.withOpacity(0.8),
                   ],
                 ),
               ),
-            ],
-          ),
+            ),
+
+            // Content
+            Positioned(
+              bottom: 12.h,
+              left: 12.w,
+              right: 12.w,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    image.title,
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: 6.h),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                    decoration: BoxDecoration(
+                      color: _getTypeColor(context, image.imageType).withOpacity(0.9),
+                      borderRadius: BorderRadius.circular(6.r),
+                    ),
+                    child: Text(
+                      image.imageTypeString,
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 9.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Subtle border highlight
+            Positioned.fill(
+              child: IgnorePointer(
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16.r),
+                    border: Border.all(
+                      color: isDarkMode ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
+                      width: 1.w,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // Tap area
+            Positioned.fill(
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () {
+                    // Find index and navigate to dedicated Image Viewer
+                    final blocState = context.read<ImageBloc>().state;
+                    List<ImageEntity> allImages = [image];
+                    if (blocState is ImageLoaded) {
+                      allImages = blocState.images;
+                    }
+                    final index = allImages.indexOf(image);
+
+                    context.pushNamed(
+                      RouteNames.imageViewer,
+                      extra: {
+                        'images': allImages,
+                        'initialIndex': index != -1 ? index : 0,
+                      },
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -320,6 +340,11 @@ class _ImageDetailSheet extends StatelessWidget {
                   fit: BoxFit.cover,
                   width: double.infinity,
                   height: 400.h,
+                  errorBuilder: (_, __, ___) => Container(
+                    height: 400.h,
+                    color: Colors.grey.shade200,
+                    child: const Icon(Icons.broken_image_rounded),
+                  ),
                 ),
               ),
               

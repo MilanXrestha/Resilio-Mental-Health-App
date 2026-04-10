@@ -45,6 +45,7 @@ class _SignUpViewState extends State<_SignUpView> {
   final _confirmPasswordController = TextEditingController();
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
+  String _selectedRole = 'customer';
 
   @override
   void dispose() {
@@ -62,6 +63,7 @@ class _SignUpViewState extends State<_SignUpView> {
               email: _emailController.text.trim(),
               password: _passwordController.text,
               name: _nameController.text.trim(),
+              userRole: _selectedRole,
             ),
           );
     }
@@ -83,10 +85,16 @@ class _SignUpViewState extends State<_SignUpView> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthAuthenticated) {
-          if (state.user.preferencesCompleted) {
-            context.goNamed(RouteNames.home);
+          if (state.user.role == 'admin') {
+            context.goNamed(RouteNames.adminDashboard);
+          } else if (state.user.role == 'therapist') {
+            context.goNamed(RouteNames.therapistDashboard);
           } else {
-            context.goNamed(RouteNames.preferences);
+            if (state.user.preferencesCompleted) {
+              context.goNamed(RouteNames.home);
+            } else {
+              context.goNamed(RouteNames.preferences);
+            }
           }
         } else if (state is AuthError) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -160,6 +168,29 @@ class _SignUpViewState extends State<_SignUpView> {
                       ),
 
                       SizedBox(height: 32.h),
+
+                      // Role Dropdown
+                      DropdownButtonFormField<String>(
+                        value: _selectedRole,
+                        decoration: InputDecoration(
+                          labelText: 'I want to register as a',
+                          prefixIcon: const Icon(Icons.badge_outlined),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                        ),
+                        items: const [
+                          DropdownMenuItem(value: 'customer', child: Text('Customer (Seeking Help)')),
+                          DropdownMenuItem(value: 'therapist', child: Text('Therapist (Professional)')),
+                        ],
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedRole = value ?? 'customer';
+                          });
+                        },
+                      ),
+
+                      SizedBox(height: 16.h),
 
                       // Name field
                       AppTextField(

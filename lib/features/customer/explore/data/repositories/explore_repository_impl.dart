@@ -110,7 +110,7 @@ class ExploreRepositoryImpl implements ExploreRepository {
   Future<List<ExploreItemEntity>> _fetchAudioItems() async {
     try {
       final tracks = await _audioDataSource.getFeaturedAudio(limit: 50);
-      return tracks.map((track) => _mapAudioToExploreItem(track as AudioEntity)).toList();
+      return tracks.map((track) => _mapAudioToExploreItem(track)).toList();
     } catch (e) {
       return [];
     }
@@ -248,23 +248,43 @@ class ExploreRepositoryImpl implements ExploreRepository {
     }
   }
 
-  ExploreItemEntity _mapAudioToExploreItem(AudioEntity audio) {
-    return ExploreItemEntity(
-      id: audio.id,
-      title: audio.title,
-      subtitle: audio.artistName,
-      description: audio.description,
-      imageUrl: audio.coverImageUrl,
-      thumbnailUrl: audio.thumbnailUrl,
-      type: ExploreItemType.audio,
-      tags: audio.moodTags,
-      categoryIds: audio.categoryId.isNotEmpty ? [audio.categoryId] : [],
-      isFeatured: audio.isFeatured,
-      isPremium: audio.isPremium,
-      durationSeconds: audio.durationSeconds,
-      createdAt: audio.createdAt,
-      metadata: {'audioUrl': audio.audioUrl},
-    );
+  ExploreItemEntity _mapAudioToExploreItem(dynamic audio) {
+    if (audio is AudioEntity) {
+      return ExploreItemEntity(
+        id: audio.id,
+        title: audio.title,
+        subtitle: audio.artistName,
+        description: audio.description,
+        imageUrl: audio.coverImageUrl,
+        thumbnailUrl: audio.thumbnailUrl,
+        type: ExploreItemType.audio,
+        tags: audio.moodTags,
+        categoryIds: audio.categoryId.isNotEmpty ? [audio.categoryId] : [],
+        isFeatured: audio.isFeatured,
+        isPremium: audio.isPremium,
+        durationSeconds: audio.durationSeconds,
+        createdAt: audio.createdAt,
+        metadata: {'audioUrl': audio.audioUrl},
+      );
+    } else {
+      // Protobuf AudioTrack
+      return ExploreItemEntity(
+        id: audio.id,
+        title: audio.title,
+        subtitle: audio.artistName,
+        description: audio.description,
+        imageUrl: audio.coverImageUrl,
+        thumbnailUrl: audio.thumbnailUrl,
+        type: ExploreItemType.audio,
+        tags: List<String>.from(audio.moodTags),
+        categoryIds: audio.categoryId.isNotEmpty ? [audio.categoryId] : [],
+        isFeatured: audio.isFeatured,
+        isPremium: audio.isPremium,
+        durationSeconds: audio.durationSeconds,
+        createdAt: DateTime.tryParse(audio.createdAt) ?? DateTime.now(),
+        metadata: {'audioUrl': audio.audioUrl},
+      );
+    }
   }
 
   @override

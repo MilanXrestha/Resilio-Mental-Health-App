@@ -26,7 +26,7 @@ class CustomBottomNavBar extends StatelessWidget {
   final List<String> _labels = const [
     'Home',
     'Explore',
-    'Shorts',
+    'Reels',
     'Category',
     'Favorite',
   ];

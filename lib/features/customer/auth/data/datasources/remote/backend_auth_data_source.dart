@@ -14,10 +14,10 @@ class BackendAuthDataSource {
 
   BackendAuthDataSource(this._dio);
 
-  /// Sync Firebase user to backend using Protobuf
   Future<User> syncUser({
     required firebase.User firebaseUser,
     String? fcmToken,
+    String? userRole,
   }) async {
     try {
       final idToken = await firebaseUser.getIdToken();
@@ -27,6 +27,8 @@ class BackendAuthDataSource {
         email: firebaseUser.email ?? '',
         displayName: firebaseUser.displayName ?? '',
         photoUrl: firebaseUser.photoURL ?? '',
+        userRole: userRole,
+        fcmToken: fcmToken ?? '',
       );
 
       final response = await _dio.post(

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:hugeicons/hugeicons.dart';
 
 import '../../../../../core/theme/app_colors.dart';
 import '../../../video/domain/entities/video_entity.dart';
+import '../../../favorites/domain/entities/favorite_entity.dart';
+import '../../../favorites/presentation/widgets/favorite_button.dart';
 
 /// Beautiful short video card widget (9:16 aspect ratio - TikTok/Reels style)
 class ShortVideoCardWidget extends StatelessWidget {
@@ -18,140 +19,193 @@ class ShortVideoCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 140.w,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.2),
-              blurRadius: 8.r,
-              offset: Offset(0, 4.h),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(16.r),
-          child: Stack(
-            children: [
-              // Thumbnail
-              AspectRatio(
-                aspectRatio: 9 / 16,
-                child: video.thumbnailUrl.isNotEmpty
-                    ? Image.network(
-                        video.thumbnailUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _buildPlaceholder(context),
-                      )
-                    : _buildPlaceholder(context),
-              ),
-
-              // Gradient overlay
-              Positioned.fill(
-                child: DecoratedBox(
+        width: 150.w,
+        margin: EdgeInsets.only(right: 10.w),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
+              children: [
+                Container(
+                  height: 200.h,
+                  width: 150.w,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withValues(alpha: 0.7),
-                      ],
-                      stops: [0.5, 1.0],
-                    ),
-                  ),
-                ),
-              ),
-
-              // Play button
-              Center(
-                child: Container(
-                  padding: EdgeInsets.all(12.w),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.3),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.5),
-                      width: 2.w,
-                    ),
-                  ),
-                  child: Icon(
-                    Icons.play_arrow_rounded,
-                    color: Colors.white,
-                    size: 32.sp,
-                  ),
-                ),
-              ),
-
-              // Duration badge
-              Positioned(
-                bottom: 8.h,
-                right: 8.w,
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.6),
-                    borderRadius: BorderRadius.circular(4.r),
-                  ),
-                  child: Text(
-                    video.formattedDuration,
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 11.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-
-              // Title at bottom
-              Positioned(
-                left: 8.w,
-                right: 8.w,
-                bottom: 32.h,
-                child: Text(
-                  video.title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withValues(alpha: 0.5),
-                        blurRadius: 4.r,
+                    borderRadius: BorderRadius.circular(12.r),
+                    color: isDarkMode
+                        ? context.surfaceColor
+                        : Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 8.r,
+                        offset: Offset(0, 4.h),
                       ),
                     ],
                   ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12.r),
+                    child: video.thumbnailUrl.isNotEmpty
+                        ? Image.network(
+                            video.thumbnailUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => _buildPlaceholder(context, isDarkMode),
+                          )
+                        : _buildPlaceholder(context, isDarkMode),
+                  ),
                 ),
-              ),
-            ],
-          ),
+                
+                // Short label badge
+                Positioned(
+                  top: 8.h,
+                  right: 8.w,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 8.w,
+                      vertical: 4.h,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: Text(
+                      'REELS',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 10.sp,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+                
+                // Favorite Button
+                Positioned(
+                  top: 8.h,
+                  left: 8.w,
+                  child: FavoriteButton(
+                    contentId: video.id,
+                    contentType: FavoriteType.video,
+                    size: 18.sp,
+                  ),
+                ),
+                
+                // Play button overlay
+                Positioned.fill(
+                  child: Center(
+                    child: Container(
+                      padding: EdgeInsets.all(8.r),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.black.withValues(alpha: 0.5),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.3),
+                          width: 1.5.w,
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.play_arrow_rounded,
+                        color: Colors.white,
+                        size: 24.sp,
+                      ),
+                    ),
+                  ),
+                ),
+                
+                // Duration chip
+                if (video.formattedDuration.isNotEmpty)
+                  Positioned(
+                    bottom: 8.h,
+                    right: 8.w,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 6.w,
+                        vertical: 2.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.6),
+                        borderRadius: BorderRadius.circular(4.r),
+                      ),
+                      child: Text(
+                        video.formattedDuration,
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          fontSize: 10.sp,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                  
+                // View count chip
+                Positioned(
+                  bottom: 8.h,
+                  left: 8.w,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 6.w,
+                      vertical: 2.h,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(4.r),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.visibility,
+                          size: 10.sp,
+                          color: Colors.white,
+                        ),
+                        SizedBox(width: 2.w),
+                        Text(
+                          _formatViewCount(video.playCount), // Mapping playCount to view count
+                          style: TextStyle(
+                            fontFamily: 'Poppins',
+                            fontSize: 10.sp,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 8.h),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildPlaceholder(BuildContext context) {
+  Widget _buildPlaceholder(BuildContext context, bool isDarkMode) {
     return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            context.primaryColor.withValues(alpha: 0.6),
-            context.primaryColor.withValues(alpha: 0.3),
-          ],
+      color: isDarkMode ? Colors.grey[900] : Colors.grey[200],
+      child: Center(
+        child: Icon(
+          Icons.videocam_rounded,
+          size: 30.sp,
+          color: isDarkMode
+              ? context.textSecondaryColor
+              : context.textSecondaryColor,
         ),
       ),
-      child: Icon(
-        Icons.video_library_rounded,
-        size: 50.sp,
-        color: Colors.white.withValues(alpha: 0.8),
-      ),
     );
+  }
+
+  String _formatViewCount(int count) {
+    if (count >= 1000000) {
+      return '${(count / 1000000).toStringAsFixed(1)}M';
+    } else if (count >= 1000) {
+      return '${(count / 1000).toStringAsFixed(1)}K';
+    } else {
+      return count.toString();
+    }
   }
 }

@@ -6,6 +6,8 @@ import 'package:chewie/chewie.dart';
 
 import '../../../../../core/theme/app_colors.dart';
 import '../../domain/entities/video_entity.dart';
+import '../../../favorites/presentation/widgets/favorite_button.dart';
+import '../../../favorites/domain/entities/favorite_entity.dart';
 
 /// Beautiful YouTube-style horizontal video player for therapy sessions
 class LongVideoPlayerScreen extends StatefulWidget {
@@ -101,16 +103,16 @@ class _LongVideoPlayerScreenState extends State<LongVideoPlayerScreen> {
               ),
             ),
             actions: [
-              IconButton(
-                icon: Icon(Icons.more_vert_rounded, color: Colors.white),
-                onPressed: () {
-                  // TODO: Show options menu
-                },
+              FavoriteButton(
+                contentId: widget.video.id,
+                contentType: FavoriteType.longVideo,
+                size: 28.sp,
+                color: Colors.white,
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
               ),
             ],
           ),
 
-          // Video Player
           if (_isLoading)
             SliverToBoxAdapter(
               child: Container(

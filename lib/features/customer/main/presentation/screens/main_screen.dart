@@ -8,6 +8,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:http/http.dart';
 
 import '../../../../../common/widgets/exit_alert_dialog_widget.dart';
 import '../../../../../core/di/injection.dart';
@@ -17,14 +18,15 @@ import '../screens/shorts_screen.dart';
 import '../screens/favorite_screen.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
 import '../../../explore/presentation/screens/explore_screen.dart';
-
 class MainScreen extends StatelessWidget {
   const MainScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => getIt<MainScreenCubit>(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => getIt<MainScreenCubit>()),
+      ],
       child: const _MainScreenView(),
     );
   }
@@ -224,8 +226,8 @@ class _MainScreenViewState extends State<_MainScreenView>
     return BlocBuilder<MainScreenCubit, MainScreenState>(
       builder: (context, state) {
         return PopScope(
-          canPop: false,
-          onPopInvokedWithResult: (didPop, result) {
+            canPop: false,
+            onPopInvokedWithResult: (didPop, result) {
             if (!didPop) {
               _handlePopScope();
             }

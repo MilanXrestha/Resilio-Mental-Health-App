@@ -29,7 +29,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     emit(DashboardLoading());
 
     // Check if user is authenticated using AuthTokenService
-    if (!_authTokenService.isAuthenticated) {
+    if (!await _authTokenService.ensureAuthenticated()) {
       emit(const DashboardError('User not authenticated'));
       return;
     }
@@ -60,7 +60,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     }
 
     // Check if user is authenticated
-    if (!_authTokenService.isAuthenticated) {
+    if (!await _authTokenService.ensureAuthenticated()) {
       emit(const DashboardError('User not authenticated'));
       return;
     }

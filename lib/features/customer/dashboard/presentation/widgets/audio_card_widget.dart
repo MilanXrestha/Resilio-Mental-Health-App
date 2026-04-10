@@ -3,6 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../../core/theme/app_colors.dart';
 import '../../../audio/domain/entities/audio_entity.dart';
+import '../../../favorites/domain/entities/favorite_entity.dart';
+import '../../../favorites/presentation/widgets/favorite_button.dart';
 
 /// Beautiful audio card widget for displaying audio tracks in horizontal list
 class AudioCardWidget extends StatelessWidget {
@@ -17,138 +19,244 @@ class AudioCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 180.w,
+        width: 300.w,
+        height: 150.h,
+        margin: EdgeInsets.symmetric(horizontal: 4.w, vertical: 8.h),
         decoration: BoxDecoration(
-          color: context.surfaceColor,
           borderRadius: BorderRadius.circular(20.r),
-          border: Border.all(
-            color: context.borderColor.withValues(alpha: 0.3),
-            width: 1.5.w,
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: isDarkMode
+                ? [context.surfaceColor, context.surfaceColor.withValues(alpha: 0.9)]
+                : [Colors.white, context.surfaceColor],
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 12.r,
-              offset: Offset(0, 4.h),
+              color: isDarkMode 
+                  ? Colors.black.withValues(alpha: 0.3) 
+                  : Colors.black.withValues(alpha: 0.08),
+              offset: Offset(0, 2.h),
+              blurRadius: 6.r,
+              spreadRadius: isDarkMode ? 0.5.r : 0.r,
             ),
           ],
+          border: Border.all(
+            color: context.borderColor.withValues(alpha: 0.3),
+            width: isDarkMode ? 1.5.w : 1.w,
+          ),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Cover image
-            ClipRRect(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-              child: Stack(
-                children: [
-                  // Cover image
-                  AspectRatio(
-                    aspectRatio: 1,
-                    child: track.coverImageUrl.isNotEmpty
-                        ? Image.network(
-                            track.coverImageUrl,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Container(
-                              color: context.primaryColor.withValues(alpha: 0.1),
-                              child: Icon(
-                                Icons.music_note_rounded,
-                                size: 60.sp,
-                                color: context.primaryColor,
-                              ),
-                            ),
-                          )
-                        : Container(
-                            color: context.primaryColor.withValues(alpha: 0.1),
-                            child: Icon(
-                              Icons.music_note_rounded,
-                              size: 60.sp,
-                              color: context.primaryColor,
-                            ),
-                          ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20.r),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              // Multiple music note backgrounds for pure aesthetics
+              Positioned(
+                right: 5.w,
+                bottom: -5.h,
+                child: Opacity(
+                  opacity: isDarkMode ? 0.05 : 0.09,
+                  child: Icon(
+                    Icons.music_note_rounded,
+                    size: 140.sp,
+                    color: context.primaryColor,
                   ),
-                  // Play button overlay
-                  Positioned(
-                    right: 8.w,
-                    bottom: 8.h,
-                    child: Container(
+                ),
+              ),
+              Positioned(
+                right: 5.w,
+                top: 50.h,
+                child: Opacity(
+                  opacity: isDarkMode ? 0.05 : 0.09,
+                  child: Icon(
+                    Icons.music_note_rounded,
+                    size: 60.sp,
+                    color: context.primaryColor,
+                  ),
+                ),
+              ),
+              
+              // Main content
+              Padding(
+                padding: EdgeInsets.all(12.r),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Circular Thumbnail
+                    Container(
+                      width: 95.w,
+                      height: 95.w,
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            context.primaryColor,
-                            context.primaryColor.withValues(alpha: 0.8),
-                          ],
-                        ),
                         shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: isDarkMode
+                              ? [context.surfaceColor, context.backgroundColor]
+                              : [context.surfaceColor, Colors.white],
+                        ),
                         boxShadow: [
                           BoxShadow(
-                            color: context.primaryColor.withValues(alpha: 0.4),
+                            color: context.primaryColor.withValues(alpha: 0.1),
                             blurRadius: 8.r,
                             offset: Offset(0, 2.h),
                           ),
                         ],
                       ),
-                      child: Icon(
-                        Icons.play_arrow_rounded,
-                        color: Colors.white,
-                        size: 28.sp,
+                      child: ClipOval(
+                        child: track.coverImageUrl.isNotEmpty
+                            ? Image.network(
+                                track.coverImageUrl,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => Icon(
+                                  Icons.music_note_rounded,
+                                  color: context.primaryColor.withValues(alpha: 0.5),
+                                  size: 36.sp,
+                                ),
+                              )
+                            : Icon(
+                                Icons.music_note_rounded,
+                                color: context.primaryColor.withValues(alpha: 0.5),
+                                size: 36.sp,
+                              ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
+                    SizedBox(width: 12.w),
 
-            // Track info
-            Padding(
-              padding: EdgeInsets.all(12.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Title
-                  Text(
-                    track.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w600,
-                      color: context.textPrimaryColor,
+                    // Text content and play button
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            track.title,
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              fontSize: 15.sp,
+                              fontWeight: FontWeight.bold,
+                              color: context.textPrimaryColor,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          SizedBox(height: 2.h),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.mic_none_rounded,
+                                size: 15.w,
+                                color: context.textSecondaryColor,
+                              ),
+                              SizedBox(width: 4.w),
+                              Expanded(
+                                child: Text(
+                                  track.artistName,
+                                  style: TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontSize: 13.sp,
+                                    color: context.textPrimaryColor,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 12.h),
+
+                          // Play button badge
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  context.primaryColor,
+                                  context.primaryColor.withValues(alpha: 0.8),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(20.r),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: context.primaryColor.withValues(alpha: 0.2),
+                                  blurRadius: 4.r,
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.play_arrow_rounded,
+                                  color: Colors.white,
+                                  size: 16.sp,
+                                ),
+                                SizedBox(width: 4.w),
+                                Text(
+                                  'Play',
+                                  style: TextStyle(
+                                    fontFamily: 'Poppins',
+                                    color: Colors.white,
+                                    fontSize: 11.sp,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 4.h),
-                  // Artist name
-                  Text(
-                    track.artistName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w400,
-                      color: context.textSecondaryColor,
-                    ),
-                  ),
-                  SizedBox(height: 8.h),
-                  // Duration badge
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 8.w,
-                      vertical: 4.h,
-                    ),
+                  ],
+                ),
+              ),
+              
+              // Favorite Button (Top Right)
+              Positioned(
+                top: 8.h,
+                right: 8.w,
+                child: FavoriteButton(
+                  contentId: track.id,
+                  contentType: FavoriteType.audio,
+                ),
+              ),
+
+              // Duration chip
+              if (track.formattedDuration.isNotEmpty)
+                Positioned(
+                  bottom: 12.h,
+                  right: 12.w,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                     decoration: BoxDecoration(
-                      color: context.primaryColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12.r),
+                      color: isDarkMode 
+                          ? context.surfaceColor.withValues(alpha: 0.9) 
+                          : Colors.white.withValues(alpha: 0.9),
+                      borderRadius: BorderRadius.circular(8.r),
+                      border: Border.all(
+                        color: context.primaryColor.withValues(alpha: 0.2),
+                        width: 1.w,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 4.r,
+                        ),
+                      ],
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          Icons.access_time_rounded,
-                          size: 14.sp,
+                          Icons.timer_outlined,
+                          size: 12.sp,
                           color: context.primaryColor,
                         ),
                         SizedBox(width: 4.w),
@@ -157,17 +265,16 @@ class AudioCardWidget extends StatelessWidget {
                           style: TextStyle(
                             fontFamily: 'Poppins',
                             fontSize: 11.sp,
-                            fontWeight: FontWeight.w500,
+                            fontWeight: FontWeight.w600,
                             color: context.primaryColor,
                           ),
                         ),
                       ],
                     ),
                   ),
-                ],
-              ),
-            ),
-          ],
+                ),
+            ],
+          ),
         ),
       ),
     );

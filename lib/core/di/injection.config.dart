@@ -25,6 +25,12 @@ import 'package:Resilio/core/network/network_module.dart' as _i266;
 import 'package:Resilio/core/routing/navigation_service.dart' as _i39;
 import 'package:Resilio/core/services/auth_token_service.dart' as _i80;
 import 'package:Resilio/core/theme/cubit/theme_cubit.dart' as _i4;
+import 'package:Resilio/features/admin/dashboard/data/repositories/admin_repository_impl.dart'
+    as _i624;
+import 'package:Resilio/features/admin/dashboard/domain/repositories/admin_repository.dart'
+    as _i22;
+import 'package:Resilio/features/admin/dashboard/presentation/bloc/admin_cubit.dart'
+    as _i846;
 import 'package:Resilio/features/customer/audio/data/datasources/audio_remote_datasource.dart'
     as _i343;
 import 'package:Resilio/features/customer/audio/data/repositories/audio_repository_impl.dart'
@@ -105,6 +111,22 @@ import 'package:Resilio/features/customer/explore/domain/usecases/explore_usecas
     as _i772;
 import 'package:Resilio/features/customer/explore/presentation/bloc/explore_bloc.dart'
     as _i241;
+import 'package:Resilio/features/customer/favorites/data/datasources/favorite_remote_datasource.dart'
+    as _i267;
+import 'package:Resilio/features/customer/favorites/data/repositories/favorite_repository_impl.dart'
+    as _i1055;
+import 'package:Resilio/features/customer/favorites/domain/repositories/favorite_repository.dart'
+    as _i618;
+import 'package:Resilio/features/customer/favorites/presentation/bloc/favorite_bloc.dart'
+    as _i99;
+import 'package:Resilio/features/customer/games/game_hub/data/datasources/games_remote_data_source.dart'
+    as _i118;
+import 'package:Resilio/features/customer/games/game_hub/data/repositories/games_repository_impl.dart'
+    as _i427;
+import 'package:Resilio/features/customer/games/game_hub/domain/repositories/games_repository.dart'
+    as _i185;
+import 'package:Resilio/features/customer/games/game_hub/presentation/bloc/games_hub_cubit.dart'
+    as _i514;
 import 'package:Resilio/features/customer/images/data/datasources/remote/image_remote_data_source.dart'
     as _i739;
 import 'package:Resilio/features/customer/images/data/repositories/image_repository_impl.dart'
@@ -147,6 +169,14 @@ import 'package:Resilio/features/customer/preferences/domain/usecases/save_user_
     as _i599;
 import 'package:Resilio/features/customer/preferences/presentation/bloc/preferences_bloc.dart'
     as _i811;
+import 'package:Resilio/features/customer/profile/data/datasources/profile_remote_data_source.dart'
+    as _i159;
+import 'package:Resilio/features/customer/profile/data/repositories/profile_repository_impl.dart'
+    as _i140;
+import 'package:Resilio/features/customer/profile/domain/repositories/profile_repository.dart'
+    as _i633;
+import 'package:Resilio/features/customer/profile/presentation/bloc/profile_bloc.dart'
+    as _i85;
 import 'package:Resilio/features/customer/settings/data/datasources/settings_local_data_source.dart'
     as _i786;
 import 'package:Resilio/features/customer/settings/data/repositories/settings_repository_impl.dart'
@@ -155,6 +185,16 @@ import 'package:Resilio/features/customer/settings/domain/repositories/settings_
     as _i648;
 import 'package:Resilio/features/customer/settings/presentation/bloc/settings_bloc.dart'
     as _i733;
+import 'package:Resilio/features/customer/subscription/data/datasources/subscription_remote_data_source.dart'
+    as _i122;
+import 'package:Resilio/features/customer/subscription/data/repositories/subscription_repository_impl.dart'
+    as _i407;
+import 'package:Resilio/features/customer/subscription/domain/repositories/subscription_repository.dart'
+    as _i841;
+import 'package:Resilio/features/customer/subscription/presentation/bloc/premium_cubit.dart'
+    as _i348;
+import 'package:Resilio/features/customer/subscription/presentation/bloc/subscription_bloc.dart'
+    as _i738;
 import 'package:Resilio/features/customer/tips/data/datasources/remote/tip_remote_data_source.dart'
     as _i482;
 import 'package:Resilio/features/customer/tips/data/repositories/tip_repository_impl.dart'
@@ -173,6 +213,12 @@ import 'package:Resilio/features/customer/video/presentation/bloc/long_video/lon
     as _i599;
 import 'package:Resilio/features/customer/video/presentation/bloc/short_video/short_video_bloc.dart'
     as _i329;
+import 'package:Resilio/features/therapist/dashboard/data/repositories/therapist_repository_impl.dart'
+    as _i217;
+import 'package:Resilio/features/therapist/dashboard/domain/repositories/therapist_repository.dart'
+    as _i120;
+import 'package:Resilio/features/therapist/dashboard/presentation/bloc/therapist_cubit.dart'
+    as _i196;
 import 'package:shared_preferences/shared_preferences.dart' as _i460;
 
 extension GetItInjectableX on _i174.GetIt {
@@ -205,8 +251,17 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i361.Dio>(
       () => networkModule.dio(gh<_i80.AuthTokenService>()),
     );
+    gh.lazySingleton<_i159.ProfileRemoteDataSource>(
+      () => _i159.ProfileRemoteDataSourceImpl(gh<_i361.Dio>()),
+    );
     gh.lazySingleton<_i482.TipRemoteDataSource>(
       () => _i482.TipRemoteDataSourceImpl(gh<_i361.Dio>()),
+    );
+    gh.lazySingleton<_i118.GamesRemoteDataSource>(
+      () => _i118.GamesRemoteDataSourceImpl(gh<_i361.Dio>()),
+    );
+    gh.lazySingleton<_i22.AdminRepository>(
+      () => _i624.AdminRepositoryImpl(gh<_i361.Dio>()),
     );
     gh.lazySingleton<_i376.AuthRemoteDataSource>(
       () => _i376.AuthRemoteDataSourceImpl(gh<_i361.Dio>()),
@@ -231,6 +286,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i667.SuperTokensDataSource>(
       () => _i667.SuperTokensDataSource(gh<_i361.Dio>()),
     );
+    gh.lazySingleton<_i267.FavoriteRemoteDataSource>(
+      () => _i267.FavoriteRemoteDataSource(gh<_i361.Dio>()),
+    );
     gh.lazySingleton<_i726.PreferenceRemoteDataSource>(
       () => _i726.PreferenceRemoteDataSource(gh<_i361.Dio>()),
     );
@@ -238,6 +296,12 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i736.SettingsRepositoryImpl(
         localDataSource: gh<_i786.SettingsLocalDataSource>(),
       ),
+    );
+    gh.lazySingleton<_i120.TherapistRepository>(
+      () => _i217.TherapistRepositoryImpl(gh<_i361.Dio>()),
+    );
+    gh.factory<_i196.TherapistCubit>(
+      () => _i196.TherapistCubit(gh<_i120.TherapistRepository>()),
     );
     gh.lazySingleton<_i871.TipRepository>(
       () => _i543.TipRepositoryImpl(gh<_i482.TipRemoteDataSource>()),
@@ -267,10 +331,19 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i189.PreferenceLocalDataSource>(
       () => _i189.PreferenceLocalDataSourceImpl(gh<_i865.DatabaseHelper>()),
     );
+    gh.lazySingleton<_i185.GamesRepository>(
+      () => _i427.GamesRepositoryImpl(
+        gh<_i118.GamesRemoteDataSource>(),
+        gh<_i759.NetworkInfo>(),
+      ),
+    );
     gh.lazySingleton<_i733.SettingsBloc>(
       () => _i733.SettingsBloc(repository: gh<_i648.SettingsRepository>()),
     );
     gh.factory<_i1035.TipBloc>(() => _i1035.TipBloc(gh<_i871.TipRepository>()));
+    gh.lazySingleton<_i618.FavoriteRepository>(
+      () => _i1055.FavoriteRepositoryImpl(gh<_i267.FavoriteRemoteDataSource>()),
+    );
     gh.lazySingleton<_i429.CategoryRepository>(
       () => _i626.CategoryRepositoryImpl(gh<_i748.CategoryRemoteDataSource>()),
     );
@@ -280,8 +353,20 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i103.OnboardingLocalDataSource>(
       () => _i103.OnboardingLocalDataSourceImpl(gh<_i460.SharedPreferences>()),
     );
+    gh.factory<_i514.GamesHubCubit>(
+      () => _i514.GamesHubCubit(gh<_i185.GamesRepository>()),
+    );
     gh.lazySingleton<_i774.DashboardRemoteDataSource>(
       () => _i774.DashboardRemoteDataSourceImpl(gh<_i361.Dio>()),
+    );
+    gh.factory<_i846.AdminCubit>(
+      () => _i846.AdminCubit(gh<_i22.AdminRepository>()),
+    );
+    gh.lazySingleton<_i122.SubscriptionRemoteDataSource>(
+      () => _i122.SubscriptionRemoteDataSourceImpl(
+        gh<_i361.Dio>(),
+        gh<_i80.AuthTokenService>(),
+      ),
     );
     gh.lazySingleton<_i927.QuoteRemoteDataSource>(
       () => _i927.QuoteRemoteDataSourceImpl(gh<_i361.Dio>()),
@@ -303,6 +388,12 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i223.ExploreLocalDataSource>(),
       ),
     );
+    gh.lazySingleton<_i633.ProfileRepository>(
+      () => _i140.ProfileRepositoryImpl(gh<_i159.ProfileRemoteDataSource>()),
+    );
+    gh.factory<_i85.ProfileBloc>(
+      () => _i85.ProfileBloc(gh<_i633.ProfileRepository>()),
+    );
     gh.factory<_i1033.SyncUserUseCase>(
       () => _i1033.SyncUserUseCase(gh<_i852.BackendAuthDataSource>()),
     );
@@ -319,6 +410,9 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i759.NetworkInfo>(),
         gh<_i80.AuthTokenService>(),
       ),
+    );
+    gh.factory<_i99.FavoriteBloc>(
+      () => _i99.FavoriteBloc(gh<_i618.FavoriteRepository>()),
     );
     gh.lazySingleton<_i81.VideoRepository>(
       () => _i503.VideoRepositoryImpl(gh<_i1067.VideoRemoteDataSource>()),
@@ -366,6 +460,12 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i542.CategoryBloc>(
       () => _i542.CategoryBloc(gh<_i1053.GetCategoriesUseCase>()),
     );
+    gh.lazySingleton<_i841.SubscriptionRepository>(
+      () => _i407.SubscriptionRepositoryImpl(
+        gh<_i122.SubscriptionRemoteDataSource>(),
+        gh<_i759.NetworkInfo>(),
+      ),
+    );
     gh.lazySingleton<_i674.ImageRepository>(
       () => _i76.ImageRepositoryImpl(gh<_i739.ImageRemoteDataSource>()),
     );
@@ -409,6 +509,9 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i420.CheckPreferencesCompletionUseCase>(),
       ),
     );
+    gh.factory<_i738.SubscriptionBloc>(
+      () => _i738.SubscriptionBloc(gh<_i841.SubscriptionRepository>()),
+    );
     gh.factory<_i671.GoogleSignInUseCase>(
       () => _i671.GoogleSignInUseCase(gh<_i184.AuthRepository>()),
     );
@@ -430,6 +533,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i426.GetDashboardUserProfileUseCase>(
       () =>
           _i426.GetDashboardUserProfileUseCase(gh<_i637.DashboardRepository>()),
+    );
+    gh.factory<_i348.PremiumCubit>(
+      () => _i348.PremiumCubit(gh<_i738.SubscriptionBloc>()),
     );
     gh.factory<_i505.QuoteBloc>(
       () => _i505.QuoteBloc(gh<_i970.GetFeaturedQuotes>()),

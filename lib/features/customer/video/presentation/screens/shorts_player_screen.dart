@@ -6,6 +6,8 @@ import 'package:hugeicons/hugeicons.dart';
 
 import '../../../../../core/theme/app_colors.dart';
 import '../../domain/entities/video_entity.dart';
+import '../../../favorites/presentation/widgets/favorite_button.dart';
+import '../../../favorites/domain/entities/favorite_entity.dart';
 
 /// Beautiful TikTok/Instagram Reels style vertical video player
 class ShortsPlayerScreen extends StatefulWidget {
@@ -338,12 +340,11 @@ class _ActionButtons extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        _ActionButton(
-          icon: Icons.favorite_border_rounded,
-          label: '${video.likeCount}',
-          onTap: () {
-            // TODO: Like video
-          },
+        FavoriteButton(
+          contentId: video.id,
+          contentType: FavoriteType.shortVideo,
+          size: 28.sp,
+          color: Colors.white,
         ),
         SizedBox(height: 24.h),
         _ActionButton(

@@ -265,6 +265,7 @@ const CreateUserRequest$json = {
     {'1': 'photo_url', '3': 5, '4': 1, '5': 9, '10': 'photoUrl'},
     {'1': 'fcm_token', '3': 6, '4': 1, '5': 9, '10': 'fcmToken'},
     {'1': 'language', '3': 7, '4': 1, '5': 9, '10': 'language'},
+    {'1': 'user_role', '3': 8, '4': 1, '5': 9, '10': 'userRole'},
   ],
 };
 
@@ -274,7 +275,7 @@ final $typed_data.Uint8List createUserRequestDescriptor = $convert.base64Decode(
     'QKBWVtYWlsGAIgASgJUgVlbWFpbBIaCgh1c2VybmFtZRgDIAEoCVIIdXNlcm5hbWUSIQoMZGlz'
     'cGxheV9uYW1lGAQgASgJUgtkaXNwbGF5TmFtZRIbCglwaG90b191cmwYBSABKAlSCHBob3RvVX'
     'JsEhsKCWZjbV90b2tlbhgGIAEoCVIIZmNtVG9rZW4SGgoIbGFuZ3VhZ2UYByABKAlSCGxhbmd1'
-    'YWdl');
+    'YWdlEhsKCXVzZXJfcm9sZRgIIAEoCVIIdXNlclJvbGU=');
 
 @$core.Deprecated('Use createUserResponseDescriptor instead')
 const CreateUserResponse$json = {
@@ -702,6 +703,8 @@ const SyncUserRequest$json = {
     {'1': 'email', '3': 2, '4': 1, '5': 9, '10': 'email'},
     {'1': 'display_name', '3': 3, '4': 1, '5': 9, '10': 'displayName'},
     {'1': 'photo_url', '3': 4, '4': 1, '5': 9, '10': 'photoUrl'},
+    {'1': 'user_role', '3': 5, '4': 1, '5': 9, '10': 'userRole'},
+    {'1': 'fcm_token', '3': 6, '4': 1, '5': 9, '10': 'fcmToken'},
   ],
 };
 
@@ -709,7 +712,8 @@ const SyncUserRequest$json = {
 final $typed_data.Uint8List syncUserRequestDescriptor = $convert.base64Decode(
     'Cg9TeW5jVXNlclJlcXVlc3QSIQoMZmlyZWJhc2VfdWlkGAEgASgJUgtmaXJlYmFzZVVpZBIUCg'
     'VlbWFpbBgCIAEoCVIFZW1haWwSIQoMZGlzcGxheV9uYW1lGAMgASgJUgtkaXNwbGF5TmFtZRIb'
-    'CglwaG90b191cmwYBCABKAlSCHBob3RvVXJs');
+    'CglwaG90b191cmwYBCABKAlSCHBob3RvVXJsEhsKCXVzZXJfcm9sZRgFIAEoCVIIdXNlclJvbG'
+    'USGwoJZmNtX3Rva2VuGAYgASgJUghmY21Ub2tlbg==');
 
 const $core.Map<$core.String, $core.dynamic> UserServiceBase$json = {
   '1': 'UserService',

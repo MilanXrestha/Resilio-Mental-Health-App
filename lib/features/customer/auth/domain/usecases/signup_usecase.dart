@@ -15,6 +15,7 @@ class SignUpUseCase {
       email: params.email,
       password: params.password,
       name: params.name,
+      userRole: params.userRole,
     );
   }
 }
@@ -23,10 +24,12 @@ class SignUpParams {
   final String email;
   final String password;
   final String? name;
+  final String userRole;
 
   SignUpParams({
     required this.email,
     required this.password,
     this.name,
+    this.userRole = 'customer',
   });
 }

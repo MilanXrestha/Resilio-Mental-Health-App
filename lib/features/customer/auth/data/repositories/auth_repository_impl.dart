@@ -6,6 +6,7 @@ import '../../../../../core/errors/failures.dart';
 import '../../../../../core/services/auth_token_service.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
+import '../../../../../core/services/push_notification_service.dart';
 import '../../domain/usecases/send_otp_usecase.dart';
 import '../datasources/remote/backend_auth_data_source.dart';
 import '../datasources/remote/firebase_auth_data_source.dart';
@@ -64,6 +65,7 @@ class AuthRepositoryImpl implements AuthRepository {
     required String email,
     required String password,
     String? name,
+    String userRole = 'customer',
   }) async {
     try {
       final credential = await _firebaseAuthDataSource
@@ -85,7 +87,7 @@ class AuthRepositoryImpl implements AuthRepository {
       }
 
       // Sync user to backend
-      final syncedUser = await _syncUserToBackend(credential.user!);
+      final syncedUser = await _syncUserToBackend(credential.user!, userRole: userRole);
 
       final user =
           syncedUser ??
@@ -300,10 +302,13 @@ class AuthRepositoryImpl implements AuthRepository {
 
   /// Sync Firebase user to backend database
   /// Returns UserEntity from backend
-  Future<UserEntity?> _syncUserToBackend(firebase.User firebaseUser) async {
+  Future<UserEntity?> _syncUserToBackend(firebase.User firebaseUser, {String? userRole}) async {
     try {
+      final fcmToken = await PushNotificationService.instance.getToken();
       final backendUser = await _backendDataSource.syncUser(
         firebaseUser: firebaseUser,
+        userRole: userRole,
+        fcmToken: fcmToken,
       );
 
       // Update userId in auth service

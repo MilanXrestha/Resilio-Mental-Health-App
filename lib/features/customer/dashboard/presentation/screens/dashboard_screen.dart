@@ -1,8 +1,10 @@
+import 'package:animate_do/animate_do.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lottie/lottie.dart';
 
 import '../../../../../core/di/injection.dart';
 import '../../../../../core/routing/route_names.dart';
@@ -15,6 +17,7 @@ import '../../../categories/domain/entities/category_entity.dart';
 import '../../../categories/presentation/bloc/category_bloc.dart';
 import '../../../categories/presentation/bloc/category_event.dart';
 import '../../../categories/presentation/bloc/category_state.dart';
+import '../../../tips/presentation/widgets/tip_card_widget.dart';
 import '../../../video/domain/entities/video_entity.dart';
 import '../../../video/presentation/bloc/short_video/short_video_bloc.dart';
 import '../../../video/presentation/bloc/short_video/short_video_event.dart';
@@ -33,11 +36,16 @@ import '../../domain/entities/quote_entity.dart';
 import '../bloc/dashboard_bloc.dart';
 import '../bloc/quote_bloc.dart';
 import '../widgets/featured_quotes_widget.dart';
+import '../widgets/section_header_widget.dart';
+import '../widgets/shimmer_dashboard_widgets.dart';
 import '../widgets/audio_card_widget.dart';
 import '../widgets/category_card_widget.dart';
 import '../widgets/short_video_card_widget.dart';
 import '../widgets/long_video_card_widget.dart';
+import '../widgets/quote_card_widget.dart';
 import '../../../images/presentation/widgets/images_section_widget.dart';
+import '../../../categories/domain/entities/category_card_entity.dart';
+import '../../../categories/presentation/screens/category_detail_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   final VoidCallback onViewAllCategories;
@@ -110,6 +118,7 @@ class _DashboardView extends StatelessWidget {
         if (state is DashboardLoading) {
           return Scaffold(
             backgroundColor: context.backgroundColor,
+            body: const SafeArea(child: DashboardShimmerLoading()),
           );
         }
 
@@ -132,30 +141,11 @@ class _DashboardView extends StatelessWidget {
 
         return Scaffold(
           backgroundColor: context.backgroundColor,
+          floatingActionButton: const CustomGamingFab(),
+          floatingActionButtonLocation: CustomFabLocation(),
           body: SafeArea(
             child: Stack(
               children: [
-                // Soft gradient wash behind the header area
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: 260.h,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          context.primaryColor.withOpacity(0.07),
-                          context.primaryColor.withOpacity(0.02),
-                          Colors.transparent,
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-
                 // Main scrollable content
                 RefreshIndicator(
                   onRefresh: () async {
@@ -195,21 +185,31 @@ class _DashboardView extends StatelessWidget {
                         // 1 ─ Header
                         _Header(profile: profile, greeting: greeting),
 
-                        SizedBox(height: 28.h),
+                        SizedBox(height: 24.h),
 
-                        // 2 ─ Featured Quotes
+                        // 2 ─ Featured Slider (Quotes & Tips)
                         _FeaturedSection(),
 
                         SizedBox(height: 36.h),
 
-                        // 6 ─ Categories
+                        // 3 ─ Categories
                         _CategoriesSection(
                           onViewAll: onViewAllCategories,
                         ),
 
+                        SizedBox(height: 36.h),
+
+                        // 3.5 ─ Therapy / Matching Hook
+                        const _TherapySection(),
+
+                        SizedBox(height: 36.h),
+
+                        // 4 ─ Reminders Card (below categories)
+                        const _RemindersCardSection(),
+
                         SizedBox(height: 40.h),
 
-                        // 3 ─ Featured Audio
+                        // 5 ─ Featured Audio
                         const _FeaturedAudioSection(),
 
                         SizedBox(height: 36.h),
@@ -226,6 +226,11 @@ class _DashboardView extends StatelessWidget {
 
                         // 5.6 ─ Images Section
                         const ImagesSection(),
+
+                        SizedBox(height: 36.h),
+
+                        // 5.8 ─ Quotes List Section
+                        const _QuotesListSection(),
 
                         SizedBox(height: 36.h),
 
@@ -280,13 +285,6 @@ class _Header extends StatelessWidget {
                     context.primaryColor.withOpacity(0.4),
                   ],
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: context.primaryColor.withOpacity(0.2),
-                    blurRadius: 14.r,
-                    offset: Offset(0, 4.h),
-                  ),
-                ],
               ),
               child: CircleAvatar(
                 radius: 26.r,
@@ -311,7 +309,19 @@ class _Header extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  greeting.isNotEmpty ? greeting : 'Welcome back',
+                  'Hello, ${profile?.firstName ?? 'User'}',
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 24.sp,
+                    fontWeight: FontWeight.w700,
+                    color: context.textPrimaryColor,
+                    height: 1.2,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  'Time to unwind',
                   style: TextStyle(
                     fontFamily: 'Poppins',
                     fontSize: 13.sp,
@@ -319,18 +329,6 @@ class _Header extends StatelessWidget {
                     color: context.textSecondaryColor,
                     height: 1.3,
                   ),
-                ),
-                SizedBox(height: 2.h),
-                Text(
-                  profile?.firstName ?? 'User',
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 22.sp,
-                    fontWeight: FontWeight.w700,
-                    color: context.textPrimaryColor,
-                    height: 1.2,
-                  ),
-                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -412,6 +410,140 @@ class _NotificationButton extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// 1.5 – REMINDERS SECTION
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _RemindersCardSection extends StatefulWidget {
+  const _RemindersCardSection();
+
+  @override
+  State<_RemindersCardSection> createState() => _RemindersCardSectionState();
+}
+
+class _RemindersCardSectionState extends State<_RemindersCardSection> with SingleTickerProviderStateMixin {
+  AnimationController? _lottieController;
+
+  @override
+  void initState() {
+    super.initState();
+    _lottieController = AnimationController(vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _lottieController?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      child: FadeInUp(
+        duration: const Duration(milliseconds: 400),
+        child: Container(
+          decoration: BoxDecoration(
+            color: context.surfaceColor,
+            borderRadius: BorderRadius.circular(20.r),
+            border: Border.all(
+              color: isDarkMode ? Colors.grey.shade800 : Colors.grey.shade200,
+              width: 1.w,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(isDarkMode ? 0.2 : 0.05),
+                blurRadius: 10.r,
+                offset: Offset(0, 4.h),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                // Navigate to reminder screen
+              },
+              borderRadius: BorderRadius.circular(20.r),
+              child: Container(
+                height: 120.h,
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                child: Stack(
+                  children: [
+                    // Background Clock Icon
+                    Positioned(
+                      right: -20.w,
+                      top: -10.h,
+                      child: Icon(
+                        Icons.access_time_rounded,
+                        size: 110.sp,
+                        color: context.primaryColor.withOpacity(isDarkMode ? 0.05 : 0.05),
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        SizedBox(
+                          width: 70.w,
+                          height: 70.w,
+                          child: _lottieController != null
+                              ? Lottie.asset(
+                                  'assets/animations/clock.json',
+                                  fit: BoxFit.cover,
+                                  controller: _lottieController,
+                                  onLoaded: (comp) {
+                                    _lottieController?.duration = comp.duration;
+                                    _lottieController?.repeat();
+                                  },
+                                  errorBuilder: (context, error, stackTrace) =>
+                                    Icon(Icons.access_time_filled_rounded, size: 50.sp, color: context.primaryColor),
+                                )
+                              : const SizedBox.shrink(),
+                        ),
+                        SizedBox(width: 16.w),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Set Reminder',
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 18.sp,
+                                  color: context.textPrimaryColor,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              SizedBox(height: 6.h),
+                              Text(
+                                'Never miss your favorite quotes',
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
+                                  fontSize: 13.sp,
+                                  color: context.textSecondaryColor,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // 2 – FEATURED QUOTES SECTION
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -424,39 +556,19 @@ class _FeaturedSection extends StatelessWidget {
         if (quoteState is QuoteLoaded) quotes = quoteState.quotes;
         if (quotes.isEmpty) return const SizedBox.shrink();
 
+        // Only featured quote feed should be shown here.
+        final featured = quotes.take(4).toList();
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Daily Inspiration',
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 20.sp,
-                      fontWeight: FontWeight.w700,
-                      color: context.textPrimaryColor,
-                    ),
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    'Swipe through today\'s featured quotes',
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 13.sp,
-                      fontWeight: FontWeight.w400,
-                      color: context.textSecondaryColor,
-                    ),
-                  ),
-                ],
-              ),
+            const SectionHeaderWidget(
+              title: 'Daily Inspiration',
+              subtitle: 'Swipe through today\'s featured quotes',
             ),
             SizedBox(height: 16.h),
             FeaturedQuotesWidget(
-              featuredQuotes: quotes,
+              featuredQuotes: featured,
               theme: Theme.of(context),
               isDarkMode: context.isDarkMode,
             ),
@@ -487,45 +599,28 @@ class _FeaturedAudioSection extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Calming Audio',
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 20.sp,
-                            fontWeight: FontWeight.w700,
-                            color: context.textPrimaryColor,
-                          ),
-                        ),
-                        SizedBox(height: 4.h),
-                        Text(
-                          'Meditation & wellness sessions',
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 13.sp,
-                            fontWeight: FontWeight.w400,
-                            color: context.textSecondaryColor,
-                          ),
-                        ),
-                      ],
+            SectionHeaderWidget(
+              title: 'Calming Audio',
+              subtitle: 'Meditation & wellness sessions',
+              onSeeAll: () {
+                final categories = context.read<CategoryBloc>().state;
+                if (categories is CategoryLoaded && categories.categories.isNotEmpty) {
+                  final cat = categories.categories.first;
+                   context.pushNamed(
+                    RouteNames.categoryDetail,
+                    extra: CategoryCardEntity(
+                      id: cat.id,
+                      name: cat.name,
+                      imageUrl: cat.imageUrl,
+                      description: cat.description,
                     ),
-                  ),
-                  _SeeAllButton(onTap: () {
-                    // TODO: Navigate to full audio library
-                  }),
-                ],
-              ),
+                  );
+                }
+              },
             ),
             SizedBox(height: 16.h),
             SizedBox(
-              height: 280.h,
+              height: 190.h,
               child: ListView.separated(
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
                 scrollDirection: Axis.horizontal,
@@ -565,29 +660,7 @@ class _ShortVideosSection extends StatelessWidget {
     return BlocBuilder<ShortVideoBloc, ShortVideoState>(
       builder: (context, state) {
         if (state is ShortVideoLoading) {
-          return Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Short Videos',
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 20.sp,
-                    fontWeight: FontWeight.w700,
-                    color: context.textPrimaryColor,
-                  ),
-                ),
-                SizedBox(height: 16.h),
-                Center(
-                  child: CircularProgressIndicator(
-                    color: context.primaryColor,
-                  ),
-                ),
-              ],
-            ),
-          );
+          return const SectionShimmerLoading(height: 220, width: 160);
         }
 
         if (state is ShortVideoError) {
@@ -655,43 +728,18 @@ class _ShortVideosSection extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Short Videos',
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 20.sp,
-                            fontWeight: FontWeight.w700,
-                            color: context.textPrimaryColor,
-                          ),
-                        ),
-                        SizedBox(height: 4.h),
-                        Text(
-                          'Quick mindfulness moments',
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 13.sp,
-                            fontWeight: FontWeight.w400,
-                            color: context.textSecondaryColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  _SeeAllButton(onTap: () {}),
-                ],
-              ),
+            SectionHeaderWidget(
+              title: 'Short Videos',
+              subtitle: 'Quick mindfulness moments',
+              onSeeAll: () {
+                 // Open CategoryDetail with shortVideo filter
+                 // We don't have a direct category for "Short Videos" but we can pass a dummy or a specific one if needed.
+                 // For now, let's just keep it or navigate to a general category detail if category logic allows.
+              },
             ),
             SizedBox(height: 16.h),
             SizedBox(
-              height: 250.h,
+              height: 220.h,
               child: ListView.separated(
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
                 scrollDirection: Axis.horizontal,
@@ -796,43 +844,14 @@ class _LongVideosSection extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Featured Videos',
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 20.sp,
-                            fontWeight: FontWeight.w700,
-                            color: context.textPrimaryColor,
-                          ),
-                        ),
-                        SizedBox(height: 4.h),
-                        Text(
-                          'In-depth wellness content',
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 13.sp,
-                            fontWeight: FontWeight.w400,
-                            color: context.textSecondaryColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  _SeeAllButton(onTap: () {}),
-                ],
-              ),
+            SectionHeaderWidget(
+              title: 'Featured Videos',
+              subtitle: 'In-depth wellness content',
+              onSeeAll: () {},
             ),
             SizedBox(height: 16.h),
             SizedBox(
-              height: 280.h,
+              height: 250.h,
               child: ListView.separated(
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
                 scrollDirection: Axis.horizontal,
@@ -924,41 +943,10 @@ class _TipsSection extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Wellness Tips',
-                          style: TextStyle(
-                            fontFamily: 'PlayfairDisplay',
-                            fontSize: 20.sp,
-                            fontWeight: FontWeight.bold,
-                            color: context.textPrimaryColor,
-                          ),
-                        ),
-                        SizedBox(height: 4.h),
-                        Text(
-                          'Quick advice for daily wellness',
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 13.sp,
-                            fontWeight: FontWeight.w400,
-                            color: context.textSecondaryColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  _SeeAllButton(
-                    onTap: () => context.push('/tips'),
-                  ),
-                ],
-              ),
+            SectionHeaderWidget(
+              title: 'Wellness Tips',
+              subtitle: 'Quick advice for daily wellness',
+              onSeeAll: () => context.push('/tips'),
             ),
             SizedBox(height: 16.h),
             SizedBox(
@@ -973,7 +961,19 @@ class _TipsSection extends StatelessWidget {
                     width: 260.w,
                     child: Padding(
                       padding: EdgeInsets.only(right: 16.w),
-                      child: _buildTipCard(context, tip),
+                      child: TipCardWidget(
+                        tip: tip,
+                        onTap: () {
+                          context.pushNamed(
+                            RouteNames.contentViewer,
+                            extra: {
+                              'tips': tips,
+                              'initialIndex': index,
+                              'title': 'Wellness Tips',
+                            },
+                          );
+                        },
+                      ),
                     ),
                   );
                 },
@@ -985,85 +985,6 @@ class _TipsSection extends StatelessWidget {
     );
   }
 
-  Widget _buildTipCard(BuildContext context, TipEntity tip) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16.r),
-      ),
-      child: InkWell(
-        onTap: () => _showTipDetail(context, tip),
-        borderRadius: BorderRadius.circular(16.r),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                _getGradientColorForType(context, tip.tipType),
-                _getGradientColorForType(context, tip.tipType).withOpacity(0.7),
-              ],
-            ),
-            borderRadius: BorderRadius.circular(16.r),
-          ),
-          padding: EdgeInsets.all(16.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Type badge
-              Expanded(
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(20.r),
-                  ),
-                  child: Text(
-                    tip.tipTypeString,
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 10.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ),
-              SizedBox(height: 8.h),
-              // Title
-              Text(
-                tip.title,
-                style: TextStyle(
-                  fontFamily: 'PlayfairDisplay',
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              SizedBox(height: 4.h),
-              // Author
-              Text(
-                tip.author.isNotEmpty ? tip.author : 'Unknown',
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 11.sp,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white.withOpacity(0.8),
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   void _showTipDetail(BuildContext context, TipEntity tip) {
     showModalBottomSheet(
       context: context,
@@ -1072,24 +993,64 @@ class _TipsSection extends StatelessWidget {
       builder: (context) => _TipDetailSheet(tip: tip),
     );
   }
+}
 
-  Color _getGradientColorForType(BuildContext context, TipType tipType) {
-    switch (tipType) {
-      case TipType.relationshipBooster:
-        return const Color(0xFFFF6B6B);
-      case TipType.lettingGo:
-        return const Color(0xFF4ECDC4);
-      case TipType.communication:
-        return const Color(0xFFFFE66D);
-      case TipType.selfCare:
-        return const Color(0xFF95E1D3);
-      case TipType.mindfulness:
-        return const Color(0xFFA8E6CF);
-      case TipType.general:
-        return context.primaryColor;
-      case TipType.unknown:
-        return Colors.grey.shade600;
-    }
+// ─────────────────────────────────────────────────────────────────────────────
+// 5.8 – QUOTES LIST SECTION
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _QuotesListSection extends StatelessWidget {
+  const _QuotesListSection();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<QuoteBloc, QuoteState>(
+      builder: (context, state) {
+        List<QuoteEntity> quotes = [];
+        if (state is QuoteLoaded) quotes = state.quotes;
+        if (quotes.isEmpty) return const SizedBox.shrink();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SectionHeaderWidget(
+              title: 'More Quotes',
+              subtitle: 'Discover words to lift your spirit',
+              onSeeAll: () {
+                // TODO: Navigate to quotes directory
+              },
+            ),
+            SizedBox(height: 16.h),
+            SizedBox(
+              height: 145.h,
+              child: ListView.separated(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                itemCount: quotes.length,
+                separatorBuilder: (_, __) => SizedBox(width: 14.w),
+                itemBuilder: (context, index) {
+                  final quote = quotes[index];
+                  return QuoteCardWidget(
+                    quote: quote,
+                    onTap: () {
+                      context.pushNamed(
+                        RouteNames.contentViewer,
+                        extra: {
+                          'quotes': quotes,
+                          'initialIndex': index,
+                          'title': 'Daily Quotes',
+                        },
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 }
 
@@ -1233,7 +1194,6 @@ class _TipDetailSheet extends StatelessWidget {
   }
 }
 
-
 // ─────────────────────────────────────────────────────────────────────────────
 // 6 – CATEGORIES SECTION
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1256,39 +1216,10 @@ class _CategoriesSection extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Explore Categories',
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 20.sp,
-                            fontWeight: FontWeight.w700,
-                            color: context.textPrimaryColor,
-                          ),
-                        ),
-                        SizedBox(height: 4.h),
-                        Text(
-                          'Find quotes that resonate with you',
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 13.sp,
-                            fontWeight: FontWeight.w400,
-                            color: context.textSecondaryColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  _SeeAllButton(onTap: onViewAll),
-                ],
-              ),
+            SectionHeaderWidget(
+              title: 'Explore Categories',
+              subtitle: 'Find quotes that resonate with you',
+              onSeeAll: onViewAll,
             ),
             SizedBox(height: 16.h),
             SizedBox(
@@ -1304,7 +1235,15 @@ class _CategoriesSection extends StatelessWidget {
                   return CategoryCardWidget(
                     category: category,
                     onTap: () {
-                      // TODO: Navigate to category detail
+                      context.pushNamed(
+                        RouteNames.categoryDetail,
+                        extra: CategoryCardEntity(
+                          id: category.id,
+                          name: category.name,
+                          imageUrl: category.imageUrl,
+                          description: category.description,
+                        ),
+                      );
                     },
                   );
                 },
@@ -1427,6 +1366,180 @@ class _ErrorBody extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                 ),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CUSTOM GAMING FAB
+// ─────────────────────────────────────────────────────────────────────────────
+
+class CustomGamingFab extends StatefulWidget {
+  const CustomGamingFab({super.key});
+
+  @override
+  State<CustomGamingFab> createState() => _CustomGamingFabState();
+}
+
+class _CustomGamingFabState extends State<CustomGamingFab> with SingleTickerProviderStateMixin {
+  AnimationController? _lottieController;
+
+  @override
+  void initState() {
+    super.initState();
+    _lottieController = AnimationController(vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _lottieController?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    return GestureDetector(
+      onTap: () {
+        context.pushNamed(RouteNames.gamesHub);
+      },
+      child: Container(
+        width: 60.w,
+        height: 60.w,
+        decoration: BoxDecoration(
+          color: isDarkMode
+              ? const Color(0xFF1A1A1A)
+              : const Color(0xFF262626),
+          borderRadius: BorderRadius.circular(16.r),
+          border: isDarkMode
+              ? Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1.w)
+              : null,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDarkMode ? 0.4 : 0.2),
+              blurRadius: 12.r,
+              offset: Offset(0, 4.h),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16.r),
+          child: _lottieController != null
+              ? Lottie.asset(
+                  'assets/animations/joystick.json',
+                  controller: _lottieController,
+                  fit: BoxFit.contain,
+                  onLoaded: (composition) {
+                    _lottieController?.duration = composition.duration;
+                    _lottieController?.repeat();
+                  },
+                )
+              : Icon(
+                  Icons.sports_esports_rounded,
+                  color: Colors.white,
+                  size: 28.sp,
+                ),
+        ),
+      ),
+    );
+  }
+}
+
+class CustomFabLocation extends FloatingActionButtonLocation {
+  @override
+  Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
+    return Offset(
+      scaffoldGeometry.scaffoldSize.width -
+          20.w -
+          scaffoldGeometry.floatingActionButtonSize.width,
+      scaffoldGeometry.scaffoldSize.height -
+          70.h -
+          scaffoldGeometry.floatingActionButtonSize.height,
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 10 – THERAPY / MATCHING SECTION
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _TherapySection extends StatelessWidget {
+  const _TherapySection();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      child: Container(
+        padding: EdgeInsets.all(20.w),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              context.primaryColor.withOpacity(0.8),
+              context.primaryColor,
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(20.r),
+          boxShadow: [
+            BoxShadow(
+              color: context.primaryColor.withOpacity(0.3),
+              blurRadius: 15,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Talk to a Professional',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18.sp,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    'Find the right therapist for your mental wellness journey.',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 13.sp,
+                      color: Colors.white.withOpacity(0.9),
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
+                  ElevatedButton(
+                    onPressed: () {
+                      context.pushNamed(RouteNames.matching);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: context.primaryColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                    ),
+                    child: const Text('Get Matched'),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(width: 16.w),
+            Icon(
+              Icons.healing,
+              size: 80.sp,
+              color: Colors.white.withOpacity(0.2),
             ),
           ],
         ),

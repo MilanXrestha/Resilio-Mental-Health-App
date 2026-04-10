@@ -48,6 +48,11 @@ class ApiEndpoints {
   // Search
   static const String search = '/search';
 
+  // Favorites
+  static const String favorites = '/favorites';
+  static const String favoriteStatus = '/favorites/status';
+  static const String favoriteUser = '/favorites/user'; 
+
   // SuperTokens FDI endpoints (passwordless)
   // These are served by supertokens-node middleware at /api/v1/auth/**
   // NOTE: baseUrl already contains /api/v1, so paths here are relative to that.

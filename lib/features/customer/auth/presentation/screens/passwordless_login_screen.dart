@@ -207,10 +207,16 @@ class _PasswordlessLoginViewState extends State<_PasswordlessLoginView> {
           // OTP resent
           _showSnackBar(l10n.newCodeSent);
         } else if (state is AuthAuthenticated) {
-          if (state.user.preferencesCompleted) {
-            context.goNamed(RouteNames.home);
+          if (state.user.role == 'admin') {
+            context.goNamed(RouteNames.adminDashboard);
+          } else if (state.user.role == 'therapist') {
+            context.goNamed(RouteNames.therapistDashboard);
           } else {
-            context.goNamed(RouteNames.preferences);
+            if (state.user.preferencesCompleted) {
+              context.goNamed(RouteNames.home);
+            } else {
+              context.goNamed(RouteNames.preferences);
+            }
           }
         } else if (state is AuthError) {
           _clearOtpFields();

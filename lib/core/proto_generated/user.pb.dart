@@ -975,6 +975,7 @@ class CreateUserRequest extends $pb.GeneratedMessage {
     $core.String? photoUrl,
     $core.String? fcmToken,
     $core.String? language,
+    $core.String? userRole,
   }) {
     final result = create();
     if (firebaseUid != null) result.firebaseUid = firebaseUid;
@@ -984,6 +985,7 @@ class CreateUserRequest extends $pb.GeneratedMessage {
     if (photoUrl != null) result.photoUrl = photoUrl;
     if (fcmToken != null) result.fcmToken = fcmToken;
     if (language != null) result.language = language;
+    if (userRole != null) result.userRole = userRole;
     return result;
   }
 
@@ -1007,6 +1009,7 @@ class CreateUserRequest extends $pb.GeneratedMessage {
     ..aOS(5, _omitFieldNames ? '' : 'photoUrl')
     ..aOS(6, _omitFieldNames ? '' : 'fcmToken')
     ..aOS(7, _omitFieldNames ? '' : 'language')
+    ..aOS(8, _omitFieldNames ? '' : 'userRole')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1090,6 +1093,15 @@ class CreateUserRequest extends $pb.GeneratedMessage {
   $core.bool hasLanguage() => $_has(6);
   @$pb.TagNumber(7)
   void clearLanguage() => $_clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get userRole => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set userRole($core.String value) => $_setString(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasUserRole() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearUserRole() => $_clearField(8);
 }
 
 /// Create user response
@@ -1984,12 +1996,16 @@ class SyncUserRequest extends $pb.GeneratedMessage {
     $core.String? email,
     $core.String? displayName,
     $core.String? photoUrl,
+    $core.String? userRole,
+    $core.String? fcmToken,
   }) {
     final result = create();
     if (firebaseUid != null) result.firebaseUid = firebaseUid;
     if (email != null) result.email = email;
     if (displayName != null) result.displayName = displayName;
     if (photoUrl != null) result.photoUrl = photoUrl;
+    if (userRole != null) result.userRole = userRole;
+    if (fcmToken != null) result.fcmToken = fcmToken;
     return result;
   }
 
@@ -2010,6 +2026,8 @@ class SyncUserRequest extends $pb.GeneratedMessage {
     ..aOS(2, _omitFieldNames ? '' : 'email')
     ..aOS(3, _omitFieldNames ? '' : 'displayName')
     ..aOS(4, _omitFieldNames ? '' : 'photoUrl')
+    ..aOS(5, _omitFieldNames ? '' : 'userRole')
+    ..aOS(6, _omitFieldNames ? '' : 'fcmToken')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -2066,6 +2084,24 @@ class SyncUserRequest extends $pb.GeneratedMessage {
   $core.bool hasPhotoUrl() => $_has(3);
   @$pb.TagNumber(4)
   void clearPhotoUrl() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get userRole => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set userRole($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasUserRole() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearUserRole() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get fcmToken => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set fcmToken($core.String value) => $_setString(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasFcmToken() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearFcmToken() => $_clearField(6);
 }
 
 /// User service definition

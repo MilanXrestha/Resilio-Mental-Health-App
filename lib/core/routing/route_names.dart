@@ -13,4 +13,22 @@ class RouteNames {
   static const String images = 'images';
   static const String explore = 'explore';
   static const String settings = 'settings';
+  static const String contentViewer = 'contentViewer';
+  static const String imageViewer = 'imageViewer';
+  static const String categoryDetail = 'categoryDetail';
+  static const String gamesHub = 'gamesHub';
+  static const String moodCalendar = 'moodCalendar';
+  static const String wellnessQuiz = 'wellnessQuiz';
+  static const String breathingGame = 'breathingGame';
+  static const String affirmationBuilder = 'affirmationBuilder';
+  static const String achievements = 'achievements';
+  static const String profile = 'profile';
+  static const String editProfile = 'editProfile';
+  static const String subscription = 'subscription';
+  static const String transactionHistory = 'transactionHistory';
+  static const String therapistDashboard = 'therapistDashboard';
+  static const String adminDashboard = 'adminDashboard';
+  static const String matching = 'matching';
+  static const String booking = 'booking';
+  static const String videoCall = 'videoCall';
 }

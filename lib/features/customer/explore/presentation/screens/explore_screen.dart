@@ -7,18 +7,30 @@ import 'package:lottie/lottie.dart';
 import '../../../../../core/di/injection.dart';
 import '../../../../../core/routing/route_names.dart';
 import '../../../../../core/theme/app_colors.dart';
+import 'package:shimmer/shimmer.dart';
+
 import '../../../audio/domain/entities/audio_entity.dart';
+import '../../../categories/domain/entities/category_entity.dart';
+import '../../../dashboard/domain/entities/quote_entity.dart';
+import '../../../images/domain/entities/image_entity.dart';
+import '../../../video/domain/entities/video_entity.dart';
+import '../../../categories/domain/entities/category_card_entity.dart';
+import '../../../categories/presentation/screens/category_detail_screen.dart';
+import '../../../tips/domain/entities/tip_entity.dart';
+
 import '../../../dashboard/presentation/widgets/audio_card_widget.dart';
-import '../../../dashboard/presentation/widgets/short_video_card_widget.dart';
+import '../../../dashboard/presentation/widgets/category_card_widget.dart';
 import '../../../dashboard/presentation/widgets/long_video_card_widget.dart';
+import '../../../dashboard/presentation/widgets/quote_card_widget.dart';
+import '../../../dashboard/presentation/widgets/section_header_widget.dart';
+import '../../../dashboard/presentation/widgets/short_video_card_widget.dart';
+import '../../../tips/presentation/widgets/tip_card_widget.dart';
+
 import '../../domain/entities/explore_item_entity.dart';
 import '../bloc/explore_bloc.dart';
 import '../widgets/explore_search_bar.dart';
 import '../widgets/explore_filter_sheet.dart';
-import '../widgets/explore_quote_card.dart';
-import '../widgets/explore_tip_card.dart';
 import '../widgets/explore_image_card.dart';
-import '../widgets/explore_category_card.dart';
 import '../widgets/explore_suggestions_widget.dart';
 
 class ExploreScreen extends StatelessWidget {
@@ -60,6 +72,7 @@ class _ExploreViewState extends State<_ExploreView> {
   }
 
   void _onFocusChange() {
+    if (!mounted) return;
     setState(() {
       _showSuggestions = _searchFocusNode.hasFocus;
     });
@@ -111,22 +124,111 @@ class _ExploreViewState extends State<_ExploreView> {
   }
 
   Widget _buildLoadingState(BuildContext context) {
-    return Center(
+    final isDarkMode = context.isDarkMode;
+    final baseColor = isDarkMode ? context.surfaceColor : context.backgroundColor;
+    final highlightColor = isDarkMode ? context.surfaceColor.withOpacity(0.5) : Colors.grey.shade100;
+
+    return SingleChildScrollView(
+      physics: const NeverScrollableScrollPhysics(),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircularProgressIndicator(color: context.primaryColor),
-          SizedBox(height: 16.h),
-          Text(
-            'Loading content...',
-            style: TextStyle(
-              fontFamily: 'Poppins',
-              fontSize: 14.sp,
-              color: context.textSecondaryColor,
+          // Header placeholder
+          Padding(
+            padding: EdgeInsets.fromLTRB(20.w, 32.h, 20.w, 16.h),
+            child: Shimmer.fromColors(
+              baseColor: baseColor,
+              highlightColor: highlightColor,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(width: 150.w, height: 32.h, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8.r))),
+                  SizedBox(height: 8.h),
+                  Container(width: 200.w, height: 16.h, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4.r))),
+                  SizedBox(height: 24.h),
+                  Container(width: double.infinity, height: 50.h, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16.r))),
+                  SizedBox(height: 16.h),
+                  Row(
+                    children: List.generate(4, (index) => Padding(
+                      padding: EdgeInsets.only(right: 8.w),
+                      child: Container(width: 80.w, height: 36.h, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20.r))),
+                    )),
+                  ),
+                ],
+              ),
             ),
           ),
+          
+          // Section placeholders
+          ...List.generate(3, (index) => _buildShimmerSection(context, baseColor, highlightColor)),
         ],
       ),
+    );
+  }
+
+  Widget _buildShimmerSection(BuildContext context, Color baseColor, Color highlightColor) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.fromLTRB(20.w, 36.h, 20.w, 16.h),
+          child: Shimmer.fromColors(
+            baseColor: baseColor,
+            highlightColor: highlightColor,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(width: 140.w, height: 24.h, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(6.r))),
+                Container(width: 60.w, height: 16.h, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4.r))),
+              ],
+            ),
+          ),
+        ),
+        SizedBox(
+          height: 220.h,
+          child: ListView.separated(
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            scrollDirection: Axis.horizontal,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: 3,
+            separatorBuilder: (_, __) => SizedBox(width: 16.w),
+            itemBuilder: (_, __) => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Shimmer.fromColors(
+                  baseColor: baseColor,
+                  highlightColor: highlightColor,
+                  child: Container(
+                    width: 160.w,
+                    height: 150.h,
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16.r)),
+                  ),
+                ),
+                SizedBox(height: 12.h),
+                Shimmer.fromColors(
+                  baseColor: baseColor,
+                  highlightColor: highlightColor,
+                  child: Container(
+                    width: 130.w,
+                    height: 14.h,
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4.r)),
+                  ),
+                ),
+                SizedBox(height: 6.h),
+                Shimmer.fromColors(
+                  baseColor: baseColor,
+                  highlightColor: highlightColor,
+                  child: Container(
+                    width: 90.w,
+                    height: 12.h,
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4.r)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -191,66 +293,58 @@ class _ExploreViewState extends State<_ExploreView> {
   Widget _buildLoadedState(BuildContext context, ExploreLoaded state) {
     final itemsByType = state.itemsByType;
 
-    return Column(
-      children: [
-        // Header with search
-        _buildHeader(context, state),
-
-        // Content
-        Expanded(
-          child: _showSuggestions && !state.isSearchActive
-              ? _buildSuggestions(context, state)
-              : state.hasResults
-              ? _buildSectionedContent(context, state, itemsByType)
-              : _buildEmptyState(context, state.isSearchActive),
+    return RefreshIndicator(
+      onRefresh: () async {
+        context.read<ExploreBloc>().add(const RefreshExploreItems());
+      },
+      color: context.primaryColor,
+      child: SingleChildScrollView(
+        controller: _scrollController,
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
         ),
-      ],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHeader(context, state),
+            if (_showSuggestions && !state.isSearchActive)
+              _buildSuggestions(context, state)
+            else if (state.hasResults)
+              _buildSectionedContent(context, state, itemsByType)
+            else
+              _buildEmptyState(context, state.isSearchActive),
+          ],
+        ),
+      ),
     );
   }
 
   Widget _buildHeader(BuildContext context, ExploreLoaded state) {
-    return Container(
-      padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 16.h),
-      decoration: BoxDecoration(
-        color: context.backgroundColor,
-      ),
+    return Padding(
+      padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 12.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Title row
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Explore',
-                      style: TextStyle(
-                        fontFamily: 'Poppins',
-                        fontSize: 28.sp,
-                        fontWeight: FontWeight.w700,
-                        color: context.textPrimaryColor,
-                      ),
-                    ),
-                    SizedBox(height: 2.h),
-                    Text(
-                      'Discover content that inspires you',
-                      style: TextStyle(
-                        fontFamily: 'Poppins',
-                        fontSize: 13.sp,
-                        fontWeight: FontWeight.w400,
-                        color: context.textSecondaryColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          Text(
+            'Explore',
+            style: TextStyle(
+              fontFamily: 'PlayfairDisplay',
+              fontSize: 30.sp,
+              fontWeight: FontWeight.w700,
+              color: context.textPrimaryColor,
+            ),
+          ),
+          SizedBox(height: 4.h),
+          Text(
+            'Discover content for your wellness journey',
+            style: TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w400,
+              color: context.textSecondaryColor,
+            ),
           ),
           SizedBox(height: 16.h),
-
-          // Search bar
           ExploreSearchBar(
             focusNode: _searchFocusNode,
             initialQuery: state.filter.searchQuery,
@@ -272,9 +366,7 @@ class _ExploreViewState extends State<_ExploreView> {
             onFilterTap: () => _showFilterSheet(context, state),
             activeFilterCount: state.filter.activeFilterCount,
           ),
-
-          // Quick type filters
-          SizedBox(height: 16.h),
+          SizedBox(height: 12.h),
           _buildQuickFilters(context, state),
         ],
       ),
@@ -282,9 +374,11 @@ class _ExploreViewState extends State<_ExploreView> {
   }
 
   Widget _buildQuickFilters(BuildContext context, ExploreLoaded state) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
+    return SizedBox(
+      height: 40.h,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
         children: [
           _QuickFilterChip(
             label: 'All',
@@ -333,72 +427,60 @@ class _ExploreViewState extends State<_ExploreView> {
       ExploreLoaded state,
       Map<ExploreItemType, List<ExploreItemEntity>> itemsByType,
       ) {
-    return RefreshIndicator(
-      onRefresh: () async {
-        context.read<ExploreBloc>().add(const RefreshExploreItems());
-      },
-      color: context.primaryColor,
-      child: SingleChildScrollView(
-        controller: _scrollController,
-        physics: const AlwaysScrollableScrollPhysics(
-          parent: BouncingScrollPhysics(),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Audio Section
-            if (itemsByType.containsKey(ExploreItemType.audio))
-              _AudioSection(
-                items: itemsByType[ExploreItemType.audio]!,
-                onSeeAll: () => _navigateToTypeList(context, ExploreItemType.audio),
-              ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Audio Section
+        if (itemsByType.containsKey(ExploreItemType.audio))
+          _AudioSection(
+            items: itemsByType[ExploreItemType.audio]!,
+            onSeeAll: () => _navigateToTypeList(context, ExploreItemType.audio),
+          ),
 
-            // Short Videos Section
-            if (itemsByType.containsKey(ExploreItemType.shortVideo))
-              _ShortVideosSection(
-                items: itemsByType[ExploreItemType.shortVideo]!,
-                onSeeAll: () => _navigateToTypeList(context, ExploreItemType.shortVideo),
-              ),
+        // Short Videos Section
+        if (itemsByType.containsKey(ExploreItemType.shortVideo))
+          _ShortVideosSection(
+            items: itemsByType[ExploreItemType.shortVideo]!,
+            onSeeAll: () => _navigateToTypeList(context, ExploreItemType.shortVideo),
+          ),
 
-            // Quotes Section
-            if (itemsByType.containsKey(ExploreItemType.quote))
-              _QuotesSection(
-                items: itemsByType[ExploreItemType.quote]!,
-                onSeeAll: () => _navigateToTypeList(context, ExploreItemType.quote),
-              ),
+        // Quotes Section
+        if (itemsByType.containsKey(ExploreItemType.quote))
+          _QuotesSection(
+            items: itemsByType[ExploreItemType.quote]!,
+            onSeeAll: () => _navigateToTypeList(context, ExploreItemType.quote),
+          ),
 
-            // Tips Section
-            if (itemsByType.containsKey(ExploreItemType.tip))
-              _TipsSection(
-                items: itemsByType[ExploreItemType.tip]!,
-                onSeeAll: () => _navigateToTypeList(context, ExploreItemType.tip),
-              ),
+        // Tips Section
+        if (itemsByType.containsKey(ExploreItemType.tip))
+          _TipsSection(
+            items: itemsByType[ExploreItemType.tip]!,
+            onSeeAll: () => _navigateToTypeList(context, ExploreItemType.tip),
+          ),
 
-            // Images Section
-            if (itemsByType.containsKey(ExploreItemType.image))
-              _ImagesSection(
-                items: itemsByType[ExploreItemType.image]!,
-                onSeeAll: () => _navigateToTypeList(context, ExploreItemType.image),
-              ),
+        // Images Section
+        if (itemsByType.containsKey(ExploreItemType.image))
+          _ImagesSection(
+            items: itemsByType[ExploreItemType.image]!,
+            onSeeAll: () => _navigateToTypeList(context, ExploreItemType.image),
+          ),
 
-            // Long Videos Section
-            if (itemsByType.containsKey(ExploreItemType.longVideo))
-              _LongVideosSection(
-                items: itemsByType[ExploreItemType.longVideo]!,
-                onSeeAll: () => _navigateToTypeList(context, ExploreItemType.longVideo),
-              ),
+        // Long Videos Section
+        if (itemsByType.containsKey(ExploreItemType.longVideo))
+          _LongVideosSection(
+            items: itemsByType[ExploreItemType.longVideo]!,
+            onSeeAll: () => _navigateToTypeList(context, ExploreItemType.longVideo),
+          ),
 
-            // Categories Section
-            if (itemsByType.containsKey(ExploreItemType.category))
-              _CategoriesSection(
-                items: itemsByType[ExploreItemType.category]!,
-                onSeeAll: () => _navigateToTypeList(context, ExploreItemType.category),
-              ),
+        // Categories Section
+        if (itemsByType.containsKey(ExploreItemType.category))
+          _CategoriesSection(
+            items: itemsByType[ExploreItemType.category]!,
+            onSeeAll: () => _navigateToTypeList(context, ExploreItemType.category),
+          ),
 
-            SizedBox(height: 100.h),
-          ],
-        ),
-      ),
+        SizedBox(height: 100.h),
+      ],
     );
   }
 
@@ -620,97 +702,15 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(20.w, 24.h, 20.w, 16.h),
-      child: Row(
-        children: [
-          if (icon != null) ...[
-            Container(
-              padding: EdgeInsets.all(8.w),
-              decoration: BoxDecoration(
-                color: (iconColor ?? context.primaryColor).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10.r),
-              ),
-              child: Icon(
-                icon,
-                size: 20.sp,
-                color: iconColor ?? context.primaryColor,
-              ),
-            ),
-            SizedBox(width: 12.w),
-          ],
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 20.sp,
-                    fontWeight: FontWeight.w700,
-                    color: context.textPrimaryColor,
-                  ),
-                ),
-                if (subtitle != null) ...[
-                  SizedBox(height: 2.h),
-                  Text(
-                    subtitle!,
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 13.sp,
-                      fontWeight: FontWeight.w400,
-                      color: context.textSecondaryColor,
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          if (onSeeAll != null) _SeeAllButton(onTap: onSeeAll!),
-        ],
-      ),
-    );
-  }
-}
-
-class _SeeAllButton extends StatelessWidget {
-  final VoidCallback onTap;
-
-  const _SeeAllButton({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: context.primaryColor.withOpacity(0.08),
-      borderRadius: BorderRadius.circular(20.r),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(20.r),
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'See All',
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w600,
-                  color: context.primaryColor,
-                ),
-              ),
-              SizedBox(width: 4.w),
-              Icon(
-                Icons.arrow_forward_rounded,
-                size: 16.sp,
-                color: context.primaryColor,
-              ),
-            ],
-          ),
+    return Column(
+      children: [
+        SizedBox(height: 16.h),
+        SectionHeaderWidget(
+          title: title,
+          subtitle: subtitle ?? '',
+          onSeeAll: onSeeAll,
         ),
-      ),
+      ],
     );
   }
 }
@@ -739,8 +739,9 @@ class _AudioSection extends StatelessWidget {
           iconColor: const Color(0xFF6366F1),
           onSeeAll: onSeeAll,
         ),
+        SizedBox(height: 16.h),
         SizedBox(
-          height: 280.h,
+          height: 190.h,
           child: ListView.separated(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
             scrollDirection: Axis.horizontal,
@@ -749,9 +750,10 @@ class _AudioSection extends StatelessWidget {
             separatorBuilder: (_, __) => SizedBox(width: 16.w),
             itemBuilder: (context, index) {
               final item = items[index];
-              return _ExploreAudioCard(
-                item: item,
-                onTap: () => _navigateToAudio(context, item),
+              final audio = _toAudioEntity(item);
+              return AudioCardWidget(
+                track: audio,
+                onTap: () => context.pushNamed(RouteNames.mediaPlayer, extra: audio),
               );
             },
           ),
@@ -760,8 +762,8 @@ class _AudioSection extends StatelessWidget {
     );
   }
 
-  void _navigateToAudio(BuildContext context, ExploreItemEntity item) {
-    final audioEntity = AudioEntity(
+  AudioEntity _toAudioEntity(ExploreItemEntity item) {
+    return AudioEntity(
       id: item.id,
       title: item.title,
       description: item.description ?? '',
@@ -778,7 +780,6 @@ class _AudioSection extends StatelessWidget {
       createdAt: item.createdAt,
       updatedAt: item.createdAt,
     );
-    context.pushNamed(RouteNames.mediaPlayer, extra: audioEntity);
   }
 }
 
@@ -806,8 +807,9 @@ class _ShortVideosSection extends StatelessWidget {
           iconColor: const Color(0xFFEC4899),
           onSeeAll: onSeeAll,
         ),
+        SizedBox(height: 16.h),
         SizedBox(
-          height: 250.h,
+          height: 220.h,
           child: ListView.separated(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
             scrollDirection: Axis.horizontal,
@@ -816,13 +818,13 @@ class _ShortVideosSection extends StatelessWidget {
             separatorBuilder: (_, __) => SizedBox(width: 14.w),
             itemBuilder: (context, index) {
               final item = items[index];
-              return _ExploreShortVideoCard(
-                item: item,
+              return ShortVideoCardWidget(
+                video: _toVideoEntity(item, VideoType.shortForm),
                 onTap: () {
+                  final videos = items.map((i) => _toVideoEntity(i, VideoType.shortForm)).toList();
                   context.pushNamed(
                     RouteNames.shortsPlayer,
-                    extra: items,
-                    queryParameters: {'index': index.toString()},
+                    extra: videos,
                   );
                 },
               );
@@ -830,6 +832,29 @@ class _ShortVideosSection extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  VideoEntity _toVideoEntity(ExploreItemEntity item, VideoType type) {
+    return VideoEntity(
+      id: item.id,
+      title: item.title,
+      description: item.description ?? '',
+      artistName: item.subtitle ?? '',
+      videoUrl: item.metadata?['videoUrl'] ?? '',
+      thumbnailUrl: item.thumbnailUrl ?? '',
+      coverImageUrl: item.imageUrl ?? '',
+      durationSeconds: item.durationSeconds ?? 0,
+      categoryId: item.categoryIds.isNotEmpty ? item.categoryIds.first : '',
+      moodTags: item.tags,
+      videoType: type,
+      aspectRatio: type == VideoType.shortForm ? 9 / 16 : 16 / 9,
+      isFeatured: item.isFeatured,
+      isPremium: item.isPremium,
+      isActive: true,
+      sortOrder: 0,
+      createdAt: item.createdAt,
+      updatedAt: item.createdAt,
     );
   }
 }
@@ -858,20 +883,21 @@ class _QuotesSection extends StatelessWidget {
           iconColor: const Color(0xFF0D9488),
           onSeeAll: onSeeAll,
         ),
+        SizedBox(height: 16.h),
         SizedBox(
-          height: 200.h,
+          height: 145.h,
           child: ListView.separated(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
             itemCount: items.length,
-            separatorBuilder: (_, __) => SizedBox(width: 16.w),
+            separatorBuilder: (_, __) => SizedBox(width: 14.w),
             itemBuilder: (context, index) {
               final item = items[index];
-              return ExploreQuoteCard(
-                item: item,
-                gradientIndex: index,
-                onTap: () => _showQuoteDetail(context, item),
+              final quote = _toQuoteEntity(item);
+              return QuoteCardWidget(
+                quote: quote,
+                onTap: () => _showQuoteDetail(context, item, items),
               );
             },
           ),
@@ -880,12 +906,33 @@ class _QuotesSection extends StatelessWidget {
     );
   }
 
-  void _showQuoteDetail(BuildContext context, ExploreItemEntity item) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => _QuoteDetailSheet(item: item),
+  QuoteEntity _toQuoteEntity(ExploreItemEntity item) {
+    return QuoteEntity(
+      id: item.id,
+      quoteText: item.title,
+      author: item.subtitle ?? '',
+      authorIconUrl: item.thumbnailUrl,
+      categoryId: item.categoryIds.isNotEmpty ? item.categoryIds.first : '',
+      preferenceIds: item.tags,
+      isFeatured: item.isFeatured,
+      isPremium: item.isPremium,
+      quoteType: 'quote',
+      createdAt: item.createdAt,
+      updatedAt: item.createdAt,
+    );
+  }
+
+  void _showQuoteDetail(BuildContext context, ExploreItemEntity item, List<ExploreItemEntity> allItems) {
+    final quotes = allItems.map((e) => _toQuoteEntity(e)).toList();
+    final initialIndex = allItems.indexOf(item);
+
+    context.pushNamed(
+      RouteNames.contentViewer,
+      extra: {
+        'quotes': quotes,
+        'initialIndex': initialIndex >= 0 ? initialIndex : 0,
+        'title': 'Daily Inspiration',
+      },
     );
   }
 }
@@ -914,19 +961,26 @@ class _TipsSection extends StatelessWidget {
           iconColor: const Color(0xFFF59E0B),
           onSeeAll: onSeeAll,
         ),
+        SizedBox(height: 16.h),
         SizedBox(
-          height: 180.h,
-          child: ListView.separated(
+          height: 280.h,
+          child: ListView.builder(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
             itemCount: items.length,
-            separatorBuilder: (_, __) => SizedBox(width: 14.w),
             itemBuilder: (context, index) {
               final item = items[index];
-              return ExploreTipCard(
-                item: item,
-                onTap: () => _showTipDetail(context, item),
+              final tip = _toTipEntity(item, index);
+              return SizedBox(
+                width: 260.w,
+                child: Padding(
+                  padding: EdgeInsets.only(right: 16.w),
+                  child: TipCardWidget(
+                    tip: tip,
+                    onTap: () => _showTipDetail(context, item, items),
+                  ),
+                ),
               );
             },
           ),
@@ -935,12 +989,45 @@ class _TipsSection extends StatelessWidget {
     );
   }
 
-  void _showTipDetail(BuildContext context, ExploreItemEntity item) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => _TipDetailSheet(item: item),
+  static const _tipTypes = [
+    TipType.relationshipBooster, // warm red  #FF6B6B
+    TipType.communication,       // yellow    #FFE66D
+    TipType.lettingGo,           // teal      #4ECDC4
+    TipType.selfCare,            // mint      #95E1D3
+    TipType.mindfulness,         // sage      #A8E6CF
+    TipType.general,             // primary
+  ];
+
+  TipEntity _toTipEntity(ExploreItemEntity item, int index) {
+    return TipEntity(
+      id: item.id,
+      title: item.title,
+      tipText: item.description ?? '',
+      author: item.subtitle ?? '',
+      authorIconUrl: item.thumbnailUrl ?? '',
+      categoryId: item.categoryIds.isNotEmpty ? item.categoryIds.first : '',
+      preferenceIds: item.tags,
+      tipType: _tipTypes[index % _tipTypes.length],
+      isFeatured: item.isFeatured,
+      isPremium: item.isPremium,
+      sortOrder: 0,
+      metadata: '',
+      createdAt: item.createdAt,
+      updatedAt: item.createdAt,
+    );
+  }
+
+  void _showTipDetail(BuildContext context, ExploreItemEntity item, List<ExploreItemEntity> allItems) {
+    final tips = [for (var i = 0; i < allItems.length; i++) _toTipEntity(allItems[i], i)];
+    final initialIndex = allItems.indexOf(item);
+    
+    context.pushNamed(
+      RouteNames.contentViewer,
+      extra: {
+        'tips': tips,
+        'initialIndex': initialIndex >= 0 ? initialIndex : 0,
+        'title': 'Wellness Tips',
+      },
     );
   }
 }
@@ -969,8 +1056,9 @@ class _ImagesSection extends StatelessWidget {
           iconColor: const Color(0xFF10B981),
           onSeeAll: onSeeAll,
         ),
+        SizedBox(height: 16.h),
         SizedBox(
-          height: 200.h,
+          height: 280.h,
           child: ListView.separated(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
             scrollDirection: Axis.horizontal,
@@ -981,7 +1069,28 @@ class _ImagesSection extends StatelessWidget {
               final item = items[index];
               return ExploreImageCard(
                 item: item,
-                onTap: () => _showImageDetail(context, item),
+                onTap: () {
+                  final images = items.map((e) => ImageEntity(
+                    id: e.id,
+                    title: e.title,
+                    description: e.description ?? '',
+                    imageUrl: e.imageUrl ?? '',
+                    thumbnailUrl: e.thumbnailUrl ?? '',
+                    imageType: ImageType.motivation, // Defaulting or mapping
+                    isFeatured: e.isFeatured,
+                    isPremium: e.isPremium,
+                    createdAt: e.createdAt,
+                    updatedAt: e.createdAt,
+                  )).toList();
+                  
+                  context.pushNamed(
+                    RouteNames.imageViewer,
+                    extra: {
+                      'images': images,
+                      'initialIndex': index,
+                    },
+                  );
+                },
               );
             },
           ),
@@ -990,10 +1099,28 @@ class _ImagesSection extends StatelessWidget {
     );
   }
 
-  void _showImageDetail(BuildContext context, ExploreItemEntity item) {
-    showDialog(
-      context: context,
-      builder: (_) => _ImageDetailDialog(item: item),
+  void _showImageDetail(BuildContext context, ExploreItemEntity item, List<ExploreItemEntity> allItems) {
+    final images = allItems.map((e) => ImageEntity(
+      id: e.id,
+      title: e.title,
+      description: e.description ?? '',
+      imageUrl: e.imageUrl ?? '',
+      thumbnailUrl: e.thumbnailUrl ?? '',
+      imageType: ImageType.nature, // Mapping
+      isFeatured: e.isFeatured,
+      isPremium: e.isPremium,
+      createdAt: e.createdAt,
+      updatedAt: e.createdAt,
+    )).toList();
+    
+    final initialIndex = allItems.indexOf(item);
+
+    context.pushNamed(
+      RouteNames.imageViewer,
+      extra: {
+        'images': images,
+        'initialIndex': initialIndex >= 0 ? initialIndex : 0,
+      },
     );
   }
 }
@@ -1022,8 +1149,9 @@ class _LongVideosSection extends StatelessWidget {
           iconColor: const Color(0xFF8B5CF6),
           onSeeAll: onSeeAll,
         ),
+        SizedBox(height: 16.h),
         SizedBox(
-          height: 280.h,
+          height: 250.h,
           child: ListView.separated(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
             scrollDirection: Axis.horizontal,
@@ -1032,12 +1160,13 @@ class _LongVideosSection extends StatelessWidget {
             separatorBuilder: (_, __) => SizedBox(width: 16.w),
             itemBuilder: (context, index) {
               final item = items[index];
+              final video = _toVideoEntity(item, VideoType.longForm);
               return SizedBox(
                 width: 320.w,
-                child: _ExploreLongVideoCard(
-                  item: item,
+                child: LongVideoCardWidget(
+                  video: video,
                   onTap: () {
-                    context.pushNamed(RouteNames.longVideoPlayer, extra: item.metadata);
+                    context.pushNamed(RouteNames.longVideoPlayer, extra: video);
                   },
                 ),
               );
@@ -1045,6 +1174,29 @@ class _LongVideosSection extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  VideoEntity _toVideoEntity(ExploreItemEntity item, VideoType type) {
+    return VideoEntity(
+      id: item.id,
+      title: item.title,
+      description: item.description ?? '',
+      artistName: item.subtitle ?? '',
+      videoUrl: item.metadata?['videoUrl'] ?? '',
+      thumbnailUrl: item.thumbnailUrl ?? '',
+      coverImageUrl: item.imageUrl ?? '',
+      durationSeconds: item.durationSeconds ?? 0,
+      categoryId: item.categoryIds.isNotEmpty ? item.categoryIds.first : '',
+      moodTags: item.tags,
+      videoType: type,
+      aspectRatio: 16 / 9,
+      isFeatured: item.isFeatured,
+      isPremium: item.isPremium,
+      isActive: true,
+      sortOrder: 0,
+      createdAt: item.createdAt,
+      updatedAt: item.createdAt,
     );
   }
 }
@@ -1073,6 +1225,7 @@ class _CategoriesSection extends StatelessWidget {
           iconColor: const Color(0xFF3B82F6),
           onSeeAll: onSeeAll,
         ),
+        SizedBox(height: 16.h),
         SizedBox(
           height: 160.h,
           child: ListView.separated(
@@ -1083,10 +1236,18 @@ class _CategoriesSection extends StatelessWidget {
             separatorBuilder: (_, __) => SizedBox(width: 14.w),
             itemBuilder: (context, index) {
               final item = items[index];
-              return ExploreCategoryCard(
-                item: item,
+              return CategoryCardWidget(
+                category: _toCategoryEntity(item),
                 onTap: () {
-                  context.pushNamed(RouteNames.preferences, extra: item.id);
+                  context.pushNamed(
+                    RouteNames.categoryDetail,
+                    extra: CategoryCardEntity(
+                      id: item.id,
+                      name: item.title,
+                      imageUrl: item.imageUrl ?? '',
+                      description: item.description ?? '',
+                    ),
+                  );
                 },
               );
             },
@@ -1095,789 +1256,20 @@ class _CategoriesSection extends StatelessWidget {
       ],
     );
   }
-}
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ITEM CARDS
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _ExploreAudioCard extends StatelessWidget {
-  final ExploreItemEntity item;
-  final VoidCallback? onTap;
-
-  const _ExploreAudioCard({required this.item, this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 180.w,
-        decoration: BoxDecoration(
-          color: context.surfaceColor,
-          borderRadius: BorderRadius.circular(20.r),
-          border: Border.all(
-            color: context.borderColor.withOpacity(0.3),
-            width: 1.5.w,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 12.r,
-              offset: Offset(0, 4.h),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Cover image
-            ClipRRect(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-              child: Stack(
-                children: [
-                  AspectRatio(
-                    aspectRatio: 1,
-                    child: item.imageUrl != null && item.imageUrl!.isNotEmpty
-                        ? Image.network(
-                      item.imageUrl!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _buildPlaceholder(context),
-                    )
-                        : _buildPlaceholder(context),
-                  ),
-                  // Play button overlay
-                  Positioned(
-                    right: 8.w,
-                    bottom: 8.h,
-                    child: Container(
-                      padding: EdgeInsets.all(8.w),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            const Color(0xFF6366F1),
-                            const Color(0xFF6366F1).withOpacity(0.8),
-                          ],
-                        ),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF6366F1).withOpacity(0.4),
-                            blurRadius: 8.r,
-                            offset: Offset(0, 2.h),
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        Icons.play_arrow_rounded,
-                        color: Colors.white,
-                        size: 24.sp,
-                      ),
-                    ),
-                  ),
-                  // Premium badge
-                  if (item.isPremium)
-                    Positioned(
-                      top: 8.h,
-                      left: 8.w,
-                      child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                        decoration: BoxDecoration(
-                          color: Colors.amber,
-                          borderRadius: BorderRadius.circular(8.r),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.star_rounded, size: 12.sp, color: Colors.white),
-                            SizedBox(width: 2.w),
-                            Text(
-                              'PRO',
-                              style: TextStyle(
-                                fontFamily: 'Poppins',
-                                fontSize: 10.sp,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-
-            // Track info
-            Padding(
-              padding: EdgeInsets.all(12.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w600,
-                      color: context.textPrimaryColor,
-                    ),
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    item.subtitle ?? '',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w400,
-                      color: context.textSecondaryColor,
-                    ),
-                  ),
-                  SizedBox(height: 8.h),
-                  if (item.formattedDuration != null)
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF6366F1).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.access_time_rounded,
-                            size: 14.sp,
-                            color: const Color(0xFF6366F1),
-                          ),
-                          SizedBox(width: 4.w),
-                          Text(
-                            item.formattedDuration!,
-                            style: TextStyle(
-                              fontFamily: 'Poppins',
-                              fontSize: 11.sp,
-                              fontWeight: FontWeight.w500,
-                              color: const Color(0xFF6366F1),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPlaceholder(BuildContext context) {
-    return Container(
-      color: const Color(0xFF6366F1).withOpacity(0.1),
-      child: Icon(
-        Icons.music_note_rounded,
-        size: 60.sp,
-        color: const Color(0xFF6366F1),
-      ),
-    );
-  }
-}
-
-class _ExploreShortVideoCard extends StatelessWidget {
-  final ExploreItemEntity item;
-  final VoidCallback? onTap;
-
-  const _ExploreShortVideoCard({required this.item, this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 140.w,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 8.r,
-              offset: Offset(0, 4.h),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(16.r),
-          child: Stack(
-            children: [
-              // Thumbnail
-              AspectRatio(
-                aspectRatio: 9 / 16,
-                child: item.thumbnailUrl != null && item.thumbnailUrl!.isNotEmpty
-                    ? Image.network(
-                  item.thumbnailUrl!,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => _buildPlaceholder(context),
-                )
-                    : _buildPlaceholder(context),
-              ),
-
-              // Gradient overlay
-              Positioned.fill(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withOpacity(0.7),
-                      ],
-                      stops: const [0.5, 1.0],
-                    ),
-                  ),
-                ),
-              ),
-
-              // Play button
-              Center(
-                child: Container(
-                  padding: EdgeInsets.all(12.w),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.3),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.5),
-                      width: 2.w,
-                    ),
-                  ),
-                  child: Icon(
-                    Icons.play_arrow_rounded,
-                    color: Colors.white,
-                    size: 32.sp,
-                  ),
-                ),
-              ),
-
-              // Duration badge
-              if (item.formattedDuration != null)
-                Positioned(
-                  bottom: 8.h,
-                  right: 8.w,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.6),
-                      borderRadius: BorderRadius.circular(4.r),
-                    ),
-                    child: Text(
-                      item.formattedDuration!,
-                      style: TextStyle(
-                        fontFamily: 'Poppins',
-                        fontSize: 11.sp,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-
-              // Title at bottom
-              Positioned(
-                left: 8.w,
-                right: 8.w,
-                bottom: 32.h,
-                child: Text(
-                  item.title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withOpacity(0.5),
-                        blurRadius: 4.r,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPlaceholder(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            const Color(0xFFEC4899).withOpacity(0.6),
-            const Color(0xFFEC4899).withOpacity(0.3),
-          ],
-        ),
-      ),
-      child: Icon(
-        Icons.video_library_rounded,
-        size: 50.sp,
-        color: Colors.white.withOpacity(0.8),
-      ),
-    );
-  }
-}
-
-class _ExploreLongVideoCard extends StatelessWidget {
-  final ExploreItemEntity item;
-  final VoidCallback? onTap;
-
-  const _ExploreLongVideoCard({required this.item, this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16.r),
-          color: context.surfaceColor,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 8.r,
-              offset: Offset(0, 4.h),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Thumbnail (16:9)
-            ClipRRect(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
-              child: AspectRatio(
-                aspectRatio: 16 / 9,
-                child: Stack(
-                  children: [
-                    if (item.imageUrl != null && item.imageUrl!.isNotEmpty)
-                      Image.network(
-                        item.imageUrl!,
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        errorBuilder: (_, __, ___) => _buildPlaceholder(context),
-                      )
-                    else
-                      _buildPlaceholder(context),
-
-                    // Play button overlay
-                    Positioned.fill(
-                      child: Center(
-                        child: Container(
-                          padding: EdgeInsets.all(16.w),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF8B5CF6).withOpacity(0.8),
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFF8B5CF6).withOpacity(0.4),
-                                blurRadius: 12.r,
-                                offset: Offset(0, 4.h),
-                              ),
-                            ],
-                          ),
-                          child: Icon(
-                            Icons.play_arrow_rounded,
-                            color: Colors.white,
-                            size: 36.sp,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // Duration badge
-                    if (item.formattedDuration != null)
-                      Positioned(
-                        bottom: 8.h,
-                        right: 8.w,
-                        child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.8),
-                            borderRadius: BorderRadius.circular(4.r),
-                          ),
-                          child: Text(
-                            item.formattedDuration!,
-                            style: TextStyle(
-                              fontFamily: 'Poppins',
-                              fontSize: 12.sp,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-
-            // Info section
-            Padding(
-              padding: EdgeInsets.all(12.w),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Artist avatar
-                  CircleAvatar(
-                    radius: 20.r,
-                    backgroundColor: const Color(0xFF8B5CF6).withOpacity(0.2),
-                    child: Text(
-                      item.subtitle?.isNotEmpty == true
-                          ? item.subtitle![0].toUpperCase()
-                          : '?',
-                      style: TextStyle(
-                        color: const Color(0xFF8B5CF6),
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 12.w),
-                  // Title and metadata
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          item.title,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 15.sp,
-                            fontWeight: FontWeight.w600,
-                            color: context.textPrimaryColor,
-                          ),
-                        ),
-                        SizedBox(height: 4.h),
-                        Text(
-                          item.subtitle ?? '',
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 13.sp,
-                            color: context.textSecondaryColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPlaceholder(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            const Color(0xFF8B5CF6).withOpacity(0.3),
-            const Color(0xFF8B5CF6).withOpacity(0.1),
-          ],
-        ),
-      ),
-      child: Center(
-        child: Icon(
-          Icons.play_circle_outline_rounded,
-          size: 60.sp,
-          color: const Color(0xFF8B5CF6).withOpacity(0.5),
-        ),
-      ),
+  CategoryEntity _toCategoryEntity(ExploreItemEntity item) {
+    return CategoryEntity(
+      id: item.id,
+      name: item.title,
+      imageUrl: item.imageUrl ?? '',
+      description: item.description ?? '',
+      preferenceIds: item.tags,
+      createdAt: item.createdAt,
+      updatedAt: item.createdAt,
     );
   }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// DETAIL SHEETS (No BLoC dependency)
+// PREVIEW CARDS
 // ─────────────────────────────────────────────────────────────────────────────
-
-class _QuoteDetailSheet extends StatelessWidget {
-  final ExploreItemEntity item;
-
-  const _QuoteDetailSheet({required this.item});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF0D9488), Color(0xFF0F766E)],
-        ),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-      ),
-      padding: EdgeInsets.all(24.w),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 40.w,
-            height: 4.h,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.3),
-              borderRadius: BorderRadius.circular(2.r),
-            ),
-          ),
-          SizedBox(height: 32.h),
-          Icon(
-            Icons.format_quote_rounded,
-            size: 40.sp,
-            color: Colors.white.withOpacity(0.4),
-          ),
-          SizedBox(height: 16.h),
-          Text(
-            item.title,
-            style: TextStyle(
-              fontFamily: 'PlayfairDisplay',
-              fontSize: 22.sp,
-              fontWeight: FontWeight.w600,
-              fontStyle: FontStyle.italic,
-              color: Colors.white,
-              height: 1.5,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: 24.h),
-          if (item.subtitle != null) ...[
-            Container(
-              width: 40.w,
-              height: 2.h,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.3),
-                borderRadius: BorderRadius.circular(1.r),
-              ),
-            ),
-            SizedBox(height: 16.h),
-            Text(
-              '— ${item.subtitle}',
-              style: TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w500,
-                color: Colors.white.withOpacity(0.8),
-              ),
-            ),
-          ],
-          SizedBox(height: 32.h + MediaQuery.of(context).padding.bottom),
-        ],
-      ),
-    );
-  }
-}
-
-class _TipDetailSheet extends StatelessWidget {
-  final ExploreItemEntity item;
-
-  const _TipDetailSheet({required this.item});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
-        ),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-      ),
-      padding: EdgeInsets.all(24.w),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Container(
-              width: 40.w,
-              height: 4.h,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.3),
-                borderRadius: BorderRadius.circular(2.r),
-              ),
-            ),
-          ),
-          SizedBox(height: 24.h),
-          if (item.tags.isNotEmpty)
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(16.r),
-              ),
-              child: Text(
-                item.tags.first,
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          SizedBox(height: 16.h),
-          Text(
-            item.title,
-            style: TextStyle(
-              fontFamily: 'Poppins',
-              fontSize: 22.sp,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(height: 16.h),
-          if (item.description != null)
-            Text(
-              item.description!,
-              style: TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 15.sp,
-                fontWeight: FontWeight.w400,
-                color: Colors.white.withOpacity(0.9),
-                height: 1.6,
-              ),
-            ),
-          SizedBox(height: 24.h),
-          if (item.subtitle != null)
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 18.r,
-                  backgroundColor: Colors.white.withOpacity(0.2),
-                  child: Text(
-                    item.subtitle![0].toUpperCase(),
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-                SizedBox(width: 12.w),
-                Text(
-                  item.subtitle!,
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          SizedBox(height: 16.h + MediaQuery.of(context).padding.bottom),
-        ],
-      ),
-    );
-  }
-}
-
-class _ImageDetailDialog extends StatelessWidget {
-  final ExploreItemEntity item;
-
-  const _ImageDetailDialog({required this.item});
-
-  @override
-  Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      insetPadding: EdgeInsets.all(20.w),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Align(
-            alignment: Alignment.topRight,
-            child: GestureDetector(
-              onTap: () => Navigator.pop(context),
-              child: Container(
-                padding: EdgeInsets.all(8.w),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.5),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.close_rounded,
-                  color: Colors.white,
-                  size: 24.sp,
-                ),
-              ),
-            ),
-          ),
-          SizedBox(height: 16.h),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(16.r),
-            child: Image.network(
-              item.imageUrl ?? '',
-              fit: BoxFit.contain,
-              errorBuilder: (_, __, ___) => Container(
-                height: 300.h,
-                color: context.surfaceColor,
-                child: Icon(
-                  Icons.image_not_supported_rounded,
-                  size: 48.sp,
-                  color: context.textSecondaryColor,
-                ),
-              ),
-            ),
-          ),
-          SizedBox(height: 16.h),
-          Container(
-            padding: EdgeInsets.all(16.w),
-            decoration: BoxDecoration(
-              color: context.surfaceColor,
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.title,
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w600,
-                    color: context.textPrimaryColor,
-                  ),
-                ),
-                if (item.subtitle != null) ...[
-                  SizedBox(height: 4.h),
-                  Text(
-                    item.subtitle!,
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 13.sp,
-                      color: context.textSecondaryColor,
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}

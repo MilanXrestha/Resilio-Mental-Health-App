@@ -10,6 +10,7 @@ import '../../../../../core/di/injection.dart';
 import '../../../../../core/routing/route_names.dart';
 import '../../../../../core/usecases/usecase.dart';
 import '../../../../../l10n/app_localizations.dart';
+import '../../../auth/domain/repositories/auth_repository.dart';
 import '../../../onboarding/domain/usecases/check_onboarding_status_usecase.dart';
 import '../../../preferences/domain/usecases/check_preferences_completion_usecase.dart';
 
@@ -44,11 +45,22 @@ class _SplashScreenState extends State<SplashScreen> {
       // Check auth status
       final user = FirebaseAuth.instance.currentUser;
       bool preferencesCompleted = false;
+      String? userRole;
 
       if (user != null) {
         final checkPrefsStatus = getIt<CheckPreferencesCompletionUseCase>();
         final prefsResult = await checkPrefsStatus.call(const NoParams());
         preferencesCompleted = prefsResult.getOrElse(() => false);
+        
+        // Use a fast local mechanism or backend check for user_role.
+        // For now, assume it's stored or we go to a loading screen.
+        // I will assume authTokenService or local preference has it, but wait:
+        // By default, let's navigate to home which will branch if it's admin/therapist (if we implement it there)
+        // Or we assume all users go to their respective dashboard here.
+        // Actually, we probably should get the cached user entity to read the role.
+        final cachedUserResult = await getIt<AuthRepository>().getCachedUser();
+        final cachedUser = cachedUserResult.getOrElse(() => null);
+        userRole = cachedUser?.role;
       }
 
       // Calculate elapsed time and ensure minimum display
@@ -66,10 +78,18 @@ class _SplashScreenState extends State<SplashScreen> {
         context.goNamed(RouteNames.onboarding);
       } else if (user == null) {
         context.goNamed(RouteNames.login);
-      } else if (!preferencesCompleted) {
-        context.goNamed(RouteNames.preferences);
       } else {
-        context.goNamed(RouteNames.home);
+        if (userRole == 'admin') {
+          context.goNamed(RouteNames.adminDashboard);
+        } else if (userRole == 'therapist') {
+          context.goNamed(RouteNames.therapistDashboard);
+        } else {
+          if (!preferencesCompleted) {
+            context.goNamed(RouteNames.preferences);
+          } else {
+            context.goNamed(RouteNames.home);
+          }
+        }
       }
     } catch (e) {
       log('Error in navigation preparation: $e');

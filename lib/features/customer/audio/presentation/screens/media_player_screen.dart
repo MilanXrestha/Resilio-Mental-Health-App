@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../../core/theme/app_colors.dart';
 import '../../domain/entities/audio_entity.dart';
+import '../../../favorites/presentation/widgets/favorite_button.dart';
+import '../../../favorites/domain/entities/favorite_entity.dart';
 
 /// Beautiful media player screen for audio playback
 class MediaPlayerScreen extends StatefulWidget {
@@ -114,15 +116,12 @@ class _MediaPlayerScreenState extends State<MediaPlayerScreen> {
                         color: context.textPrimaryColor,
                       ),
                     ),
-                    IconButton(
-                      icon: Icon(
-                        Icons.more_horiz_rounded,
-                        size: 28.sp,
-                        color: context.textPrimaryColor,
-                      ),
-                      onPressed: () {
-                        // TODO: Show options menu
-                      },
+                    FavoriteButton(
+                      contentId: widget.audioTrack.id,
+                      contentType: FavoriteType.audio,
+                      size: 28.sp,
+                      color: context.textPrimaryColor,
+                      padding: EdgeInsets.zero,
                     ),
                   ],
                 ),

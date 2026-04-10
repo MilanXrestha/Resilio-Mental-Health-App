@@ -1,15 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+
 import '../../../../../core/di/injection.dart';
+import '../../../../../core/routing/route_names.dart';
+import '../../../profile/presentation/widgets/profile_menu_item.dart';
 import '../bloc/settings_bloc.dart';
 import '../bloc/settings_event.dart';
 import '../bloc/settings_state.dart';
 import '../widgets/settings_theme_selector.dart';
 import '../widgets/settings_language_selector.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  String _appVersion = '1.0.0';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAppInfo();
+  }
+
+  Future<void> _loadAppInfo() async {
+    final packageInfo = await PackageInfo.fromPlatform();
+    if (mounted) {
+      setState(() {
+        _appVersion = packageInfo.version;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,21 +45,14 @@ class SettingsScreen extends StatelessWidget {
       child: Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-          surfaceTintColor: Colors.transparent,
+          title: const Text('App Settings'),
+          centerTitle: true,
           elevation: 0,
+          backgroundColor: Colors.transparent,
+          surfaceTintColor: Colors.transparent,
           leading: IconButton(
             icon: Icon(Icons.arrow_back_ios_new_rounded, size: 20.w),
             onPressed: () => Navigator.pop(context),
-          ),
-          centerTitle: true,
-          title: Text(
-            'App Settings',
-            style: TextStyle(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w700,
-              color: Theme.of(context).textTheme.bodyLarge?.color,
-            ),
           ),
         ),
         body: BlocBuilder<SettingsBloc, SettingsState>(
@@ -63,7 +83,7 @@ class SettingsScreen extends StatelessWidget {
                       child: Text(
                         state.message,
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.grey),
+                        style: const TextStyle(color: Colors.grey),
                       ),
                     ),
                     SizedBox(height: 24.h),
@@ -93,122 +113,78 @@ class SettingsScreen extends StatelessWidget {
             final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
             return SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
               physics: const BouncingScrollPhysics(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildProfileHeader(context, isDarkMode),
-                  SizedBox(height: 32.h),
-
-                  _SectionHeader(
-                    title: 'PREFERENCES',
-                    icon: Icons.tune_rounded,
+                  _SettingsSectionHeader(title: 'Profile', isFirst: true),
+                  ProfileMenuItem(
+                    icon: Icons.person_outline_rounded,
+                    title: 'Your Profile',
+                    description: 'Manage account, subscription, and preferences',
+                    onTap: () => context.pushNamed(RouteNames.profile),
                   ),
-                  SizedBox(height: 12.h),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: isDarkMode
-                          ? Colors.white.withValues(alpha: 0.03)
-                          : Colors.white,
-                      borderRadius: BorderRadius.circular(20.r),
-                      boxShadow: isDarkMode
-                          ? []
-                          : [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.02),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
+                  _SettingsSectionHeader(title: 'Appearance'),
+                  _settingsPanel(
+                    isDarkMode: isDarkMode,
+                    child: SettingsThemeSelector(
+                      currentTheme: settings.theme,
+                      onThemeChanged: (theme) {
+                        context.read<SettingsBloc>().add(UpdateTheme(theme));
+                      },
                     ),
-                    child: Column(
-                      children: [
-                        SettingsThemeSelector(
-                          currentTheme: settings.theme,
-                          onThemeChanged: (theme) {
-                            context.read<SettingsBloc>().add(
-                              UpdateTheme(theme),
-                            );
-                          },
-                        ),
-                        Divider(
-                          height: 1,
-                          thickness: 1,
-                          color: isDarkMode
-                              ? Colors.white10
-                              : Colors.grey.withValues(alpha: 0.1),
-                        ),
-                        SettingsLanguageSelector(
-                          currentLanguage: settings.language,
-                          onLanguageChanged: (language) {
-                            context.read<SettingsBloc>().add(
+                  ),
+                  _settingsPanel(
+                    isDarkMode: isDarkMode,
+                    child: SettingsLanguageSelector(
+                      currentLanguage: settings.language,
+                      onLanguageChanged: (language) {
+                        context.read<SettingsBloc>().add(
                               UpdateLanguage(language),
                             );
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  SizedBox(height: 32.h),
-
-                  Center(
-                    child: TextButton.icon(
-                      style: TextButton.styleFrom(
-                        foregroundColor: Colors.redAccent,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 24.w,
-                          vertical: 12.h,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16.r),
-                        ),
-                      ),
-                      onPressed: () {
-                        context.read<SettingsBloc>().add(const ResetSettings());
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: const Text('Settings reset to defaults'),
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10.r),
-                            ),
-                          ),
-                        );
                       },
-                      icon: Icon(Icons.refresh_rounded, size: 20.w),
-                      label: Text(
-                        'Reset to Defaults',
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
                     ),
                   ),
-
-                  SizedBox(height: 48.h),
-                  Center(
-                    child: Column(
-                      children: [
-                        Text(
-                          'Resilio App',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey,
-                            fontSize: 14.sp,
+                  _SettingsSectionHeader(title: 'General'),
+                  ProfileMenuItem(
+                    icon: Icons.refresh_rounded,
+                    title: 'Reset to Defaults',
+                    description: 'Restore theme and language to defaults',
+                    iconColor: Colors.orange,
+                    onTap: () {
+                      context.read<SettingsBloc>().add(const ResetSettings());
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: const Text('Settings reset to defaults'),
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10.r),
                           ),
                         ),
-                        SizedBox(height: 4.h),
-                        Text(
-                          'Version 1.0.0 (Build 30)',
-                          style: TextStyle(color: Colors.grey, fontSize: 12.sp),
-                        ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
-                  SizedBox(height: 32.h),
+                  _SettingsSectionHeader(title: 'About'),
+                  ProfileMenuItem(
+                    icon: Icons.info_outline_rounded,
+                    title: 'About Resilio',
+                    description: 'Version $_appVersion',
+                    onTap: () {
+                      showAboutDialog(
+                        context: context,
+                        applicationName: 'Resilio',
+                        applicationVersion: _appVersion,
+                        applicationIcon: Icon(
+                          Icons.self_improvement_rounded,
+                          size: 48.w,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                        applicationLegalese: '© 2026 Resilio',
+                      );
+                    },
+                  ),
+                  SizedBox(height: 40.h),
                 ],
               ),
             );
@@ -218,86 +194,71 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileHeader(BuildContext context, bool isDarkMode) {
+  Widget _settingsPanel({
+    required bool isDarkMode,
+    required Widget child,
+  }) {
     return Container(
-      padding: EdgeInsets.all(20.w),
+      margin: EdgeInsets.only(bottom: 12.h),
       decoration: BoxDecoration(
-        color: Theme.of(
-          context,
-        ).primaryColor.withValues(alpha: isDarkMode ? 0.2 : 0.1),
-        borderRadius: BorderRadius.circular(24.r),
-        border: Border.all(
-          color: Theme.of(context).primaryColor.withValues(alpha: 0.3),
-          width: 1.5,
-        ),
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 30.r,
-            backgroundColor: Theme.of(context).primaryColor,
-            child: Icon(
-              Icons.person_outline_rounded,
-              size: 32.w,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(width: 16.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Your Profile',
-                  style: TextStyle(
-                    fontSize: 20.sp,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).textTheme.bodyLarge?.color,
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  'Manage account and data',
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    color: Theme.of(context).primaryColor,
-                  ),
+        color: isDarkMode ? Colors.white.withValues(alpha: 0.05) : Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: isDarkMode
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
                 ),
               ],
-            ),
-          ),
-          Icon(
-            Icons.arrow_forward_ios_rounded,
-            size: 18.w,
-            color: Theme.of(context).primaryColor,
-          ),
-        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16.r),
+        child: child,
       ),
     );
   }
 }
 
-class _SectionHeader extends StatelessWidget {
+/// Section title with accent underline, aligned with reference profile settings.
+class _SettingsSectionHeader extends StatelessWidget {
   final String title;
-  final IconData icon;
+  final bool isFirst;
 
-  const _SectionHeader({required this.title, required this.icon});
+  const _SettingsSectionHeader({
+    required this.title,
+    this.isFirst = false,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Padding(
-      padding: EdgeInsets.only(left: 8.w, bottom: 8.h),
-      child: Row(
+      padding: EdgeInsets.only(
+        top: isFirst ? 8.h : 24.h,
+        bottom: 8.h,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 16.w, color: Colors.grey),
-          SizedBox(width: 8.w),
           Text(
             title,
-            style: TextStyle(
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.2,
-              color: Colors.grey,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontSize: 20.sp,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Poppins',
+              color: theme.textTheme.bodyLarge?.color,
+            ),
+          ),
+          SizedBox(height: 4.h),
+          Container(
+            height: 2.h,
+            width: 50.w,
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primary,
+              borderRadius: BorderRadius.circular(1.r),
             ),
           ),
         ],

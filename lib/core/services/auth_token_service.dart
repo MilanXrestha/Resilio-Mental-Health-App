@@ -35,24 +35,28 @@ class AuthTokenService {
     if (providerStr == 'firebase') {
       _provider = AuthProvider.firebase;
       
-      // For Firebase users, check if we need to refresh the token
-      if (_currentToken != null && FirebaseAuth.instance.currentUser != null) {
+      // For Firebase users, try to get a fresh token.
+      // currentUser may be null here if Firebase hasn't finished restoring its
+      // session yet — in that case keep whatever was loaded from SharedPreferences
+      // and let ensureAuthenticated() handle the refresh on first use.
+      final fbUser = FirebaseAuth.instance.currentUser;
+      if (fbUser != null) {
         try {
-          // Get a fresh ID token from Firebase
-          final freshToken = await FirebaseAuth.instance.currentUser!.getIdToken();
+          final freshToken = await fbUser.getIdToken();
           if (freshToken != null && freshToken.isNotEmpty) {
             _currentToken = freshToken;
-            // Update storage with fresh token
+            _userId = fbUser.uid;
             await _prefs?.setString(_keyToken, freshToken);
+            await _prefs?.setString(_keyUserId, fbUser.uid);
             print('✓ AuthTokenService: Refreshed Firebase ID token');
           }
         } catch (e) {
           print('⚠️ AuthTokenService: Failed to refresh token: $e');
-          // If refresh fails, clear the token as it's definitely expired
-          await clear();
-          return;
+          // Keep the stored token; it may still be valid.
         }
       }
+      // If currentUser is null and _currentToken is also null, the user is
+      // genuinely signed out — isAuthenticated will return false as expected.
     } else if (providerStr == 'supertokens') {
       _provider = AuthProvider.superTokens;
     } else {
@@ -113,6 +117,33 @@ class AuthTokenService {
 
   /// Check if user is authenticated
   bool get isAuthenticated => hasToken;
+
+  /// Ensures a valid token is available.
+  /// Always tries Firebase as a fallback — handles hot-restart (where init()
+  /// was never called) and timing gaps between app start and session restore.
+  Future<bool> ensureAuthenticated() async {
+    if (hasToken) return true;
+    final fbUser = FirebaseAuth.instance.currentUser;
+    if (fbUser != null) {
+      try {
+        final token = await fbUser.getIdToken();
+        if (token != null && token.isNotEmpty) {
+          _prefs ??= await SharedPreferences.getInstance();
+          _provider = AuthProvider.firebase;
+          _currentToken = token;
+          _userId = fbUser.uid;
+          _prefs?.setString(_keyToken, token);
+          _prefs?.setString(_keyProvider, 'firebase');
+          _prefs?.setString(_keyUserId, fbUser.uid);
+          print('✓ AuthTokenService: Token recovered via ensureAuthenticated');
+          return true;
+        }
+      } catch (e) {
+        print('⚠️ AuthTokenService: ensureAuthenticated failed: $e');
+      }
+    }
+    return false;
+  }
 
   /// Check if using Firebase auth
   bool get isFirebaseAuth => _provider == AuthProvider.firebase;

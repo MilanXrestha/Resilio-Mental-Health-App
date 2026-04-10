@@ -15,6 +15,7 @@ abstract class AuthRepository {
     required String email,
     required String password,
     String? name,
+    String userRole = 'customer',
   });
 
   /// Sign in with Google

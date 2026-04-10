@@ -2,7 +2,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../../../../core/theme/app_colors.dart';
 import '../../domain/entities/explore_item_entity.dart';
 
 class ExploreImageCard extends StatelessWidget {
@@ -17,61 +16,63 @@ class ExploreImageCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 180.w,
+        width: 150.w,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16.r),
+          color: isDarkMode ? const Color(0xFF1E1E1E) : Colors.grey.shade200,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.15),
-              blurRadius: 10.r,
-              offset: Offset(0, 4.h),
+              blurRadius: 12.r,
+              offset: Offset(0, 6.h),
             ),
           ],
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(16.r),
           child: Stack(
+            fit: StackFit.expand,
             children: [
               // Image
-              AspectRatio(
-                aspectRatio: 3 / 4,
-                child: item.imageUrl != null && item.imageUrl!.isNotEmpty
-                    ? CachedNetworkImage(
-                  imageUrl: item.imageUrl!,
-                  fit: BoxFit.cover,
-                  placeholder: (_, __) => _buildPlaceholder(context),
-                  errorWidget: (_, __, ___) => _buildPlaceholder(context),
-                )
-                    : _buildPlaceholder(context),
-              ),
+              (item.imageUrl != null && item.imageUrl!.isNotEmpty)
+                  ? CachedNetworkImage(
+                      imageUrl: item.imageUrl!,
+                      fit: BoxFit.cover,
+                      placeholder: (_, __) => _buildPlaceholder(isDarkMode),
+                      errorWidget: (_, __, ___) => _buildPlaceholder(isDarkMode),
+                      memCacheWidth: 400,
+                    )
+                  : _buildPlaceholder(isDarkMode),
 
-              // Gradient overlay
-              Positioned.fill(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withOpacity(0.6),
-                      ],
-                      stops: const [0.5, 1.0],
-                    ),
+              // Gradient overlay matching dashboard style
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.transparent,
+                      Colors.black.withOpacity(0.4),
+                      Colors.black.withOpacity(0.8),
+                    ],
                   ),
                 ),
               ),
 
-              // Title
+              // Title and subtitle at bottom
               Positioned(
+                bottom: 12.h,
                 left: 12.w,
                 right: 12.w,
-                bottom: 12.h,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       item.title,
@@ -79,28 +80,31 @@ class ExploreImageCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontFamily: 'Poppins',
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w700,
                         color: Colors.white,
-                        shadows: [
-                          Shadow(
-                            color: Colors.black.withOpacity(0.5),
-                            blurRadius: 4.r,
-                          ),
-                        ],
                       ),
                     ),
-                    if (item.subtitle != null) ...[
-                      SizedBox(height: 2.h),
-                      Text(
-                        item.subtitle!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontFamily: 'Poppins',
-                          fontSize: 11.sp,
-                          fontWeight: FontWeight.w400,
-                          color: Colors.white.withOpacity(0.8),
+                    if (item.subtitle != null &&
+                        item.subtitle!.isNotEmpty) ...[
+                      SizedBox(height: 4.h),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 8.w, vertical: 3.h),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF10B981).withOpacity(0.9),
+                          borderRadius: BorderRadius.circular(6.r),
+                        ),
+                        child: Text(
+                          item.subtitle!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontFamily: 'Poppins',
+                            fontSize: 9.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
                         ),
                       ),
                     ],
@@ -108,20 +112,19 @@ class ExploreImageCard extends StatelessWidget {
                 ),
               ),
 
-              // Expand icon
-              Positioned(
-                top: 8.h,
-                right: 8.w,
-                child: Container(
-                  padding: EdgeInsets.all(6.w),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.4),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.fullscreen_rounded,
-                    size: 18.sp,
-                    color: Colors.white,
+              // Subtle border overlay
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16.r),
+                      border: Border.all(
+                        color: isDarkMode
+                            ? Colors.white.withOpacity(0.1)
+                            : Colors.black.withOpacity(0.05),
+                        width: 1.w,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -132,14 +135,14 @@ class ExploreImageCard extends StatelessWidget {
     );
   }
 
-  Widget _buildPlaceholder(BuildContext context) {
+  Widget _buildPlaceholder(bool isDarkMode) {
     return Container(
-      color: const Color(0xFF10B981).withOpacity(0.2),
+      color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
       child: Center(
         child: Icon(
           Icons.image_rounded,
-          size: 40.sp,
-          color: const Color(0xFF10B981).withOpacity(0.5),
+          size: 36,
+          color: isDarkMode ? Colors.grey.shade600 : Colors.grey.shade400,
         ),
       ),
     );

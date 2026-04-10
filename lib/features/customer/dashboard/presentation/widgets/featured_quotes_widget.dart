@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
+import '../../../../../core/routing/route_names.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/theme_extension.dart';
 import '../../domain/entities/quote_entity.dart';
@@ -80,6 +82,8 @@ class _FeaturedQuotesWidgetState extends State<FeaturedQuotesWidget> {
       widget.featuredQuotes.isNotEmpty &&
           widget.featuredQuotes.every((q) => q.quoteText.isNotEmpty);
 
+  List<QuoteEntity> get _displayedQuotes => widget.featuredQuotes.take(4).toList();
+
   void _onScroll() {
     if (!mounted) return;
     final page = _pageController.page;
@@ -88,9 +92,11 @@ class _FeaturedQuotesWidgetState extends State<FeaturedQuotesWidget> {
 
   void _startAutoScroll() {
     _autoScrollTimer?.cancel();
+    final count = _displayedQuotes.length;
+    if (count <= 1) return;
     _autoScrollTimer = Timer.periodic(const Duration(seconds: 5), (_) {
       if (!mounted || !_pageController.hasClients) return;
-      final next = (_currentIndex + 1) % widget.featuredQuotes.length;
+      final next = (_currentIndex + 1) % count;
       _pageController.animateToPage(
         next,
         duration: const Duration(milliseconds: 500),
@@ -112,10 +118,10 @@ class _FeaturedQuotesWidgetState extends State<FeaturedQuotesWidget> {
           height: 230.h,
           child: PageView.builder(
             controller: _pageController,
-            itemCount: widget.featuredQuotes.length,
+            itemCount: _displayedQuotes.length,
             onPageChanged: (i) => setState(() => _currentIndex = i),
             itemBuilder: (context, index) {
-              final quote = widget.featuredQuotes[index];
+              final quote = _displayedQuotes[index];
               final colors = _gradients[index % _gradients.length];
 
               // Scale: current card = 1.0, adjacent cards = 0.92
@@ -131,6 +137,16 @@ class _FeaturedQuotesWidgetState extends State<FeaturedQuotesWidget> {
                 child: _QuoteCard(
                   quote: quote,
                   gradientColors: colors,
+                  onTap: () {
+                    context.pushNamed(
+                      RouteNames.contentViewer,
+                      extra: {
+                        'quotes': _displayedQuotes,
+                        'initialIndex': index,
+                        'title': 'Daily Inspiration',
+                      },
+                    );
+                  },
                 ),
               );
             },
@@ -142,7 +158,7 @@ class _FeaturedQuotesWidgetState extends State<FeaturedQuotesWidget> {
         // ── Dots ────────────────────────────────────────────────────
         SmoothPageIndicator(
           controller: _pageController,
-          count: widget.featuredQuotes.length,
+          count: _displayedQuotes.length,
           effect: ExpandingDotsEffect(
             dotHeight: 6.h,
             dotWidth: 6.w,
@@ -164,10 +180,12 @@ class _FeaturedQuotesWidgetState extends State<FeaturedQuotesWidget> {
 class _QuoteCard extends StatelessWidget {
   final QuoteEntity quote;
   final List<Color> gradientColors;
+  final VoidCallback onTap;
 
   const _QuoteCard({
     required this.quote,
     required this.gradientColors,
+    required this.onTap,
   });
 
   @override
@@ -182,36 +200,49 @@ class _QuoteCard extends StatelessWidget {
             end: Alignment.bottomRight,
             colors: gradientColors,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: gradientColors.first.withOpacity(0.40),
-              blurRadius: 20.r,
-              offset: Offset(0, 10.h),
-            ),
-          ],
         ),
         child: Material(
           color: Colors.transparent,
           borderRadius: BorderRadius.circular(24.r),
           clipBehavior: Clip.antiAlias,
           child: InkWell(
-            onTap: () {
-              // TODO: open quote detail
-            },
+            onTap: onTap,
             splashColor: Colors.white10,
             highlightColor: Colors.white10,
             child: Stack(
               children: [
-                // Decorative circles
+                // Decorative quotes background
                 Positioned(
-                  top: -30.h,
-                  right: -20.w,
-                  child: _circle(100.w, 0.08),
+                  left: -10.w,
+                  top: -15.h,
+                  child: Opacity(
+                    opacity: 0.15,
+                    child: Transform(
+                      transform: Matrix4.rotationY(3.14159), // Flipped horizontally
+                      alignment: Alignment.center,
+                      child: Icon(
+                        Icons.format_quote,
+                        size: 100.sp,
+                        color: Colors.white.withOpacity(0.7),
+                      ),
+                    ),
+                  ),
                 ),
                 Positioned(
-                  bottom: -40.h,
-                  left: -25.w,
-                  child: _circle(120.w, 0.06),
+                  right: -10.w,
+                  bottom: -10.h,
+                  child: Opacity(
+                    opacity: 0.15,
+                    child: Transform(
+                      transform: Matrix4.rotationY(0),
+                      alignment: Alignment.center,
+                      child: Icon(
+                        Icons.format_quote,
+                        size: 100.sp,
+                        color: Colors.white.withOpacity(0.7),
+                      ),
+                    ),
+                  ),
                 ),
 
                 // Content
@@ -229,23 +260,48 @@ class _QuoteCard extends StatelessWidget {
                         size: 30.sp,
                         color: Colors.white.withOpacity(0.45),
                       ),
-
+                      
                       SizedBox(height: 10.h),
-
+                      
                       // Quote text
                       Flexible(
-                        child: Text(
-                          quote.quoteText,
+                        child: RichText(
                           textAlign: TextAlign.center,
                           maxLines: 4,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontFamily: 'PlayfairDisplay',
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w600,
-                            fontStyle: FontStyle.italic,
-                            color: Colors.white,
-                            height: 1.5,
+                          text: TextSpan(
+                            children: [
+                              TextSpan(
+                                text: '"',
+                                style: TextStyle(
+                                  fontFamily: 'PlayfairDisplay',
+                                  fontSize: 18.sp,
+                                  color: Colors.white,
+                                  fontStyle: FontStyle.italic,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              TextSpan(
+                                text: quote.quoteText,
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
+                                  fontSize: 14.sp,
+                                  color: Colors.white,
+                                  fontStyle: FontStyle.italic,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              TextSpan(
+                                text: '"',
+                                style: TextStyle(
+                                  fontFamily: 'PlayfairDisplay',
+                                  fontSize: 18.sp,
+                                  color: Colors.white,
+                                  fontStyle: FontStyle.italic,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -282,8 +338,16 @@ class _QuoteCard extends StatelessWidget {
                                 radius: 14.r,
                                 backgroundColor:
                                 Colors.white.withOpacity(0.15),
-                                backgroundImage: CachedNetworkImageProvider(
-                                  quote.authorIconUrl!,
+                                child: ClipOval(
+                                  child: CachedNetworkImage(
+                                    imageUrl: quote.authorIconUrl!,
+                                    fit: BoxFit.cover,
+                                    errorWidget: (context, url, error) => Icon(
+                                      Icons.person_rounded,
+                                      size: 16.sp,
+                                      color: Colors.white.withOpacity(0.5),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
@@ -310,17 +374,6 @@ class _QuoteCard extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _circle(double size, double opacity) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: Colors.white.withOpacity(opacity),
       ),
     );
   }
