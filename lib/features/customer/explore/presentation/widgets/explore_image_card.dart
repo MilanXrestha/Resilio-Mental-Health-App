@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../../../core/widgets/premium_tag_widget.dart';
 import '../../domain/entities/explore_item_entity.dart';
 
 class ExploreImageCard extends StatelessWidget {
@@ -110,6 +111,13 @@ class ExploreImageCard extends StatelessWidget {
                     ],
                   ],
                 ),
+              ),
+
+              // Premium Tag
+              PremiumTagWidget(
+                isPremium: item.isPremium,
+                top: 8,
+                left: 8,
               ),
 
               // Subtle border overlay

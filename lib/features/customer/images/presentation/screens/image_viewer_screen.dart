@@ -3,9 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../../../core/routing/route_names.dart';
+import '../../../../../core/widgets/premium_tag_widget.dart';
 import 'package:Resilio/features/customer/images/domain/entities/image_entity.dart';
+import '../../../explore/domain/entities/explore_item_entity.dart';
 import '../../../favorites/presentation/widgets/favorite_button.dart';
 import '../../../favorites/domain/entities/favorite_entity.dart';
+import '../../../subscription/presentation/bloc/subscription_bloc.dart';
+import '../../../subscription/presentation/bloc/subscription_state.dart';
 
 /// Full-screen immersive image viewer.
 /// Pass [images] as a list of ImageEntity OR URLs.
@@ -90,7 +98,10 @@ class _ImageViewerScreenState extends State<ImageViewerScreen>
                 itemCount: images.length,
                 itemBuilder: (context, index, _) {
                   final item = images[index];
-                  final String url = item is ImageEntity ? item.imageUrl : item.toString();
+                  final String url;
+                  if (item is ImageEntity) url = item.imageUrl;
+                  else if (item is ExploreItemEntity) url = item.imageUrl ?? '';
+                  else url = item.toString();
                   
                   return SizedBox(
                     height: double.infinity,
@@ -153,16 +164,31 @@ class _ImageViewerScreenState extends State<ImageViewerScreen>
                               ),
                             ),
                             Expanded(
-                              child: Text(
-                                widget.categoryName ?? _titleForIndex(),
-                                style: TextStyle(
-                                  fontFamily: 'Poppins',
-                                  fontSize: 16.sp,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
-                                ),
-                                textAlign: TextAlign.center,
-                                overflow: TextOverflow.ellipsis,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      widget.categoryName ?? _titleForIndex(),
+                                      style: TextStyle(
+                                        fontFamily: 'Poppins',
+                                        fontSize: 16.sp,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  if (_isPremiumItem(images[_currentIndex])) ...[
+                                    SizedBox(width: 8.w),
+                                    const PremiumTagWidget(
+                                      isPremium: true,
+                                      top: 0,
+                                      padding: 4,
+                                    ),
+                                  ],
+                                ],
                               ),
                             ),
                             // Counter chip
@@ -324,22 +350,60 @@ class _ImageViewerScreenState extends State<ImageViewerScreen>
   String _contentIdForCurrentImage() {
     final item = widget.images[_currentIndex];
     if (item is ImageEntity) return item.id;
+    if (item is ExploreItemEntity) return item.id;
     return item.toString();
+  }
+
+  bool _isPremiumItem(dynamic item) {
+    if (item is ImageEntity) return item.isPremium;
+    if (item is ExploreItemEntity) return item.isPremium;
+    return false;
+  }
+
+  bool _hasPremiumAccess() {
+    final state = context.read<SubscriptionBloc>().state;
+    return state is SubscriptionLoaded && state.subscription.isActive;
+  }
+
+  void _showPremiumRequired(String action) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Premium subscription required to $action this content.')),
+    );
+    context.pushNamed(RouteNames.subscription);
   }
 
   /// Same chrome as [_buildActionBtn], with heart toggle next to Share.
   Widget _buildFavoriteAction() {
+    final bool isPremiumLocked = _isPremiumItem(widget.images[_currentIndex]) && !_hasPremiumAccess();
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        FavoriteButton(
-          key: ValueKey<String>(_contentIdForCurrentImage()),
-          contentId: _contentIdForCurrentImage(),
-          contentType: FavoriteType.image,
-          size: 24.sp,
-          color: Colors.white,
-          bordered: true,
-        ),
+        if (isPremiumLocked)
+          GestureDetector(
+            onTap: () => _showPremiumRequired('favorite'),
+            child: Container(
+              padding: EdgeInsets.all(12.r),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.2),
+                  width: 1.5,
+                ),
+              ),
+              child: Icon(Icons.favorite_border_rounded, color: Colors.white, size: 24.sp),
+            ),
+          )
+        else
+          FavoriteButton(
+            key: ValueKey<String>(_contentIdForCurrentImage()),
+            contentId: _contentIdForCurrentImage(),
+            contentType: FavoriteType.image,
+            size: 24.sp,
+            color: Colors.white,
+            bordered: true,
+          ),
         SizedBox(height: 4.h),
         Text(
           'Favorite',
@@ -357,6 +421,7 @@ class _ImageViewerScreenState extends State<ImageViewerScreen>
   String _titleForIndex() {
     final item = widget.images[_currentIndex];
     if (item is ImageEntity && item.title.isNotEmpty) return item.title;
+    if (item is ExploreItemEntity && item.title.isNotEmpty) return item.title;
     
     return (widget.titles?.length ?? 0) > _currentIndex
         ? widget.titles![_currentIndex]
@@ -366,6 +431,7 @@ class _ImageViewerScreenState extends State<ImageViewerScreen>
   String _subtitleForIndex() {
     final item = widget.images[_currentIndex];
     if (item is ImageEntity && item.author.isNotEmpty) return 'by ${item.author}';
+    if (item is ExploreItemEntity && (item.subtitle?.isNotEmpty ?? false)) return 'by ${item.subtitle}';
     
     return (widget.subtitles?.length ?? 0) > _currentIndex
         ? widget.subtitles![_currentIndex]
@@ -444,6 +510,11 @@ class _ImageViewerScreenState extends State<ImageViewerScreen>
   }
 
   void _downloadImage() {
+    if (_isPremiumItem(widget.images[_currentIndex]) && !_hasPremiumAccess()) {
+       _showPremiumRequired('download');
+       return;
+    }
+
     HapticFeedback.lightImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

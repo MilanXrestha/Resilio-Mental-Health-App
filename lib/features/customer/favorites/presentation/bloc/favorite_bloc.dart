@@ -16,7 +16,9 @@ class FavoriteBloc extends Bloc<FavoriteEvent, FavoriteState> {
   }
 
   Future<void> _onLoadFavorites(LoadFavorites event, Emitter<FavoriteState> emit) async {
-    emit(FavoriteLoading());
+    if (state is! FavoritesLoaded) {
+      emit(FavoriteLoading());
+    }
     try {
       final favorites = await _repository.getFavorites(event.userId);
       final statusMap = <String, bool>{};
@@ -25,7 +27,9 @@ class FavoriteBloc extends Bloc<FavoriteEvent, FavoriteState> {
       }
       emit(FavoritesLoaded(favorites: favorites, favoriteStatusMap: statusMap));
     } catch (e) {
-      emit(FavoriteError(e.toString()));
+      if (state is! FavoritesLoaded) {
+        emit(FavoriteError(e.toString()));
+      }
     }
   }
 
@@ -64,7 +68,7 @@ class FavoriteBloc extends Bloc<FavoriteEvent, FavoriteState> {
       
       // We don't necessarily need to reload everything here as the map is synced
       // But if we want the full entity list for the FavoriteScreen, we could trigger a reload
-      // _onLoadFavorites(LoadFavorites(event.userId), emit);
+      add(LoadFavorites(event.userId));
     } catch (e) {
       // Rollback on error
       final rollbackMap = Map<String, bool>.from(loadedState.favoriteStatusMap);

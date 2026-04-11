@@ -20,6 +20,7 @@ class ProfileModel extends ProfileEntity {
     required super.language,
     required super.createdAt,
     required super.updatedAt,
+    super.lastLoginAt,
   });
 
   factory ProfileModel.fromProto(pb.User proto) {
@@ -41,6 +42,7 @@ class ProfileModel extends ProfileEntity {
       language: proto.language,
       createdAt: DateTime.tryParse(proto.createdAt) ?? DateTime.now(),
       updatedAt: DateTime.tryParse(proto.updatedAt) ?? DateTime.now(),
+      lastLoginAt: proto.lastLoginAt.isNotEmpty ? DateTime.tryParse(proto.lastLoginAt) : null,
     );
   }
 

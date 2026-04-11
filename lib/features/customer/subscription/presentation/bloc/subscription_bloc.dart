@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
+import '../../domain/entities/subscription_entity.dart';
 import '../../domain/repositories/subscription_repository.dart';
 import 'subscription_event.dart';
 import 'subscription_state.dart';
@@ -58,19 +59,42 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
     LoadTransactions event,
     Emitter<SubscriptionState> emit,
   ) async {
+    emit(SubscriptionLoading());
+
+    // Try to get subscription data; if none exists (e.g. free user), use a
+    // placeholder so we can still display the (empty) transaction list.
+    SubscriptionEntity subscription;
     if (state is SubscriptionLoaded) {
-      final currentState = state as SubscriptionLoaded;
-      
-      final failureOrTx = await _subscriptionRepository.getTransactions();
-      
-      failureOrTx.fold(
-        (failure) {
-           // Maybe handle error differently, but for now just don't update list
-        },
-        (transactions) {
-          emit(currentState.copyWith(transactions: transactions));
-        },
+      subscription = (state as SubscriptionLoaded).subscription;
+    } else {
+      final failureOrSub = await _subscriptionRepository.getSubscription();
+      subscription = failureOrSub.fold(
+        (_) => _noSubscription,
+        (sub) => sub,
       );
     }
+
+    final failureOrTx = await _subscriptionRepository.getTransactions();
+
+    failureOrTx.fold(
+      (failure) => emit(SubscriptionError(message: failure.message)),
+      (transactions) => emit(SubscriptionLoaded(
+        subscription: subscription,
+        transactions: transactions,
+      )),
+    );
   }
+
+  static final SubscriptionEntity _noSubscription = SubscriptionEntity(
+    id: '',
+    userId: '',
+    planId: 'none',
+    status: 'none',
+    startDate: DateTime(2000),
+    paymentMethod: '',
+    lastTransactionId: '',
+    isAutoRenew: false,
+    createdAt: DateTime(2000),
+    updatedAt: DateTime(2000),
+  );
 }

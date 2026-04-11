@@ -1,5 +1,7 @@
 import 'package:animate_do/animate_do.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:esewa_flutter_sdk/esewa_config.dart';
 import 'package:esewa_flutter_sdk/esewa_flutter_sdk.dart';
 import 'package:esewa_flutter_sdk/esewa_payment.dart';
@@ -9,6 +11,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 
+import 'package:Resilio/core/routing/route_names.dart';
 import 'package:Resilio/core/theme/app_colors.dart';
 import 'package:Resilio/features/customer/subscription/presentation/bloc/subscription_bloc.dart';
 import 'package:Resilio/features/customer/subscription/presentation/bloc/subscription_event.dart';
@@ -165,6 +168,122 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     }
   }
 
+  Widget _buildHeroBanner(bool isDarkMode, ThemeData theme) {
+    return FadeInDown(
+      duration: const Duration(milliseconds: 500),
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(20.w),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: isDarkMode
+                ? [const Color(0xFF1A1A2E), const Color(0xFF16213E)]
+                : [const Color(0xFF667EEA), const Color(0xFF764BA2)],
+          ),
+          borderRadius: BorderRadius.circular(20.r),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF667EEA).withValues(alpha: 0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(20.r),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.auto_awesome, size: 12.sp, color: Colors.amber),
+                        SizedBox(width: 4.w),
+                        Text(
+                          'PREMIUM MEMBERSHIP',
+                          style: TextStyle(
+                            fontSize: 10.sp,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 12.h),
+                  Text(
+                    'Elevate Your\nWellness Journey',
+                    style: TextStyle(
+                      fontSize: 22.sp,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      height: 1.2,
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    'Unlock premium content, guided sessions,\nand exclusive wellness tools.',
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: Colors.white.withValues(alpha: 0.8),
+                      height: 1.4,
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
+                  Wrap(
+                    spacing: 8.w,
+                    runSpacing: 6.h,
+                    children: [
+                      _benefitChip('Unlimited Content'),
+                      _benefitChip('Expert Tips'),
+                      _benefitChip('Ad-Free'),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(width: 12.w),
+            Image.asset(
+              'assets/icons/png/wellness_logo.png',
+              width: 80.w,
+              height: 80.w,
+              opacity: const AlwaysStoppedAnimation(0.9),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _benefitChip(String label) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 11.sp,
+          color: Colors.white,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
   Widget _buildPlanCard({
     required Map<String, dynamic> plan,
     required bool isDarkMode,
@@ -259,12 +378,19 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
         title: const Text('Go Premium'),
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            size: 20.sp,
+            color: context.textPrimaryColor,
+          ),
+          onPressed: () => context.pop(),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.history),
-            onPressed: () {
-              // Navigator.pushNamed(context, RouteNames.transactionHistoryScreen);
-            },
+            icon: const Icon(Icons.history_rounded),
+            tooltip: 'Transaction History',
+            onPressed: () => context.pushNamed(RouteNames.transactionHistory),
           ),
         ],
       ),
@@ -278,7 +404,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         },
         builder: (context, state) {
           if (state is SubscriptionLoading || state is SubscriptionPurchaseLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return _SubscriptionShimmer(isDarkMode: isDarkMode);
           }
 
           bool isSubscriptionActive = false;
@@ -302,8 +428,12 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Hero banner
+                if (!isSubscriptionActive) _buildHeroBanner(isDarkMode, theme),
+                if (!isSubscriptionActive) SizedBox(height: 24.h),
+
                 Text(
-                  isSubscriptionActive ? 'Your Subscription' : 'Unlock All Premium Content',
+                  isSubscriptionActive ? 'Your Subscription' : 'Choose Your Plan',
                   style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 SizedBox(height: 16.h),
@@ -363,6 +493,57 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class _SubscriptionShimmer extends StatelessWidget {
+  final bool isDarkMode;
+  const _SubscriptionShimmer({required this.isDarkMode});
+
+  @override
+  Widget build(BuildContext context) {
+    final base = isDarkMode ? Colors.grey[800]! : Colors.grey[300]!;
+    final highlight = isDarkMode ? Colors.grey[700]! : Colors.grey[100]!;
+
+    return Shimmer.fromColors(
+      baseColor: base,
+      highlightColor: highlight,
+      child: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
+        child: Column(
+          children: [
+            // Hero banner placeholder
+            Container(
+              height: 140.h,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20.r),
+              ),
+            ),
+            SizedBox(height: 24.h),
+            // Carousel placeholder
+            Container(
+              height: 260.h,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24.r),
+              ),
+            ),
+            SizedBox(height: 24.h),
+            // CTA button placeholder
+            Container(
+              height: 52.h,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16.r),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

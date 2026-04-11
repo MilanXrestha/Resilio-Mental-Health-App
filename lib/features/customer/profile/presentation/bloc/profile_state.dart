@@ -29,6 +29,10 @@ class ProfileUpdating extends ProfileState {
   List<Object?> get props => [currentProfile];
 }
 
+class ProfileAvatarUploading extends ProfileState {
+  const ProfileAvatarUploading();
+}
+
 class ProfileUpdateSuccess extends ProfileState {
   final ProfileEntity profile;
 

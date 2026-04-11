@@ -24,6 +24,7 @@ import 'package:Resilio/core/network/network_info.dart' as _i759;
 import 'package:Resilio/core/network/network_module.dart' as _i266;
 import 'package:Resilio/core/routing/navigation_service.dart' as _i39;
 import 'package:Resilio/core/services/auth_token_service.dart' as _i80;
+import 'package:Resilio/core/services/cloudinary_service.dart' as _i399;
 import 'package:Resilio/core/theme/cubit/theme_cubit.dart' as _i4;
 import 'package:Resilio/features/admin/dashboard/data/repositories/admin_repository_impl.dart'
     as _i624;
@@ -236,7 +237,7 @@ import 'package:Resilio/features/therapist/dashboard/domain/repositories/dashboa
 import 'package:Resilio/features/therapist/dashboard/domain/repositories/therapist_repository.dart'
     as _i120;
 import 'package:Resilio/features/therapist/dashboard/presentation/bloc/therapist_content_cubit.dart'
-    as _i197;
+    as _i499;
 import 'package:Resilio/features/therapist/dashboard/presentation/bloc/therapist_cubit.dart'
     as _i196;
 import 'package:Resilio/features/therapist/earnings/data/datasources/remote/earnings_remote_datasource.dart'
@@ -283,6 +284,7 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i39.NavigationService>(() => _i39.NavigationService());
     gh.lazySingleton<_i80.AuthTokenService>(() => _i80.AuthTokenService());
+    gh.lazySingleton<_i399.CloudinaryService>(() => _i399.CloudinaryService());
     gh.lazySingleton<_i772.SearchExploreItems>(
       () => _i772.SearchExploreItems(),
     );
@@ -347,11 +349,11 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i120.TherapistRepository>(
       () => _i217.TherapistRepositoryImpl(gh<_i361.Dio>()),
     );
+    gh.factory<_i499.TherapistContentCubit>(
+      () => _i499.TherapistContentCubit(gh<_i120.TherapistRepository>()),
+    );
     gh.factory<_i196.TherapistCubit>(
       () => _i196.TherapistCubit(gh<_i120.TherapistRepository>()),
-    );
-    gh.factory<_i197.TherapistContentCubit>(
-      () => _i197.TherapistContentCubit(gh<_i120.TherapistRepository>()),
     );
     gh.lazySingleton<_i871.TipRepository>(
       () => _i543.TipRepositoryImpl(gh<_i482.TipRemoteDataSource>()),
@@ -376,6 +378,15 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i59.FirebaseAuth>(),
         gh<_i116.GoogleSignIn>(),
         gh<_i806.FacebookAuth>(),
+      ),
+    );
+    gh.lazySingleton<_i189.PreferenceLocalDataSource>(
+      () => _i189.PreferenceLocalDataSourceImpl(gh<_i865.DatabaseHelper>()),
+    );
+    gh.lazySingleton<_i185.GamesRepository>(
+      () => _i427.GamesRepositoryImpl(
+        gh<_i118.GamesRemoteDataSource>(),
+        gh<_i759.NetworkInfo>(),
       ),
     );
     gh.lazySingleton<_i733.SettingsBloc>(
@@ -433,23 +444,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i739.ImageRemoteDataSource>(
       () => _i739.ImageRemoteDataSourceImpl(gh<_i361.Dio>()),
     );
-    gh.lazySingleton<_i694.ExploreRepository>(
-      () => _i923.ExploreRepositoryImpl(
-        gh<_i361.Dio>(),
-        gh<_i343.AudioRemoteDataSource>(),
-        gh<_i1067.VideoRemoteDataSource>(),
-        gh<_i927.QuoteRemoteDataSource>(),
-        gh<_i482.TipRemoteDataSource>(),
-        gh<_i739.ImageRemoteDataSource>(),
-        gh<_i748.CategoryRemoteDataSource>(),
-        gh<_i223.ExploreLocalDataSource>(),
-      ),
-    );
     gh.lazySingleton<_i633.ProfileRepository>(
       () => _i140.ProfileRepositoryImpl(gh<_i159.ProfileRemoteDataSource>()),
-    );
-    gh.factory<_i85.ProfileBloc>(
-      () => _i85.ProfileBloc(gh<_i633.ProfileRepository>()),
     );
     gh.factory<_i1033.SyncUserUseCase>(
       () => _i1033.SyncUserUseCase(gh<_i852.BackendAuthDataSource>()),
@@ -463,15 +459,6 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i453.AppointmentsRepositoryImpl(
         gh<_i740.AppointmentsRemoteDataSource>(),
       ),
-    );
-    gh.lazySingleton<_i772.GetAllExploreItems>(
-      () => _i772.GetAllExploreItems(gh<_i694.ExploreRepository>()),
-    );
-    gh.lazySingleton<_i772.ManageRecentSearches>(
-      () => _i772.ManageRecentSearches(gh<_i694.ExploreRepository>()),
-    );
-    gh.lazySingleton<_i189.PreferenceLocalDataSource>(
-      () => _i189.PreferenceLocalDataSourceImpl(gh<_i865.DatabaseHelper>()),
     );
     gh.lazySingleton<_i337.PreferenceRepository>(
       () => _i449.PreferenceRepositoryImpl(
@@ -536,6 +523,24 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i1064.ContentRepository>(
       () => _i309.ContentRepositoryImpl(gh<_i48.ContentRemoteDataSource>()),
     );
+    gh.lazySingleton<_i694.ExploreRepository>(
+      () => _i923.ExploreRepositoryImpl(
+        gh<_i361.Dio>(),
+        gh<_i343.AudioRemoteDataSource>(),
+        gh<_i1067.VideoRemoteDataSource>(),
+        gh<_i927.QuoteRemoteDataSource>(),
+        gh<_i482.TipRemoteDataSource>(),
+        gh<_i739.ImageRemoteDataSource>(),
+        gh<_i748.CategoryRemoteDataSource>(),
+        gh<_i223.ExploreLocalDataSource>(),
+      ),
+    );
+    gh.factory<_i85.ProfileBloc>(
+      () => _i85.ProfileBloc(
+        gh<_i633.ProfileRepository>(),
+        gh<_i399.CloudinaryService>(),
+      ),
+    );
     gh.lazySingleton<_i841.SubscriptionRepository>(
       () => _i407.SubscriptionRepositoryImpl(
         gh<_i122.SubscriptionRemoteDataSource>(),
@@ -544,14 +549,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i674.ImageRepository>(
       () => _i76.ImageRepositoryImpl(gh<_i739.ImageRemoteDataSource>()),
-    );
-    gh.factory<_i241.ExploreBloc>(
-      () => _i241.ExploreBloc(
-        gh<_i772.GetAllExploreItems>(),
-        gh<_i772.SearchExploreItems>(),
-        gh<_i772.ManageRecentSearches>(),
-        gh<_i694.ExploreRepository>(),
-      ),
     );
     gh.lazySingleton<_i184.AuthRepository>(
       () => _i474.AuthRepositoryImpl(
@@ -577,6 +574,12 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i277.ImageBloc>(
       () => _i277.ImageBloc(gh<_i674.ImageRepository>()),
+    );
+    gh.lazySingleton<_i772.GetAllExploreItems>(
+      () => _i772.GetAllExploreItems(gh<_i694.ExploreRepository>()),
+    );
+    gh.lazySingleton<_i772.ManageRecentSearches>(
+      () => _i772.ManageRecentSearches(gh<_i694.ExploreRepository>()),
     );
     gh.factory<_i811.PreferencesBloc>(
       () => _i811.PreferencesBloc(
@@ -641,6 +644,14 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i99.SendOtpUseCase>(),
         gh<_i613.VerifyOtpUseCase>(),
         gh<_i104.LogoutUseCase>(),
+      ),
+    );
+    gh.factory<_i241.ExploreBloc>(
+      () => _i241.ExploreBloc(
+        gh<_i772.GetAllExploreItems>(),
+        gh<_i772.SearchExploreItems>(),
+        gh<_i772.ManageRecentSearches>(),
+        gh<_i694.ExploreRepository>(),
       ),
     );
     return this;

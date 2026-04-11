@@ -41,9 +41,16 @@ class FavoriteRemoteDataSource {
           'content_id': contentId,
           'content_type': contentType,
         },
+        options: Options(
+          headers: {'Content-Type': 'application/json'},
+        ),
       );
 
-      return response.statusCode == 201 || (response.data != null && response.data['success'] == true);
+      // 201 = created, 200 = success, alreadyExists = already saved (treat as success)
+      if (response.statusCode == 201 || response.statusCode == 200) return true;
+      final body = response.data;
+      if (body is Map && body['data'] is Map && body['data']['alreadyExists'] == true) return true;
+      return body != null && body['success'] == true;
     } on DioException catch (e) {
       throw ServerFailure('Failed to add favorite: ${e.message ?? 'Unknown error'}');
     } catch (e) {
@@ -64,9 +71,13 @@ class FavoriteRemoteDataSource {
           'content_id': contentId,
           'content_type': contentType,
         },
+        options: Options(
+          headers: {'Content-Type': 'application/json'},
+        ),
       );
 
-      return response.statusCode == 200 || (response.data != null && response.data['success'] == true);
+      return response.statusCode == 200 ||
+          (response.data != null && response.data['success'] == true);
     } on DioException catch (e) {
       throw ServerFailure('Failed to remove favorite: ${e.message ?? 'Unknown error'}');
     } catch (e) {

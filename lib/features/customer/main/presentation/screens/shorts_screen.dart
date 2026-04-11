@@ -33,20 +33,61 @@ class _ReelsView extends StatefulWidget {
   State<_ReelsView> createState() => _ReelsViewState();
 }
 
-class _ReelsViewState extends State<_ReelsView> {
+class _ReelsViewState extends State<_ReelsView> with WidgetsBindingObserver {
   late PageController _pageController;
   int _currentIndex = 0;
   final Map<int, VideoPlayerController> _controllers = {};
   bool _isPaused = false;
 
+  // Tracks whether this tab is the visible page in the outer PageView.
+  // TickerMode is inherited and set to false by Flutter's PageView for
+  // off-screen keepalive pages — we piggyback on that to pause/resume.
+  bool _wasTickerEnabled = true;
+
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // TickerMode.valuesOf returns false when our page is off-screen inside
+    // the outer PageView (KeepAlivePage uses TickerMode(enabled: false) for
+    // non-active pages), letting us auto-pause/resume without extra state.
+    final tickerEnabled = TickerMode.valuesOf(context).enabled;
+    if (tickerEnabled == _wasTickerEnabled) return;
+    _wasTickerEnabled = tickerEnabled;
+
+    if (!tickerEnabled) {
+      // Tab is no longer visible — pause the active video
+      _controllers[_currentIndex]?.pause();
+    } else {
+      // Tab became visible again — resume only if user hadn't manually paused
+      if (!_isPaused) {
+        _controllers[_currentIndex]?.play();
+      }
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.hidden) {
+      _controllers[_currentIndex]?.pause();
+    } else if (state == AppLifecycleState.resumed) {
+      if (!_isPaused && _wasTickerEnabled) {
+        _controllers[_currentIndex]?.play();
+      }
+    }
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _pageController.dispose();
     for (final c in _controllers.values) {
       c.dispose();
@@ -65,7 +106,8 @@ class _ReelsViewState extends State<_ReelsView> {
     });
     await controller.initialize();
     controller.setLooping(true);
-    if (index == _currentIndex && mounted) {
+    // Only auto-play if this tab is currently active (ticker enabled)
+    if (index == _currentIndex && mounted && _wasTickerEnabled) {
       controller.play();
     }
   }
@@ -77,7 +119,8 @@ class _ReelsViewState extends State<_ReelsView> {
       _currentIndex = index;
       _isPaused = false;
     });
-    // Play current (or init if not yet loaded)
+    // Play current only if this tab is the active outer page
+    if (!_wasTickerEnabled) return;
     final c = _controllers[index];
     if (c != null && c.value.isInitialized) {
       c.play();
@@ -470,7 +513,7 @@ class _ActionColumn extends StatelessWidget {
             borderRadius: BorderRadius.circular(6.r),
             child: video.thumbnailUrl.isNotEmpty
                 ? Image.network(video.thumbnailUrl, fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _musicPlaceholder())
+                    errorBuilder: (_, _, _) => _musicPlaceholder())
                 : _musicPlaceholder(),
           ),
         ),

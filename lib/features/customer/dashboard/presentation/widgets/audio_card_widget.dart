@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../../../core/routing/route_names.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/widgets/premium_tag_widget.dart';
 import '../../../audio/domain/entities/audio_entity.dart';
 import '../../../favorites/domain/entities/favorite_entity.dart';
 import '../../../favorites/presentation/widgets/favorite_button.dart';
+import '../../../subscription/presentation/bloc/subscription_bloc.dart';
+import '../../../subscription/presentation/bloc/subscription_state.dart';
 
 /// Beautiful audio card widget for displaying audio tracks in horizontal list
 class AudioCardWidget extends StatelessWidget {
@@ -22,7 +29,20 @@ class AudioCardWidget extends StatelessWidget {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        if (track.isPremium) {
+          final state = context.read<SubscriptionBloc>().state;
+          final isPremiumUser = state is SubscriptionLoaded && state.subscription.isActive;
+          if (!isPremiumUser) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Premium subscription required to play this content.')),
+            );
+            context.pushNamed(RouteNames.subscription);
+            return;
+          }
+        }
+        if (onTap != null) onTap!();
+      },
       child: Container(
         width: 300.w,
         height: 150.h,
@@ -226,6 +246,13 @@ class AudioCardWidget extends StatelessWidget {
                   contentId: track.id,
                   contentType: FavoriteType.audio,
                 ),
+              ),
+
+              // Premium Tag (Top Left)
+              PremiumTagWidget(
+                isPremium: track.isPremium,
+                top: 8,
+                left: 8,
               ),
 
               // Duration chip

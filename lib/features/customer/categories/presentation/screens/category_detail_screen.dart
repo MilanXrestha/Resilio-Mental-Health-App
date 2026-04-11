@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../../core/di/injection.dart';
 import '../../../../../core/routing/route_names.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/widgets/premium_tag_widget.dart';
 import '../../../audio/domain/entities/audio_entity.dart';
 import '../../../dashboard/domain/entities/quote_entity.dart';
 import '../../../dashboard/presentation/widgets/audio_card_widget.dart';
@@ -86,6 +87,25 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
             final filtered = _filtered(items);
             final isLoading = state is ExploreLoading || state is ExploreInitial;
 
+            List<dynamic> groupedItems = [];
+            for (int i = 0; i < filtered.length; i++) {
+              final item = filtered[i];
+              if (item.type == ExploreItemType.shortVideo || item.type == ExploreItemType.image) {
+                if (groupedItems.isNotEmpty && groupedItems.last is List<ExploreItemEntity>) {
+                   List<ExploreItemEntity> group = groupedItems.last;
+                   if (group.length == 1 && group.first.type == item.type) {
+                     group.add(item);
+                   } else {
+                     groupedItems.add([item]);
+                   }
+                } else {
+                  groupedItems.add([item]);
+                }
+              } else {
+                groupedItems.add(item);
+              }
+            }
+
             return CustomScrollView(
               physics: const BouncingScrollPhysics(),
               slivers: [
@@ -97,27 +117,32 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
                   backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                   surfaceTintColor: Colors.transparent,
                   elevation: 0,
-                  expandedHeight: 110.h,
+                  expandedHeight: 120.h,
                   automaticallyImplyLeading: false,
                   flexibleSpace: FlexibleSpaceBar(
                     background: SafeArea(
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Padding(
-                            padding: EdgeInsets.fromLTRB(8.w, 8.h, 8.w, 0),
-                            child: Row(
+                            padding: EdgeInsets.fromLTRB(8.w, 8.h, 8.w, 12.h),
+                            child: Stack(
+                              alignment: Alignment.center,
                               children: [
-                                IconButton(
-                                  onPressed: () => Navigator.pop(context),
-                                  icon: Icon(
-                                    Icons.arrow_back_ios_new_rounded,
-                                    size: 20.sp,
-                                    color: context.textPrimaryColor,
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: IconButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    icon: Icon(
+                                      Icons.arrow_back_ios_new_rounded,
+                                      size: 20.sp,
+                                      color: context.textPrimaryColor,
+                                    ),
                                   ),
                                 ),
-                                Expanded(
+                                Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 48.w),
                                   child: Text(
                                     widget.category.name,
                                     style: TextStyle(
@@ -126,6 +151,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
                                       fontWeight: FontWeight.w700,
                                       color: context.textPrimaryColor,
                                     ),
+                                    textAlign: TextAlign.center,
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
@@ -175,12 +201,38 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
                     sliver: SliverList(
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
+                          final itemOrGroup = groupedItems[index];
+
+                          if (itemOrGroup is List<ExploreItemEntity>) {
+                            return Padding(
+                              padding: EdgeInsets.only(bottom: 16.h),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: itemOrGroup[0].type == ExploreItemType.shortVideo 
+                                        ? _buildShortVideoWithGridStyle(itemOrGroup[0], filtered)
+                                        : _buildImageWithGridStyle(itemOrGroup[0], filtered),
+                                  ),
+                                  SizedBox(width: 12.w),
+                                  if (itemOrGroup.length > 1)
+                                    Expanded(
+                                      child: itemOrGroup[1].type == ExploreItemType.shortVideo
+                                          ? _buildShortVideoWithGridStyle(itemOrGroup[1], filtered)
+                                          : _buildImageWithGridStyle(itemOrGroup[1], filtered),
+                                    )
+                                  else
+                                    Expanded(child: const SizedBox()),
+                                ],
+                              ),
+                            );
+                          }
+
                           return Padding(
                             padding: EdgeInsets.only(bottom: 16.h),
-                            child: _buildCard(filtered[index], index, filtered),
+                            child: _buildCard(itemOrGroup as ExploreItemEntity, filtered.indexOf(itemOrGroup), filtered),
                           );
                         },
-                        childCount: filtered.length,
+                        childCount: groupedItems.length,
                       ),
                     ),
                   ),
@@ -193,71 +245,92 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
   }
 
   Widget _buildSearchField(bool isDarkMode) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(14.r),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-        child: Container(
-          height: 44.h,
-          decoration: BoxDecoration(
-            color: isDarkMode
-                ? Colors.white.withOpacity(0.07)
-                : Colors.white.withOpacity(0.92),
-            borderRadius: BorderRadius.circular(14.r),
-            border: Border.all(
-              color: isDarkMode
-                  ? Colors.white.withOpacity(0.1)
-                  : Colors.black.withOpacity(0.08),
-              width: 1.2.w,
+    return Container(
+      height: 48.h,
+      decoration: BoxDecoration(
+        color: isDarkMode ? const Color(0xFF2C2C2E) : Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDarkMode ? 0.3 : 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        border: Border.all(
+          color: isDarkMode
+              ? Colors.white.withOpacity(0.05)
+              : Colors.black.withOpacity(0.05),
+          width: 1.w,
+        ),
+      ),
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      child: Row(
+        children: [
+          Icon(Icons.search_rounded,
+              size: 22.sp, color: context.textSecondaryColor),
+          SizedBox(width: 8.w),
+          Expanded(
+            child: TextField(
+              controller: _searchController,
+              onChanged: (v) =>
+                  setState(() => _searchQuery = v.toLowerCase()),
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 15.sp,
+                color: context.textPrimaryColor,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Search ${widget.category.name}...',
+                hintStyle: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w400,
+                  color: context.textSecondaryColor.withOpacity(0.6),
+                ),
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                isDense: true,
+                contentPadding: EdgeInsets.zero,
+              ),
             ),
           ),
-          child: Row(
-            children: [
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12.w),
-                child: Icon(Icons.search_rounded,
-                    size: 20.sp, color: context.textSecondaryColor),
-              ),
-              Expanded(
-                child: TextField(
-                  controller: _searchController,
-                  onChanged: (v) =>
-                      setState(() => _searchQuery = v.toLowerCase()),
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 14.sp,
-                    color: context.textPrimaryColor,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: 'Search ${widget.category.name}...',
-                    hintStyle: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 14.sp,
-                      color: context.textSecondaryColor.withOpacity(0.5),
-                    ),
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    isDense: true,
-                    contentPadding: EdgeInsets.symmetric(vertical: 12.h),
-                  ),
+          if (_searchQuery.isNotEmpty)
+            GestureDetector(
+              onTap: () {
+                _searchController.clear();
+                setState(() => _searchQuery = '');
+              },
+              child: Container(
+                padding: EdgeInsets.all(4.w),
+                decoration: BoxDecoration(
+                  color: isDarkMode
+                      ? Colors.white.withOpacity(0.1)
+                      : Colors.black.withOpacity(0.05),
+                  shape: BoxShape.circle,
                 ),
+                child: Icon(Icons.close_rounded,
+                    size: 14.sp, color: context.textSecondaryColor),
               ),
-              if (_searchQuery.isNotEmpty)
-                GestureDetector(
-                  onTap: () {
-                    _searchController.clear();
-                    setState(() => _searchQuery = '');
-                  },
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w),
-                    child: Icon(Icons.close_rounded,
-                        size: 18.sp, color: context.textSecondaryColor),
-                  ),
-                ),
-            ],
-          ),
-        ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildShortVideoWithGridStyle(ExploreItemEntity item, List<ExploreItemEntity> all) {
+    final shorts = all.where((e) => e.type == ExploreItemType.shortVideo).map(_toVideo).toList();
+    final shortIdx = shorts.indexWhere((v) => v.id == item.id);
+    return ShortVideoCardWidget(
+      video: _toVideo(item),
+      width: double.infinity,
+      containerWidth: double.infinity,
+      margin: EdgeInsets.zero,
+      onTap: () => context.pushNamed(
+        RouteNames.shortsPlayer,
+        extra: shorts, 
+        queryParameters: {'index': '${shortIdx < 0 ? 0 : shortIdx}'}
       ),
     );
   }
@@ -311,12 +384,12 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
     }
   }
 
-  Widget _buildImageItem(ExploreItemEntity item, List<ExploreItemEntity> all) {
+  Widget _buildImageItem(ExploreItemEntity item, List<ExploreItemEntity> all, {bool isGrid = false}) {
     final images = all.where((e) => e.type == ExploreItemType.image).toList();
     final imgIdx = images.indexWhere((i) => i.id == item.id);
     return GestureDetector(
       onTap: () => context.pushNamed(RouteNames.imageViewer, extra: {
-        'images': images.map((e) => e.imageUrl ?? '').toList(),
+        'images': images, // passing full ExploreItemEntity to preserve isPremium
         'titles': images.map((e) => e.title).toList(),
         'subtitles': images.map((e) => e.subtitle ?? '').toList(),
         'initialIndex': imgIdx < 0 ? 0 : imgIdx,
@@ -325,7 +398,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16.r),
         child: AspectRatio(
-          aspectRatio: 16 / 9,
+          aspectRatio: isGrid ? 3 / 4 : 16 / 9,
           child: Stack(
             fit: StackFit.expand,
             children: [
@@ -364,11 +437,21 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
                   ),
                 ),
               ),
+
+              PremiumTagWidget(
+                isPremium: item.isPremium,
+                top: 8,
+                left: 8,
+              ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildImageWithGridStyle(ExploreItemEntity item, List<ExploreItemEntity> all) {
+    return _buildImageItem(item, all, isGrid: true);
   }
 
   Widget _buildQuoteListItem(QuoteEntity quote) {
@@ -536,6 +619,29 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
         updatedAt: e.createdAt,
       );
 
+  TipType _parseTipType(ExploreItemEntity e) {
+    String typeStr = e.metadata?['tipType']?.toString() ?? '';
+    if (typeStr.isEmpty && e.tags.isNotEmpty) {
+      typeStr = e.tags.first;
+    }
+    
+    if (typeStr == TipType.relationshipBooster.toString()) return TipType.relationshipBooster;
+    if (typeStr == TipType.lettingGo.toString()) return TipType.lettingGo;
+    if (typeStr == TipType.communication.toString()) return TipType.communication;
+    if (typeStr == TipType.selfCare.toString()) return TipType.selfCare;
+    if (typeStr == TipType.mindfulness.toString()) return TipType.mindfulness;
+    if (typeStr == TipType.general.toString()) return TipType.general;
+
+    final lower = typeStr.toLowerCase();
+    if (lower.contains('relationship')) return TipType.relationshipBooster;
+    if (lower.contains('letting')) return TipType.lettingGo;
+    if (lower.contains('communication')) return TipType.communication;
+    if (lower.contains('self_care') || lower.contains('self-care') || lower.contains('self care')) return TipType.selfCare;
+    if (lower.contains('mindful')) return TipType.mindfulness;
+    
+    return TipType.general;
+  }
+
   TipEntity _toTip(ExploreItemEntity e) => TipEntity(
         id: e.id,
         title: e.title,
@@ -544,7 +650,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
         authorIconUrl: e.metadata?['authorIconUrl'] as String? ?? '',
         categoryId: e.categoryIds.firstOrNull ?? '',
         preferenceIds: const [],
-        tipType: TipType.general,
+        tipType: _parseTipType(e),
         isFeatured: e.isFeatured,
         isPremium: e.isPremium,
         sortOrder: 0,

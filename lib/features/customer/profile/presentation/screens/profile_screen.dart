@@ -3,10 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:package_info_plus/package_info_plus.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:shimmer/shimmer.dart';
+import 'package:Resilio/core/theme/app_colors.dart';
 
-import 'package:Resilio/core/di/injection.dart';
 import 'package:Resilio/core/routing/route_names.dart';
 import 'package:Resilio/features/customer/auth/presentation/bloc/auth_bloc.dart';
 import 'package:Resilio/features/customer/auth/presentation/bloc/auth_event.dart';
@@ -24,99 +23,6 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  String _appVersion = '1.0.0';
-  String _cacheSize = '0.0 MB';
-
-  @override
-  void initState() {
-    super.initState();
-    _loadAppInfo();
-    _calculateCacheSize();
-  }
-
-  Future<void> _loadAppInfo() async {
-    final packageInfo = await PackageInfo.fromPlatform();
-    if (mounted) {
-      setState(() {
-        _appVersion = packageInfo.version;
-      });
-    }
-  }
-
-  Future<void> _calculateCacheSize() async {
-    try {
-      final tempDir = await getTemporaryDirectory();
-      final cacheDir = await getApplicationCacheDirectory();
-      int totalSize = 0;
-
-      for (var dir in [tempDir, cacheDir]) {
-        if (await dir.exists()) {
-          await for (var entity in dir.list(recursive: true)) {
-            if (entity is File) {
-              totalSize += await entity.length();
-            }
-          }
-        }
-      }
-      if (mounted) {
-        setState(() {
-          _cacheSize = '${(totalSize / (1024 * 1024)).toStringAsFixed(1)} MB';
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _cacheSize = 'Error';
-        });
-      }
-    }
-  }
-
-  Future<void> _clearCache() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Clear Cache'),
-        content: Text('Current cache size: $_cacheSize\nAre you sure you want to clear it?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Clear', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true && mounted) {
-      try {
-        final tempDir = await getTemporaryDirectory();
-        final cacheDir = await getApplicationCacheDirectory();
-        for (var dir in [tempDir, cacheDir]) {
-          if (await dir.exists()) {
-            await dir.delete(recursive: true);
-            await dir.create(recursive: true);
-          }
-        }
-        await _calculateCacheSize();
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Cache cleared successfully')),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error clearing cache: $e')),
-          );
-        }
-      }
-    }
-  }
-
   void _handleLogout() {
     showDialog(
       context: context,
@@ -150,11 +56,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
           elevation: 0,
           backgroundColor: Colors.transparent,
           surfaceTintColor: Colors.transparent,
+          leading: IconButton(
+            icon: Icon(
+              Icons.arrow_back_ios_new_rounded,
+              size: 20.sp,
+              color: context.textPrimaryColor,
+            ),
+            onPressed: () => context.pop(),
+          ),
         ),
         body: BlocBuilder<ProfileBloc, ProfileState>(
           builder: (context, state) {
             if (state is ProfileLoading) {
-              return const Center(child: CircularProgressIndicator());
+              return _ProfileShimmer();
             } else if (state is ProfileError) {
               return Center(child: Text(state.message));
             } else if (state is ProfileLoaded) {
@@ -167,20 +81,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     // Premium Card or Simple Info
                     BlocBuilder<SubscriptionBloc, SubscriptionState>(
                       builder: (context, subState) {
-                        final isPremium = subState is SubscriptionLoaded && 
-                                        subState.subscription.isActive;
+                        final isPremium = subState is SubscriptionLoaded &&
+                            subState.subscription.isActive;
                         final planName = subState is SubscriptionLoaded && isPremium
-                                        ? subState.subscription.planId
-                                        : 'Free';
+                            ? subState.subscription.planId
+                            : 'Free';
 
                         if (isPremium) {
                           return PremiumProfileCard(
                             profile: profile,
-                            planName: planName,
+                            subscription: subState.subscription,
                           );
                         }
 
-                        return _buildSimpleHeader(context, profile);
+                        return _buildSimpleHeader(context, profile, isPremium: false);
                       },
                     ),
 
@@ -206,33 +120,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       onTap: () => context.pushNamed(RouteNames.transactionHistory),
                     ),
                     ProfileMenuItem(
-                      icon: Icons.cleaning_services_outlined,
-                      title: 'Clear Cache',
-                      description: 'Free up space: $_cacheSize',
-                      onTap: _clearCache,
-                    ),
-                    ProfileMenuItem(
-                      icon: Icons.info_outline_rounded,
-                      title: 'About',
-                      description: 'Resilio v$_appVersion',
-                      onTap: () {
-                        showAboutDialog(
-                          context: context,
-                          applicationName: 'Resilio',
-                          applicationVersion: _appVersion,
-                          applicationIcon: const FlutterLogo(), // Replace with app icon if available
-                          applicationLegalese: '© 2026 Resilio Team',
-                        );
-                      },
-                    ),
-                    ProfileMenuItem(
                       icon: Icons.logout_rounded,
                       title: 'Logout',
                       description: 'Sign out of your account',
                       isDestructive: true,
                       onTap: _handleLogout,
                     ),
-                    
+
                     SizedBox(height: 40.h),
                   ],
                 ),
@@ -244,29 +138,160 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
   }
 
-  Widget _buildSimpleHeader(BuildContext context, dynamic profile) {
+  ImageProvider _resolveImage(String photoUrl) {
+    if (photoUrl.startsWith('/')) return FileImage(File(photoUrl));
+    return NetworkImage(photoUrl);
+  }
+
+  Widget _buildSimpleHeader(BuildContext context, dynamic profile,
+      {required bool isPremium}) {
     return Column(
       children: [
-        CircleAvatar(
-          radius: 50.r,
-          backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
-          backgroundImage: profile.photoUrl.isNotEmpty 
-                           ? NetworkImage(profile.photoUrl) 
-                           : null,
-          child: profile.photoUrl.isEmpty
-                 ? Icon(Icons.person_rounded, size: 50.sp, color: Theme.of(context).primaryColor)
-                 : null,
+        // Avatar with optional crown above the head
+        SizedBox(
+          width: 110.w,
+          height: 100.h,
+          child: Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.bottomCenter,
+            children: [
+              // Gold glow ring for premium
+              if (isPremium)
+                Container(
+                  width: 104.w,
+                  height: 104.w,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFD4AF37), Color(0xFF8B6914)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFD4AF37).withValues(alpha: 0.45),
+                        blurRadius: 18,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(3),
+                  child: CircleAvatar(
+                    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                    backgroundImage: profile.photoUrl.isNotEmpty
+                        ? _resolveImage(profile.photoUrl)
+                        : null,
+                    child: profile.photoUrl.isEmpty
+                        ? Icon(Icons.person_rounded,
+                            size: 50.sp,
+                            color: const Color(0xFFD4AF37))
+                        : null,
+                  ),
+                )
+              else
+                CircleAvatar(
+                  radius: 50.r,
+                  backgroundColor:
+                      Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                  backgroundImage: profile.photoUrl.isNotEmpty
+                      ? _resolveImage(profile.photoUrl)
+                      : null,
+                  child: profile.photoUrl.isEmpty
+                      ? Icon(Icons.person_rounded,
+                          size: 50.sp,
+                          color: Theme.of(context).primaryColor)
+                      : null,
+                ),
+
+            ],
+          ),
         ),
-        SizedBox(height: 16.h),
-        Text(
-          profile.displayName,
-          style: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.bold),
+
+        SizedBox(height: 14.h),
+
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              profile.displayName,
+              style: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.bold),
+            ),
+            if (isPremium) ...[
+              SizedBox(width: 6.w),
+              const Icon(Icons.verified_rounded,
+                  size: 18, color: Color(0xFFD4AF37)),
+            ],
+          ],
         ),
         Text(
           profile.email,
           style: TextStyle(fontSize: 14.sp, color: Colors.grey),
         ),
       ],
+    );
+  }
+}
+
+class _ProfileShimmer extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final base = isDark ? Colors.grey[800]! : Colors.grey[300]!;
+    final highlight = isDark ? Colors.grey[700]! : Colors.grey[100]!;
+
+    return Shimmer.fromColors(
+      baseColor: base,
+      highlightColor: highlight,
+      child: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+        child: Column(
+          children: [
+            // Avatar placeholder
+            Center(
+              child: CircleAvatar(
+                radius: 50.r,
+                backgroundColor: Colors.white,
+              ),
+            ),
+            SizedBox(height: 16.h),
+            // Name placeholder
+            Center(
+              child: Container(
+                width: 160.w,
+                height: 22.h,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(6.r),
+                ),
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Center(
+              child: Container(
+                width: 120.w,
+                height: 14.h,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(6.r),
+                ),
+              ),
+            ),
+            SizedBox(height: 32.h),
+            // Menu item placeholders
+            ...List.generate(5, (i) => Padding(
+              padding: EdgeInsets.only(bottom: 12.h),
+              child: Container(
+                height: 64.h,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16.r),
+                ),
+              ),
+            )),
+          ],
+        ),
+      ),
     );
   }
 }

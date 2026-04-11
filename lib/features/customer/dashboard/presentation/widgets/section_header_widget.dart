@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../../../../core/theme/theme_extension.dart';
 import '../../../../../core/theme/app_colors.dart';
 
 class SectionHeaderWidget extends StatelessWidget {
@@ -20,7 +19,9 @@ class SectionHeaderWidget extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
+        crossAxisAlignment: subtitle.isEmpty
+            ? CrossAxisAlignment.center
+            : CrossAxisAlignment.end,
         children: [
           Expanded(
             child: Column(
@@ -35,16 +36,17 @@ class SectionHeaderWidget extends StatelessWidget {
                     color: context.textPrimaryColor,
                   ),
                 ),
-                SizedBox(height: 4.h),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w400,
-                    color: context.textSecondaryColor,
+                if (subtitle.isNotEmpty) SizedBox(height: 4.h),
+                if (subtitle.isNotEmpty)
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w400,
+                      color: context.textSecondaryColor,
+                    ),
                   ),
-                ),
               ],
             ),
           ),
@@ -56,7 +58,10 @@ class SectionHeaderWidget extends StatelessWidget {
                 onTap: onSeeAll,
                 borderRadius: BorderRadius.circular(20.r),
                 child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 14.w,
+                    vertical: 8.h,
+                  ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [

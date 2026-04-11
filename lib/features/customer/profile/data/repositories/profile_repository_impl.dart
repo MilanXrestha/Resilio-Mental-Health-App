@@ -51,6 +51,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
         language: profile.language,
         createdAt: profile.createdAt,
         updatedAt: profile.updatedAt,
+        lastLoginAt: profile.lastLoginAt,
       );
       final updatedProfile = await _remoteDataSource.updateProfile(model);
       if (updatedProfile != null) {

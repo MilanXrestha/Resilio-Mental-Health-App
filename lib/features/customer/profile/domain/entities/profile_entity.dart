@@ -18,6 +18,7 @@ class ProfileEntity extends Equatable {
   final String language;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final DateTime? lastLoginAt;
 
   const ProfileEntity({
     required this.id,
@@ -37,6 +38,7 @@ class ProfileEntity extends Equatable {
     required this.language,
     required this.createdAt,
     required this.updatedAt,
+    this.lastLoginAt,
   });
 
   @override
@@ -58,5 +60,6 @@ class ProfileEntity extends Equatable {
         language,
         createdAt,
         updatedAt,
+        lastLoginAt,
       ];
 }

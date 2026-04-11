@@ -15,7 +15,6 @@ import '../../../dashboard/domain/entities/quote_entity.dart';
 import '../../../images/domain/entities/image_entity.dart';
 import '../../../video/domain/entities/video_entity.dart';
 import '../../../categories/domain/entities/category_card_entity.dart';
-import '../../../categories/presentation/screens/category_detail_screen.dart';
 import '../../../tips/domain/entities/tip_entity.dart';
 
 import '../../../dashboard/presentation/widgets/audio_card_widget.dart';
@@ -125,8 +124,12 @@ class _ExploreViewState extends State<_ExploreView> {
 
   Widget _buildLoadingState(BuildContext context) {
     final isDarkMode = context.isDarkMode;
-    final baseColor = isDarkMode ? context.surfaceColor : context.backgroundColor;
-    final highlightColor = isDarkMode ? context.surfaceColor.withOpacity(0.5) : Colors.grey.shade100;
+    final baseColor = isDarkMode
+        ? context.surfaceColor
+        : context.backgroundColor;
+    final highlightColor = isDarkMode
+        ? context.surfaceColor.withOpacity(0.5)
+        : Colors.grey.shade100;
 
     return SingleChildScrollView(
       physics: const NeverScrollableScrollPhysics(),
@@ -142,31 +145,72 @@ class _ExploreViewState extends State<_ExploreView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(width: 150.w, height: 32.h, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8.r))),
+                  Container(
+                    width: 150.w,
+                    height: 32.h,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                  ),
                   SizedBox(height: 8.h),
-                  Container(width: 200.w, height: 16.h, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4.r))),
+                  Container(
+                    width: 200.w,
+                    height: 16.h,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(4.r),
+                    ),
+                  ),
                   SizedBox(height: 24.h),
-                  Container(width: double.infinity, height: 50.h, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16.r))),
+                  Container(
+                    width: double.infinity,
+                    height: 50.h,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16.r),
+                    ),
+                  ),
                   SizedBox(height: 16.h),
-                  Row(
-                    children: List.generate(4, (index) => Padding(
-                      padding: EdgeInsets.only(right: 8.w),
-                      child: Container(width: 80.w, height: 36.h, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20.r))),
-                    )),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: List.generate(
+                        4,
+                        (index) => Padding(
+                          padding: EdgeInsets.only(right: 8.w),
+                          child: Container(
+                            width: 80.w,
+                            height: 36.h,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20.r),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
           ),
-          
+
           // Section placeholders
-          ...List.generate(3, (index) => _buildShimmerSection(context, baseColor, highlightColor)),
+          ...List.generate(
+            3,
+            (index) => _buildShimmerSection(context, baseColor, highlightColor),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildShimmerSection(BuildContext context, Color baseColor, Color highlightColor) {
+  Widget _buildShimmerSection(
+    BuildContext context,
+    Color baseColor,
+    Color highlightColor,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -178,8 +222,22 @@ class _ExploreViewState extends State<_ExploreView> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(width: 140.w, height: 24.h, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(6.r))),
-                Container(width: 60.w, height: 16.h, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4.r))),
+                Container(
+                  width: 140.w,
+                  height: 24.h,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(6.r),
+                  ),
+                ),
+                Container(
+                  width: 60.w,
+                  height: 16.h,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(4.r),
+                  ),
+                ),
               ],
             ),
           ),
@@ -201,7 +259,10 @@ class _ExploreViewState extends State<_ExploreView> {
                   child: Container(
                     width: 160.w,
                     height: 150.h,
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16.r)),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16.r),
+                    ),
                   ),
                 ),
                 SizedBox(height: 12.h),
@@ -211,7 +272,10 @@ class _ExploreViewState extends State<_ExploreView> {
                   child: Container(
                     width: 130.w,
                     height: 14.h,
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4.r)),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(4.r),
+                    ),
                   ),
                 ),
                 SizedBox(height: 6.h),
@@ -221,7 +285,10 @@ class _ExploreViewState extends State<_ExploreView> {
                   child: Container(
                     width: 90.w,
                     height: 12.h,
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4.r)),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(4.r),
+                    ),
                   ),
                 ),
               ],
@@ -366,8 +433,6 @@ class _ExploreViewState extends State<_ExploreView> {
             onFilterTap: () => _showFilterSheet(context, state),
             activeFilterCount: state.filter.activeFilterCount,
           ),
-          SizedBox(height: 12.h),
-          _buildQuickFilters(context, state),
         ],
       ),
     );
@@ -423,62 +488,54 @@ class _ExploreViewState extends State<_ExploreView> {
   }
 
   Widget _buildSectionedContent(
-      BuildContext context,
-      ExploreLoaded state,
-      Map<ExploreItemType, List<ExploreItemEntity>> itemsByType,
-      ) {
+    BuildContext context,
+    ExploreLoaded state,
+    Map<ExploreItemType, List<ExploreItemEntity>> itemsByType,
+  ) {
+    final categories = itemsByType[ExploreItemType.category] ?? [];
+    final Map<String, List<ExploreItemEntity>> itemsByCategory = {};
+    final List<ExploreItemEntity> uncategorized = [];
+
+    for (final item in state.filteredItems) {
+      if (item.type == ExploreItemType.category) continue;
+      if (item.categoryIds.isEmpty) {
+        uncategorized.add(item);
+      } else {
+        for (final catId in item.categoryIds) {
+          itemsByCategory.putIfAbsent(catId, () => []).add(item);
+        }
+      }
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Audio Section
-        if (itemsByType.containsKey(ExploreItemType.audio))
-          _AudioSection(
-            items: itemsByType[ExploreItemType.audio]!,
-            onSeeAll: () => _navigateToTypeList(context, ExploreItemType.audio),
+        ...categories.map((category) {
+          final items = itemsByCategory[category.id] ?? [];
+          if (items.isEmpty) return const SizedBox.shrink();
+          return _CategoryContentSection(
+            categoryTitle: category.title,
+            items: items,
+            allItems: state.allItems,
+            onSeeAll: () {
+              context.pushNamed(
+                RouteNames.categoryDetail,
+                extra: CategoryCardEntity(
+                  id: category.id,
+                  name: category.title,
+                  imageUrl: category.imageUrl ?? '',
+                  description: category.description ?? '',
+                ),
+              );
+            },
+          );
+        }),
+        if (uncategorized.isNotEmpty)
+          _CategoryContentSection(
+            categoryTitle: 'Other Content',
+            items: uncategorized,
+            allItems: state.allItems,
           ),
-
-        // Short Videos Section
-        if (itemsByType.containsKey(ExploreItemType.shortVideo))
-          _ShortVideosSection(
-            items: itemsByType[ExploreItemType.shortVideo]!,
-            onSeeAll: () => _navigateToTypeList(context, ExploreItemType.shortVideo),
-          ),
-
-        // Quotes Section
-        if (itemsByType.containsKey(ExploreItemType.quote))
-          _QuotesSection(
-            items: itemsByType[ExploreItemType.quote]!,
-            onSeeAll: () => _navigateToTypeList(context, ExploreItemType.quote),
-          ),
-
-        // Tips Section
-        if (itemsByType.containsKey(ExploreItemType.tip))
-          _TipsSection(
-            items: itemsByType[ExploreItemType.tip]!,
-            onSeeAll: () => _navigateToTypeList(context, ExploreItemType.tip),
-          ),
-
-        // Images Section
-        if (itemsByType.containsKey(ExploreItemType.image))
-          _ImagesSection(
-            items: itemsByType[ExploreItemType.image]!,
-            onSeeAll: () => _navigateToTypeList(context, ExploreItemType.image),
-          ),
-
-        // Long Videos Section
-        if (itemsByType.containsKey(ExploreItemType.longVideo))
-          _LongVideosSection(
-            items: itemsByType[ExploreItemType.longVideo]!,
-            onSeeAll: () => _navigateToTypeList(context, ExploreItemType.longVideo),
-          ),
-
-        // Categories Section
-        if (itemsByType.containsKey(ExploreItemType.category))
-          _CategoriesSection(
-            items: itemsByType[ExploreItemType.category]!,
-            onSeeAll: () => _navigateToTypeList(context, ExploreItemType.category),
-          ),
-
         SizedBox(height: 100.h),
       ],
     );
@@ -546,9 +603,9 @@ class _ExploreViewState extends State<_ExploreView> {
   void _navigateToTypeList(BuildContext context, ExploreItemType type) {
     // Navigate to full list of specific type
     // You can implement a separate screen or just filter
-    context.read<ExploreBloc>().add(UpdateFilters(
-      ExploreFilter(types: [type]),
-    ));
+    context.read<ExploreBloc>().add(
+      UpdateFilters(ExploreFilter(types: [type])),
+    );
   }
 
   String _getTypeLabel(ExploreItemType type) {
@@ -641,17 +698,19 @@ class _QuickFilterChip extends StatelessWidget {
           color: isSelected ? chipColor : context.surfaceColor,
           borderRadius: BorderRadius.circular(20.r),
           border: Border.all(
-            color: isSelected ? chipColor : context.borderColor.withOpacity(0.3),
+            color: isSelected
+                ? chipColor
+                : context.borderColor.withOpacity(0.3),
             width: 1.5.w,
           ),
           boxShadow: isSelected
               ? [
-            BoxShadow(
-              color: chipColor.withOpacity(0.3),
-              blurRadius: 8.r,
-              offset: Offset(0, 3.h),
-            ),
-          ]
+                  BoxShadow(
+                    color: chipColor.withOpacity(0.3),
+                    blurRadius: 8.r,
+                    offset: Offset(0, 3.h),
+                  ),
+                ]
               : null,
         ),
         child: Row(
@@ -716,32 +775,71 @@ class _SectionHeader extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// AUDIO SECTION
+// CATEGORY CONTENT SECTION (MIXED)
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _AudioSection extends StatelessWidget {
+class _CategoryContentSection extends StatelessWidget {
+  final String categoryTitle;
   final List<ExploreItemEntity> items;
+  final List<ExploreItemEntity> allItems;
   final VoidCallback? onSeeAll;
 
-  const _AudioSection({required this.items, this.onSeeAll});
+  const _CategoryContentSection({
+    required this.categoryTitle,
+    required this.items,
+    required this.allItems,
+    this.onSeeAll,
+  });
 
   @override
   Widget build(BuildContext context) {
     if (items.isEmpty) return const SizedBox.shrink();
 
+    double _getMaxHeight() {
+      double maxHeight = 145.h; // default minimum
+      for (final item in items) {
+        double h = 0;
+        switch (item.type) {
+          case ExploreItemType.audio:
+            h = 190.h;
+            break;
+          case ExploreItemType.shortVideo:
+            h = 245.h;
+            break;
+          case ExploreItemType.longVideo:
+            h = 300.h;
+            break;
+          case ExploreItemType.quote:
+            h = 145.h;
+            break;
+          case ExploreItemType.tip:
+            h = 280.h;
+            break;
+          case ExploreItemType.image:
+            h = 280.h;
+            break;
+          case ExploreItemType.category:
+            h = 160.h;
+            break;
+        }
+        if (h > maxHeight) maxHeight = h;
+      }
+      return maxHeight;
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _SectionHeader(
-          title: 'Calming Audio',
-          subtitle: 'Meditation & wellness sessions',
-          icon: Icons.headphones_rounded,
-          iconColor: const Color(0xFF6366F1),
+          title: categoryTitle,
+          subtitle: '',
+          icon: Icons.category_rounded,
+          iconColor: const Color(0xFF3B82F6),
           onSeeAll: onSeeAll,
         ),
         SizedBox(height: 16.h),
         SizedBox(
-          height: 190.h,
+          height: _getMaxHeight(),
           child: ListView.separated(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
             scrollDirection: Axis.horizontal,
@@ -750,16 +848,110 @@ class _AudioSection extends StatelessWidget {
             separatorBuilder: (_, __) => SizedBox(width: 16.w),
             itemBuilder: (context, index) {
               final item = items[index];
-              final audio = _toAudioEntity(item);
-              return AudioCardWidget(
-                track: audio,
-                onTap: () => context.pushNamed(RouteNames.mediaPlayer, extra: audio),
+              return Align(
+                alignment: Alignment.topCenter,
+                child: _buildCardForItem(context, item, index),
               );
             },
           ),
         ),
       ],
     );
+  }
+
+  Widget _buildCardForItem(
+    BuildContext context,
+    ExploreItemEntity item,
+    int index,
+  ) {
+    switch (item.type) {
+      case ExploreItemType.audio:
+        final audio = _toAudioEntity(item);
+        return SizedBox(
+          height: 190.h,
+          child: AudioCardWidget(
+            track: audio,
+            onTap: () =>
+                context.pushNamed(RouteNames.mediaPlayer, extra: audio),
+          ),
+        );
+
+      case ExploreItemType.shortVideo:
+        return SizedBox(
+          height: 245.h,
+          child: ShortVideoCardWidget(
+            video: _toVideoEntity(item, VideoType.shortForm),
+            onTap: () {
+              final videos = items
+                  .where((i) => i.type == ExploreItemType.shortVideo)
+                  .map((i) => _toVideoEntity(i, VideoType.shortForm))
+                  .toList();
+              context.pushNamed(RouteNames.shortsPlayer, extra: videos);
+            },
+          ),
+        );
+
+      case ExploreItemType.longVideo:
+        final video = _toVideoEntity(item, VideoType.longForm);
+        return SizedBox(
+          height: 300.h,
+          width: 320.w,
+          child: LongVideoCardWidget(
+            video: video,
+            onTap: () =>
+                context.pushNamed(RouteNames.longVideoPlayer, extra: video),
+          ),
+        );
+
+      case ExploreItemType.quote:
+        final quote = _toQuoteEntity(item);
+        return SizedBox(
+          height: 145.h,
+          child: QuoteCardWidget(
+            quote: quote,
+            onTap: () => _showQuoteDetail(context, item),
+          ),
+        );
+
+      case ExploreItemType.tip:
+        final tip = _toTipEntity(item, index);
+        return SizedBox(
+          height: 280.h,
+          width: 260.w,
+          child: TipCardWidget(
+            tip: tip,
+            onTap: () => _showTipDetail(context, item),
+          ),
+        );
+
+      case ExploreItemType.image:
+        return SizedBox(
+          height: 280.h,
+          child: ExploreImageCard(
+            item: item,
+            onTap: () => _showImageDetail(context, item),
+          ),
+        );
+
+      case ExploreItemType.category:
+        return SizedBox(
+          height: 160.h,
+          child: CategoryCardWidget(
+            category: _toCategoryEntity(item),
+            onTap: () {
+              context.pushNamed(
+                RouteNames.categoryDetail,
+                extra: CategoryCardEntity(
+                  id: item.id,
+                  name: item.title,
+                  imageUrl: item.imageUrl ?? '',
+                  description: item.description ?? '',
+                ),
+              );
+            },
+          ),
+        );
+    }
   }
 
   AudioEntity _toAudioEntity(ExploreItemEntity item) {
@@ -779,59 +971,6 @@ class _AudioSection extends StatelessWidget {
       sortOrder: 0,
       createdAt: item.createdAt,
       updatedAt: item.createdAt,
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SHORT VIDEOS SECTION
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _ShortVideosSection extends StatelessWidget {
-  final List<ExploreItemEntity> items;
-  final VoidCallback? onSeeAll;
-
-  const _ShortVideosSection({required this.items, this.onSeeAll});
-
-  @override
-  Widget build(BuildContext context) {
-    if (items.isEmpty) return const SizedBox.shrink();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _SectionHeader(
-          title: 'Short Videos',
-          subtitle: 'Quick mindfulness moments',
-          icon: Icons.play_circle_outline_rounded,
-          iconColor: const Color(0xFFEC4899),
-          onSeeAll: onSeeAll,
-        ),
-        SizedBox(height: 16.h),
-        SizedBox(
-          height: 220.h,
-          child: ListView.separated(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            itemCount: items.length,
-            separatorBuilder: (_, __) => SizedBox(width: 14.w),
-            itemBuilder: (context, index) {
-              final item = items[index];
-              return ShortVideoCardWidget(
-                video: _toVideoEntity(item, VideoType.shortForm),
-                onTap: () {
-                  final videos = items.map((i) => _toVideoEntity(i, VideoType.shortForm)).toList();
-                  context.pushNamed(
-                    RouteNames.shortsPlayer,
-                    extra: videos,
-                  );
-                },
-              );
-            },
-          ),
-        ),
-      ],
     );
   }
 
@@ -857,54 +996,6 @@ class _ShortVideosSection extends StatelessWidget {
       updatedAt: item.createdAt,
     );
   }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// QUOTES SECTION
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _QuotesSection extends StatelessWidget {
-  final List<ExploreItemEntity> items;
-  final VoidCallback? onSeeAll;
-
-  const _QuotesSection({required this.items, this.onSeeAll});
-
-  @override
-  Widget build(BuildContext context) {
-    if (items.isEmpty) return const SizedBox.shrink();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _SectionHeader(
-          title: 'Inspiring Quotes',
-          subtitle: 'Words of wisdom',
-          icon: Icons.format_quote_rounded,
-          iconColor: const Color(0xFF0D9488),
-          onSeeAll: onSeeAll,
-        ),
-        SizedBox(height: 16.h),
-        SizedBox(
-          height: 145.h,
-          child: ListView.separated(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            itemCount: items.length,
-            separatorBuilder: (_, __) => SizedBox(width: 14.w),
-            itemBuilder: (context, index) {
-              final item = items[index];
-              final quote = _toQuoteEntity(item);
-              return QuoteCardWidget(
-                quote: quote,
-                onTap: () => _showQuoteDetail(context, item, items),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
 
   QuoteEntity _toQuoteEntity(ExploreItemEntity item) {
     return QuoteEntity(
@@ -922,80 +1013,31 @@ class _QuotesSection extends StatelessWidget {
     );
   }
 
-  void _showQuoteDetail(BuildContext context, ExploreItemEntity item, List<ExploreItemEntity> allItems) {
-    final quotes = allItems.map((e) => _toQuoteEntity(e)).toList();
-    final initialIndex = allItems.indexOf(item);
+  void _showQuoteDetail(BuildContext context, ExploreItemEntity item) {
+    final quotes = items
+        .where((e) => e.type == ExploreItemType.quote)
+        .map((e) => _toQuoteEntity(e))
+        .toList();
+    final localItem = _toQuoteEntity(item);
+    final initialIndex = quotes.indexWhere((q) => q.id == localItem.id);
 
     context.pushNamed(
       RouteNames.contentViewer,
       extra: {
         'quotes': quotes,
         'initialIndex': initialIndex >= 0 ? initialIndex : 0,
-        'title': 'Daily Inspiration',
+        'title': categoryTitle,
       },
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// TIPS SECTION
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _TipsSection extends StatelessWidget {
-  final List<ExploreItemEntity> items;
-  final VoidCallback? onSeeAll;
-
-  const _TipsSection({required this.items, this.onSeeAll});
-
-  @override
-  Widget build(BuildContext context) {
-    if (items.isEmpty) return const SizedBox.shrink();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _SectionHeader(
-          title: 'Wellness Tips',
-          subtitle: 'Quick advice for daily wellness',
-          icon: Icons.lightbulb_outline_rounded,
-          iconColor: const Color(0xFFF59E0B),
-          onSeeAll: onSeeAll,
-        ),
-        SizedBox(height: 16.h),
-        SizedBox(
-          height: 280.h,
-          child: ListView.builder(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            itemCount: items.length,
-            itemBuilder: (context, index) {
-              final item = items[index];
-              final tip = _toTipEntity(item, index);
-              return SizedBox(
-                width: 260.w,
-                child: Padding(
-                  padding: EdgeInsets.only(right: 16.w),
-                  child: TipCardWidget(
-                    tip: tip,
-                    onTap: () => _showTipDetail(context, item, items),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
     );
   }
 
   static const _tipTypes = [
-    TipType.relationshipBooster, // warm red  #FF6B6B
-    TipType.communication,       // yellow    #FFE66D
-    TipType.lettingGo,           // teal      #4ECDC4
-    TipType.selfCare,            // mint      #95E1D3
-    TipType.mindfulness,         // sage      #A8E6CF
-    TipType.general,             // primary
+    TipType.relationshipBooster,
+    TipType.communication,
+    TipType.lettingGo,
+    TipType.selfCare,
+    TipType.mindfulness,
+    TipType.general,
   ];
 
   TipEntity _toTipEntity(ExploreItemEntity item, int index) {
@@ -1017,103 +1059,45 @@ class _TipsSection extends StatelessWidget {
     );
   }
 
-  void _showTipDetail(BuildContext context, ExploreItemEntity item, List<ExploreItemEntity> allItems) {
-    final tips = [for (var i = 0; i < allItems.length; i++) _toTipEntity(allItems[i], i)];
-    final initialIndex = allItems.indexOf(item);
-    
+  void _showTipDetail(BuildContext context, ExploreItemEntity item) {
+    final tipItems = items.where((e) => e.type == ExploreItemType.tip).toList();
+    final tips = [
+      for (var i = 0; i < tipItems.length; i++) _toTipEntity(tipItems[i], i),
+    ];
+    final initialIndex = tipItems.indexOf(item);
+
     context.pushNamed(
       RouteNames.contentViewer,
       extra: {
         'tips': tips,
         'initialIndex': initialIndex >= 0 ? initialIndex : 0,
-        'title': 'Wellness Tips',
+        'title': categoryTitle,
       },
     );
   }
-}
 
-// ─────────────────────────────────────────────────────────────────────────────
-// IMAGES SECTION
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _ImagesSection extends StatelessWidget {
-  final List<ExploreItemEntity> items;
-  final VoidCallback? onSeeAll;
-
-  const _ImagesSection({required this.items, this.onSeeAll});
-
-  @override
-  Widget build(BuildContext context) {
-    if (items.isEmpty) return const SizedBox.shrink();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _SectionHeader(
-          title: 'Calming Images',
-          subtitle: 'Visual peace for your mind',
-          icon: Icons.image_rounded,
-          iconColor: const Color(0xFF10B981),
-          onSeeAll: onSeeAll,
-        ),
-        SizedBox(height: 16.h),
-        SizedBox(
-          height: 280.h,
-          child: ListView.separated(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            itemCount: items.length,
-            separatorBuilder: (_, __) => SizedBox(width: 14.w),
-            itemBuilder: (context, index) {
-              final item = items[index];
-              return ExploreImageCard(
-                item: item,
-                onTap: () {
-                  final images = items.map((e) => ImageEntity(
-                    id: e.id,
-                    title: e.title,
-                    description: e.description ?? '',
-                    imageUrl: e.imageUrl ?? '',
-                    thumbnailUrl: e.thumbnailUrl ?? '',
-                    imageType: ImageType.motivation, // Defaulting or mapping
-                    isFeatured: e.isFeatured,
-                    isPremium: e.isPremium,
-                    createdAt: e.createdAt,
-                    updatedAt: e.createdAt,
-                  )).toList();
-                  
-                  context.pushNamed(
-                    RouteNames.imageViewer,
-                    extra: {
-                      'images': images,
-                      'initialIndex': index,
-                    },
-                  );
-                },
-              );
-            },
+  void _showImageDetail(BuildContext context, ExploreItemEntity item) {
+    final imageItems = items
+        .where((e) => e.type == ExploreItemType.image)
+        .toList();
+    final images = imageItems
+        .map(
+          (e) => ImageEntity(
+            id: e.id,
+            title: e.title,
+            description: e.description ?? '',
+            imageUrl: e.imageUrl ?? '',
+            thumbnailUrl: e.thumbnailUrl ?? '',
+            imageType: ImageType.nature,
+            isFeatured: e.isFeatured,
+            isPremium: e.isPremium,
+            createdAt: e.createdAt,
+            updatedAt: e.createdAt,
           ),
-        ),
-      ],
-    );
-  }
+        )
+        .toList();
 
-  void _showImageDetail(BuildContext context, ExploreItemEntity item, List<ExploreItemEntity> allItems) {
-    final images = allItems.map((e) => ImageEntity(
-      id: e.id,
-      title: e.title,
-      description: e.description ?? '',
-      imageUrl: e.imageUrl ?? '',
-      thumbnailUrl: e.thumbnailUrl ?? '',
-      imageType: ImageType.nature, // Mapping
-      isFeatured: e.isFeatured,
-      isPremium: e.isPremium,
-      createdAt: e.createdAt,
-      updatedAt: e.createdAt,
-    )).toList();
-    
-    final initialIndex = allItems.indexOf(item);
+    final initialIndex = imageItems.indexOf(item);
 
     context.pushNamed(
       RouteNames.imageViewer,
@@ -1121,139 +1105,6 @@ class _ImagesSection extends StatelessWidget {
         'images': images,
         'initialIndex': initialIndex >= 0 ? initialIndex : 0,
       },
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// LONG VIDEOS SECTION
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _LongVideosSection extends StatelessWidget {
-  final List<ExploreItemEntity> items;
-  final VoidCallback? onSeeAll;
-
-  const _LongVideosSection({required this.items, this.onSeeAll});
-
-  @override
-  Widget build(BuildContext context) {
-    if (items.isEmpty) return const SizedBox.shrink();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _SectionHeader(
-          title: 'Featured Videos',
-          subtitle: 'In-depth wellness content',
-          icon: Icons.ondemand_video_rounded,
-          iconColor: const Color(0xFF8B5CF6),
-          onSeeAll: onSeeAll,
-        ),
-        SizedBox(height: 16.h),
-        SizedBox(
-          height: 250.h,
-          child: ListView.separated(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            itemCount: items.length,
-            separatorBuilder: (_, __) => SizedBox(width: 16.w),
-            itemBuilder: (context, index) {
-              final item = items[index];
-              final video = _toVideoEntity(item, VideoType.longForm);
-              return SizedBox(
-                width: 320.w,
-                child: LongVideoCardWidget(
-                  video: video,
-                  onTap: () {
-                    context.pushNamed(RouteNames.longVideoPlayer, extra: video);
-                  },
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  VideoEntity _toVideoEntity(ExploreItemEntity item, VideoType type) {
-    return VideoEntity(
-      id: item.id,
-      title: item.title,
-      description: item.description ?? '',
-      artistName: item.subtitle ?? '',
-      videoUrl: item.metadata?['videoUrl'] ?? '',
-      thumbnailUrl: item.thumbnailUrl ?? '',
-      coverImageUrl: item.imageUrl ?? '',
-      durationSeconds: item.durationSeconds ?? 0,
-      categoryId: item.categoryIds.isNotEmpty ? item.categoryIds.first : '',
-      moodTags: item.tags,
-      videoType: type,
-      aspectRatio: 16 / 9,
-      isFeatured: item.isFeatured,
-      isPremium: item.isPremium,
-      isActive: true,
-      sortOrder: 0,
-      createdAt: item.createdAt,
-      updatedAt: item.createdAt,
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// CATEGORIES SECTION
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _CategoriesSection extends StatelessWidget {
-  final List<ExploreItemEntity> items;
-  final VoidCallback? onSeeAll;
-
-  const _CategoriesSection({required this.items, this.onSeeAll});
-
-  @override
-  Widget build(BuildContext context) {
-    if (items.isEmpty) return const SizedBox.shrink();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _SectionHeader(
-          title: 'Categories',
-          subtitle: 'Browse by topic',
-          icon: Icons.category_rounded,
-          iconColor: const Color(0xFF3B82F6),
-          onSeeAll: onSeeAll,
-        ),
-        SizedBox(height: 16.h),
-        SizedBox(
-          height: 160.h,
-          child: ListView.separated(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            itemCount: items.length,
-            separatorBuilder: (_, __) => SizedBox(width: 14.w),
-            itemBuilder: (context, index) {
-              final item = items[index];
-              return CategoryCardWidget(
-                category: _toCategoryEntity(item),
-                onTap: () {
-                  context.pushNamed(
-                    RouteNames.categoryDetail,
-                    extra: CategoryCardEntity(
-                      id: item.id,
-                      name: item.title,
-                      imageUrl: item.imageUrl ?? '',
-                      description: item.description ?? '',
-                    ),
-                  );
-                },
-              );
-            },
-          ),
-        ),
-      ],
     );
   }
 
@@ -1269,7 +1120,3 @@ class _CategoriesSection extends StatelessWidget {
     );
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// PREVIEW CARDS
-// ─────────────────────────────────────────────────────────────────────────────

@@ -5,10 +5,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../../../core/routing/route_names.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/widgets/premium_tag_widget.dart';
 import '../../../video/domain/entities/video_entity.dart';
 import '../../../favorites/domain/entities/favorite_entity.dart';
 import '../../../favorites/presentation/widgets/favorite_button.dart';
+import '../../../subscription/presentation/bloc/subscription_bloc.dart';
+import '../../../subscription/presentation/bloc/subscription_state.dart';
 
 // Per-session cache shared across all long video cards.
 final Map<String, Uint8List?> _longVideoThumbnailCache = {};
@@ -31,7 +38,20 @@ class LongVideoCardWidget extends StatelessWidget {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        if (video.isPremium) {
+          final state = context.read<SubscriptionBloc>().state;
+          final isPremiumUser = state is SubscriptionLoaded && state.subscription.isActive;
+          if (!isPremiumUser) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Premium subscription required to play this content.')),
+            );
+            context.pushNamed(RouteNames.subscription);
+            return;
+          }
+        }
+        if (onTap != null) onTap!();
+      },
       child: Container(
         width: 290.w,
         margin: EdgeInsets.only(right: 10.w),
@@ -43,7 +63,7 @@ class LongVideoCardWidget extends StatelessWidget {
               Stack(
                 children: [
                   Container(
-                    height: 150.h,
+                    height: 190.h,
                     width: double.infinity,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12.r),
@@ -112,6 +132,13 @@ class LongVideoCardWidget extends StatelessWidget {
                         ),
                       ),
                     ),
+
+                  // Premium Tag
+                  PremiumTagWidget(
+                    isPremium: video.isPremium,
+                    top: 8,
+                    left: 8,
+                  ),
                 ],
               ),
               SizedBox(height: 12.h),
@@ -183,12 +210,6 @@ class LongVideoCardWidget extends StatelessWidget {
                         ),
                       ],
                     ),
-                  ),
-                  FavoriteButton(
-                    contentId: video.id,
-                    contentType: FavoriteType.video,
-                    color: context.textSecondaryColor,
-                    padding: EdgeInsets.zero,
                   ),
                 ],
               ),

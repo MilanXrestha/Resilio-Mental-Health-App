@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
+import 'package:shimmer/shimmer.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:Resilio/core/theme/app_colors.dart';
 import 'package:Resilio/features/customer/subscription/presentation/bloc/subscription_bloc.dart';
@@ -33,11 +35,38 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
         title: const Text('Transaction History'),
         elevation: 0,
         backgroundColor: Colors.transparent,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            size: 20.sp,
+            color: context.textPrimaryColor,
+          ),
+          onPressed: () => context.pop(),
+        ),
       ),
       body: BlocBuilder<SubscriptionBloc, SubscriptionState>(
         builder: (context, state) {
           if (state is SubscriptionLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return _TransactionShimmer(isDarkMode: isDarkMode);
+          }
+
+          if (state is SubscriptionError) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error_outline_rounded, size: 48.sp, color: Colors.redAccent),
+                  SizedBox(height: 12.h),
+                  Text(state.message, style: theme.textTheme.bodyMedium?.copyWith(color: context.textSecondaryColor)),
+                  SizedBox(height: 16.h),
+                  ElevatedButton.icon(
+                    onPressed: () => context.read<SubscriptionBloc>().add(LoadTransactions()),
+                    icon: const Icon(Icons.refresh_rounded),
+                    label: const Text('Retry'),
+                  ),
+                ],
+              ),
+            );
           }
 
           if (state is SubscriptionLoaded) {
@@ -45,11 +74,25 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
 
             if (transactions.isEmpty) {
               return Center(
-                child: Text(
-                  'No transactions found',
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: context.textSecondaryColor,
-                  ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.receipt_long_outlined, size: 72.sp, color: Colors.grey.shade400),
+                    SizedBox(height: 16.h),
+                    Text(
+                      'No transactions yet',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: context.textPrimaryColor,
+                      ),
+                    ),
+                    SizedBox(height: 8.h),
+                    Text(
+                      'Your payment history will appear here\nonce you subscribe to a plan.',
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodyMedium?.copyWith(color: context.textSecondaryColor),
+                    ),
+                  ],
                 ),
               );
             }
@@ -150,8 +193,36 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
             );
           }
 
-          return const Center(child: Text('Failed to load history'));
+          return _TransactionShimmer(isDarkMode: isDarkMode);
         },
+      ),
+    );
+  }
+}
+
+class _TransactionShimmer extends StatelessWidget {
+  final bool isDarkMode;
+  const _TransactionShimmer({required this.isDarkMode});
+
+  @override
+  Widget build(BuildContext context) {
+    final base = isDarkMode ? Colors.grey[800]! : Colors.grey[300]!;
+    final highlight = isDarkMode ? Colors.grey[700]! : Colors.grey[100]!;
+
+    return Shimmer.fromColors(
+      baseColor: base,
+      highlightColor: highlight,
+      child: ListView.separated(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+        itemCount: 6,
+        separatorBuilder: (context, _) => SizedBox(height: 12.h),
+        itemBuilder: (context, _) => Container(
+          height: 80.h,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16.r),
+          ),
+        ),
       ),
     );
   }

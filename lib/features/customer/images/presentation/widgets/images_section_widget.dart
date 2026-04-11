@@ -5,7 +5,9 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../../core/routing/route_names.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../categories/domain/entities/category_card_entity.dart';
 import '../../../dashboard/presentation/widgets/section_header_widget.dart';
+import '../../../../../core/widgets/premium_tag_widget.dart';
 import '../../domain/entities/image_entity.dart';
 import '../bloc/image_bloc.dart';
 import '../bloc/image_state.dart';
@@ -70,7 +72,18 @@ class ImagesSection extends StatelessWidget {
             SectionHeaderWidget(
               title: 'Inspirational Images',
               subtitle: 'Beautiful wallpapers to inspire you',
-              onSeeAll: () => context.push('/images'),
+              onSeeAll: () {
+                context.pushNamed(
+                  RouteNames.categoryDetail,
+                  extra: const CategoryCardEntity(
+                    id: '',
+                    name: 'Inspirational Images',
+                    imageUrl: '',
+                    description: 'All inspirational images',
+                  ),
+                  queryParameters: {'contentType': 'image'},
+                );
+              },
             ),
             SizedBox(height: 16.h),
             SizedBox(
@@ -81,12 +94,9 @@ class ImagesSection extends StatelessWidget {
                 itemCount: images.length > 6 ? 6 : images.length,
                 itemBuilder: (context, index) {
                   final image = images[index];
-                  return SizedBox(
-                    width: 260.w,
-                    child: Padding(
-                      padding: EdgeInsets.only(right: 16.w),
-                      child: _buildImageCard(context, image),
-                    ),
+                  return Padding(
+                    padding: EdgeInsets.only(right: 16.w),
+                    child: _buildImageCard(context, image),
                   );
                 },
               ),
@@ -102,8 +112,6 @@ class ImagesSection extends StatelessWidget {
 
     return Container(
       width: 150.w,
-      height: 220.h,
-      margin: EdgeInsets.only(right: 11.w),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16.r),
         color: isDarkMode ? context.surfaceColor : context.backgroundColor,
@@ -203,6 +211,13 @@ class ImagesSection extends StatelessWidget {
                   ),
                 ],
               ),
+            ),
+
+            // Premium Tag
+            PremiumTagWidget(
+              isPremium: image.isPremium,
+              top: 8,
+              left: 8,
             ),
 
             // Subtle border highlight

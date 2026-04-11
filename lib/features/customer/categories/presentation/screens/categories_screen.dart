@@ -8,6 +8,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lottie/lottie.dart';
 
 import '../../../../../core/di/injection.dart';
+import '../../../../../core/routing/route_names.dart';
+import 'package:go_router/go_router.dart';
+import '../../domain/entities/category_card_entity.dart';
 import '../../domain/entities/category_entity.dart';
 import '../bloc/category_bloc.dart';
 import '../bloc/category_event.dart';
@@ -510,10 +513,14 @@ class _CategoryViewState extends State<CategoryView> {
                 clipBehavior: Clip.antiAlias,
                 child: InkWell(
                   onTap: () {
-                    Navigator.pushNamed(
-                      context,
-                      'categoryDetail',
-                      arguments: category,
+                    context.pushNamed(
+                      RouteNames.categoryDetail,
+                      extra: CategoryCardEntity(
+                        id: category.id,
+                        name: category.name,
+                        imageUrl: category.imageUrl,
+                        description: category.description,
+                      ),
                     );
                   },
                   child: Stack(

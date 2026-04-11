@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:animate_do/animate_do.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
@@ -48,6 +49,10 @@ import '../widgets/quote_card_widget.dart';
 import '../../../images/presentation/widgets/images_section_widget.dart';
 import '../../../categories/domain/entities/category_card_entity.dart';
 import '../../../categories/presentation/screens/category_detail_screen.dart';
+import '../../../profile/presentation/bloc/profile_bloc.dart';
+import '../../../profile/presentation/widgets/premium_profile_card.dart';
+import '../../../subscription/presentation/bloc/subscription_bloc.dart';
+import '../../../subscription/presentation/bloc/subscription_state.dart';
 
 class DashboardScreen extends StatelessWidget {
   final VoidCallback onViewAllCategories;
@@ -271,36 +276,80 @@ class _Header extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 20.w),
       child: Row(
         children: [
-          // ── Avatar ─────────────────────────────────────────────────
-          InkWell(
-            onTap: () {
-              context.pushNamed(RouteNames.settings);
-            },
-            borderRadius: BorderRadius.circular(30.r),
-            child: Container(
-              padding: EdgeInsets.all(2.5.w),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  colors: [
-                    context.primaryColor,
-                    context.primaryColor.withOpacity(0.4),
-                  ],
+          // ── Avatar (reads from ProfileBloc so it stays fresh after upload) ─
+          BlocBuilder<ProfileBloc, ProfileState>(
+            builder: (context, profileState) {
+              final String? photoUrl = profileState is ProfileLoaded
+                  ? profileState.profile.photoUrl
+                  : profile?.profilePictureUrl;
+
+              final ImageProvider? image = _resolveImage(photoUrl);
+
+              final bool isPremium = context
+                  .watch<SubscriptionBloc>()
+                  .state is SubscriptionLoaded &&
+                  (context.read<SubscriptionBloc>().state as SubscriptionLoaded)
+                      .subscription
+                      .isActive;
+
+              return InkWell(
+                onTap: () => context.pushNamed(RouteNames.settings),
+                borderRadius: BorderRadius.circular(30.r),
+                child: SizedBox(
+                  width: 62.w,
+                  height: 58.h,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    alignment: Alignment.bottomCenter,
+                    children: [
+                      // Ring — gold for premium, primary color for free
+                      Container(
+                        width: 58.w,
+                        height: 58.w,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            colors: isPremium
+                                ? const [
+                                    Color(0xFFD4AF37),
+                                    Color(0xFF8B6914),
+                                  ]
+                                : [
+                                    context.primaryColor,
+                                    context.primaryColor.withOpacity(0.4),
+                                  ],
+                          ),
+                          boxShadow: isPremium
+                              ? [
+                                  BoxShadow(
+                                    color: const Color(0xFFD4AF37)
+                                        .withValues(alpha: 0.45),
+                                    blurRadius: 10,
+                                    spreadRadius: 1,
+                                  ),
+                                ]
+                              : [],
+                        ),
+                        padding: EdgeInsets.all(2.5.w),
+                        child: CircleAvatar(
+                          backgroundColor: context.surfaceColor,
+                          backgroundImage: image,
+                          child: image == null
+                              ? Icon(
+                                  Icons.person_rounded,
+                                  size: 24.sp,
+                                  color: isPremium
+                                      ? const Color(0xFFD4AF37)
+                                      : context.primaryColor,
+                                )
+                              : null,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              child: CircleAvatar(
-                radius: 26.r,
-                backgroundColor: context.surfaceColor,
-                backgroundImage: _avatarImage,
-                child: _avatarImage == null
-                    ? Icon(
-                        Icons.person_rounded,
-                        size: 26.sp,
-                        color: context.primaryColor,
-                      )
-                    : null,
-              ),
-            ),
+              );
+            },
           ),
 
           SizedBox(width: 14.w),
@@ -343,10 +392,10 @@ class _Header extends StatelessWidget {
     );
   }
 
-  ImageProvider? get _avatarImage {
-    final url = profile?.profilePictureUrl;
-    if (url != null && url.isNotEmpty) return CachedNetworkImageProvider(url);
-    return null;
+  ImageProvider? _resolveImage(String? url) {
+    if (url == null || url.isEmpty) return null;
+    if (url.startsWith('/')) return FileImage(File(url));
+    return CachedNetworkImageProvider(url);
   }
 }
 
@@ -870,7 +919,7 @@ class _LongVideosSection extends StatelessWidget {
             ),
             SizedBox(height: 16.h),
             SizedBox(
-              height: 250.h,
+              height: 300.h,
               child: ListView.separated(
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
                 scrollDirection: Axis.horizontal,
@@ -965,7 +1014,18 @@ class _TipsSection extends StatelessWidget {
             SectionHeaderWidget(
               title: 'Wellness Tips',
               subtitle: 'Quick advice for daily wellness',
-              onSeeAll: () => context.push('/tips'),
+              onSeeAll: () {
+                context.pushNamed(
+                  RouteNames.categoryDetail,
+                  extra: const CategoryCardEntity(
+                    id: '',
+                    name: 'Wellness Tips',
+                    imageUrl: '',
+                    description: 'All wellness tips',
+                  ),
+                  queryParameters: {'contentType': 'tip'},
+                );
+              },
             ),
             SizedBox(height: 16.h),
             SizedBox(

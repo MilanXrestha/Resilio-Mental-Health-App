@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io' show Platform;
+import 'dart:ui';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -13,7 +14,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../../core/routing/route_names.dart';
-import '../../../../../core/widgets/premium_overlay_widget.dart';
 import '../../../subscription/presentation/bloc/subscription_bloc.dart';
 import '../../../subscription/presentation/bloc/subscription_state.dart';
 import '../../../dashboard/domain/entities/quote_entity.dart';
@@ -72,8 +72,7 @@ class _ContentViewerScreenState extends State<ContentViewerScreen>
   static const _kSwipeHint = 'cv_settings_swipe_hint';
   static const _kSlideshow = 'cv_settings_slideshow';
 
-  int get _itemCount =>
-      widget.tips?.length ?? widget.quotes?.length ?? 0;
+  int get _itemCount => widget.tips?.length ?? widget.quotes?.length ?? 0;
 
   // ── helpers ───────────────────────────────────────────────────────────────
   String _getTitle(int index) {
@@ -155,7 +154,8 @@ class _ContentViewerScreenState extends State<ContentViewerScreen>
       _settingsShowSwipeIndicator = prefs.getBool(_kSwipeHint) ?? true;
       _settingsSlideshowEnabled = prefs.getBool(_kSlideshow) ?? true;
       _countdown = _settingsCountdown;
-      _showSwipeHint = _settingsShowSwipeIndicator && _itemCount > 1 && _currentIndex == 0;
+      _showSwipeHint =
+          _settingsShowSwipeIndicator && _itemCount > 1 && _currentIndex == 0;
     });
     if (_showSwipeHint) {
       Future.delayed(const Duration(seconds: 3)).then((_) {
@@ -235,9 +235,9 @@ class _ContentViewerScreenState extends State<ContentViewerScreen>
           _pulseController.stop();
           _pulseController.reset();
           final m = msg?.toString() ?? 'Speech failed';
-          ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-            SnackBar(content: Text(m)),
-          );
+          ScaffoldMessenger.maybeOf(
+            context,
+          )?.showSnackBar(SnackBar(content: Text(m)));
         }
       });
       // Let the Android TTS service finish binding (avoids "not bound to TTS engine").
@@ -308,9 +308,9 @@ class _ContentViewerScreenState extends State<ContentViewerScreen>
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-          SnackBar(content: Text('Read aloud failed: $e')),
-        );
+        ScaffoldMessenger.maybeOf(
+          context,
+        )?.showSnackBar(SnackBar(content: Text('Read aloud failed: $e')));
       }
     }
   }
@@ -354,7 +354,10 @@ class _ContentViewerScreenState extends State<ContentViewerScreen>
   void _startSlideshow() {
     _slideshowTimer?.cancel();
     _slideshowTimer = Timer.periodic(const Duration(seconds: 1), (t) {
-      if (!mounted) { t.cancel(); return; }
+      if (!mounted) {
+        t.cancel();
+        return;
+      }
       setState(() {
         if (_countdown > 0) {
           _countdown--;
@@ -461,35 +464,27 @@ class _ContentViewerScreenState extends State<ContentViewerScreen>
                 if (_isSlideshowEnabled) _countdown = _settingsCountdown;
               },
               itemBuilder: (context, index) {
-                return _ContentPage(
-                  title: _getTitle(index),
-                  body: _getBody(index),
-                  author: _getAuthor(index),
-                  authorAvatar: _getAuthorAvatar(index),
-                  isQuote: _isQuoteMode,
+                return BlocBuilder<SubscriptionBloc, SubscriptionState>(
+                  builder: (context, state) {
+                    final bool isPremiumUser =
+                        state is SubscriptionLoaded &&
+                        state.subscription.isActive;
+                    final bool isContentPremium = _isItemPremium(index);
+                    final bool isLocked = isContentPremium && !isPremiumUser;
+
+                    return _ContentPage(
+                      title: _getTitle(index),
+                      body: _getBody(index),
+                      author: _getAuthor(index),
+                      authorAvatar: _getAuthorAvatar(index),
+                      isQuote: _isQuoteMode,
+                      isLocked: isLocked,
+                      onUnlockTap: () {
+                        context.pushNamed(RouteNames.subscription);
+                      },
+                    );
+                  },
                 );
-              },
-            ),
-
-            // ── Premium blur (below chrome so bars stay tappable) ───────
-            BlocBuilder<SubscriptionBloc, SubscriptionState>(
-              builder: (context, state) {
-                // Avoid locking content while subscription status is still loading.
-                if (state is SubscriptionLoading || state is SubscriptionInitial) {
-                  return const SizedBox.shrink();
-                }
-                final bool isPremiumUser =
-                    state is SubscriptionLoaded && state.subscription.isActive;
-                final bool isContentPremium = _isItemPremium(_currentIndex);
-
-                if (isContentPremium && !isPremiumUser) {
-                  return PremiumOverlayWidget(
-                    onUpgradePressed: () {
-                      context.pushNamed(RouteNames.subscription);
-                    },
-                  );
-                }
-                return const SizedBox.shrink();
               },
             ),
 
@@ -548,9 +543,7 @@ class _ContentViewerScreenState extends State<ContentViewerScreen>
   void _shareCurrent() {
     final text = '${_getTitle(_currentIndex)}\n${_getBody(_currentIndex)}';
     HapticFeedback.lightImpact();
-    SharePlus.instance.share(
-      ShareParams(text: text, subject: widget.title),
-    );
+    SharePlus.instance.share(ShareParams(text: text, subject: widget.title));
   }
 
   void _showTimerSettings() {
@@ -574,7 +567,10 @@ class _ContentViewerScreenState extends State<ContentViewerScreen>
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20.r),
               ),
-              insetPadding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 24.h),
+              insetPadding: EdgeInsets.symmetric(
+                horizontal: 24.w,
+                vertical: 24.h,
+              ),
               child: Padding(
                 padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 12.h),
                 child: SingleChildScrollView(
@@ -587,7 +583,9 @@ class _ContentViewerScreenState extends State<ContentViewerScreen>
                           Container(
                             padding: EdgeInsets.all(10.r),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF6366F1).withValues(alpha: 0.2),
+                              color: const Color(
+                                0xFF6366F1,
+                              ).withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(12.r),
                             ),
                             child: Icon(
@@ -645,9 +643,13 @@ class _ContentViewerScreenState extends State<ContentViewerScreen>
                       SliderTheme(
                         data: SliderTheme.of(context).copyWith(
                           activeTrackColor: const Color(0xFF6366F1),
-                          inactiveTrackColor: Colors.white.withValues(alpha: 0.12),
+                          inactiveTrackColor: Colors.white.withValues(
+                            alpha: 0.12,
+                          ),
                           thumbColor: const Color(0xFFA5B4FC),
-                          overlayColor: const Color(0xFF6366F1).withValues(alpha: 0.2),
+                          overlayColor: const Color(
+                            0xFF6366F1,
+                          ).withValues(alpha: 0.2),
                         ),
                         child: Slider(
                           min: 1,
@@ -665,7 +667,8 @@ class _ContentViewerScreenState extends State<ContentViewerScreen>
                         title: 'Slideshow',
                         subtitle: 'Auto-advance slides in fullscreen',
                         value: tempSlideshowEnabled,
-                        onChanged: (v) => setStateDialog(() => tempSlideshowEnabled = v),
+                        onChanged: (v) =>
+                            setStateDialog(() => tempSlideshowEnabled = v),
                       ),
                       SizedBox(height: 8.h),
                       _SettingsSwitchTile(
@@ -673,7 +676,8 @@ class _ContentViewerScreenState extends State<ContentViewerScreen>
                         title: 'Fullscreen button',
                         subtitle: 'Show in the bottom bar',
                         value: tempShowFullScreenIcon,
-                        onChanged: (v) => setStateDialog(() => tempShowFullScreenIcon = v),
+                        onChanged: (v) =>
+                            setStateDialog(() => tempShowFullScreenIcon = v),
                       ),
                       SizedBox(height: 8.h),
                       _SettingsSwitchTile(
@@ -681,7 +685,8 @@ class _ContentViewerScreenState extends State<ContentViewerScreen>
                         title: 'Swipe hint',
                         subtitle: 'Brief tip when multiple items',
                         value: tempShowSwipeIndicator,
-                        onChanged: (v) => setStateDialog(() => tempShowSwipeIndicator = v),
+                        onChanged: (v) =>
+                            setStateDialog(() => tempShowSwipeIndicator = v),
                       ),
                       SizedBox(height: 16.h),
                       Row(
@@ -690,8 +695,12 @@ class _ContentViewerScreenState extends State<ContentViewerScreen>
                             child: OutlinedButton(
                               onPressed: () => Navigator.pop(dialogContext),
                               style: OutlinedButton.styleFrom(
-                                foregroundColor: onSurface.withValues(alpha: 0.85),
-                                side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+                                foregroundColor: onSurface.withValues(
+                                  alpha: 0.85,
+                                ),
+                                side: BorderSide(
+                                  color: Colors.white.withValues(alpha: 0.2),
+                                ),
                                 padding: EdgeInsets.symmetric(vertical: 12.h),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12.r),
@@ -699,7 +708,10 @@ class _ContentViewerScreenState extends State<ContentViewerScreen>
                               ),
                               child: Text(
                                 'Cancel',
-                                style: TextStyle(fontFamily: 'Poppins', fontSize: 14.sp),
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
+                                  fontSize: 14.sp,
+                                ),
                               ),
                             ),
                           ),
@@ -709,9 +721,12 @@ class _ContentViewerScreenState extends State<ContentViewerScreen>
                               onPressed: () {
                                 setState(() {
                                   _settingsCountdown = tempCountdown;
-                                  _settingsShowFullScreenIcon = tempShowFullScreenIcon;
-                                  _settingsShowSwipeIndicator = tempShowSwipeIndicator;
-                                  _settingsSlideshowEnabled = tempSlideshowEnabled;
+                                  _settingsShowFullScreenIcon =
+                                      tempShowFullScreenIcon;
+                                  _settingsShowSwipeIndicator =
+                                      tempShowSwipeIndicator;
+                                  _settingsSlideshowEnabled =
+                                      tempSlideshowEnabled;
                                   _countdown = tempCountdown;
 
                                   if (!_settingsSlideshowEnabled) {
@@ -719,12 +734,15 @@ class _ContentViewerScreenState extends State<ContentViewerScreen>
                                     _slideshowTimer?.cancel();
                                     _isFullScreen = false;
                                   }
-                                  _showSwipeHint = _settingsShowSwipeIndicator &&
+                                  _showSwipeHint =
+                                      _settingsShowSwipeIndicator &&
                                       _itemCount > 1 &&
                                       _currentIndex == 0 &&
                                       !_isFullScreen;
                                   if (_showSwipeHint) {
-                                    Future.delayed(const Duration(seconds: 3)).then((_) {
+                                    Future.delayed(
+                                      const Duration(seconds: 3),
+                                    ).then((_) {
                                       if (!mounted) return;
                                       setState(() => _showSwipeHint = false);
                                     });
@@ -742,7 +760,10 @@ class _ContentViewerScreenState extends State<ContentViewerScreen>
                               ),
                               child: Text(
                                 'Save',
-                                style: TextStyle(fontFamily: 'Poppins', fontSize: 14.sp),
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
+                                  fontSize: 14.sp,
+                                ),
                               ),
                             ),
                           ),
@@ -817,7 +838,9 @@ class _SettingsSwitchTile extends StatelessWidget {
               Switch.adaptive(
                 value: value,
                 onChanged: onChanged,
-                activeTrackColor: const Color(0xFF6366F1).withValues(alpha: 0.55),
+                activeTrackColor: const Color(
+                  0xFF6366F1,
+                ).withValues(alpha: 0.55),
                 activeThumbColor: const Color(0xFFE0E7FF),
               ),
             ],
@@ -879,6 +902,8 @@ class _ContentPage extends StatelessWidget {
   final String author;
   final String? authorAvatar;
   final bool isQuote;
+  final bool isLocked;
+  final VoidCallback? onUnlockTap;
 
   const _ContentPage({
     required this.title,
@@ -886,106 +911,217 @@ class _ContentPage extends StatelessWidget {
     required this.author,
     this.authorAvatar,
     required this.isQuote,
+    this.isLocked = false,
+    this.onUnlockTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(24.w, 80.h, 24.w, 120.h),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (isQuote)
-              Icon(
-                Icons.format_quote_rounded,
-                size: 48.sp,
-                color: Colors.white.withValues(alpha: 0.25),
-              )
-            else
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(20.r),
-                ),
-                child: Text(
-                  'Wellness Tip',
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
+    final contentColumn = Padding(
+      padding: EdgeInsets.fromLTRB(24.w, 80.h, 24.w, 120.h),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (isQuote)
+            Icon(
+              Icons.format_quote_rounded,
+              size: 48.sp,
+              color: Colors.white.withValues(alpha: 0.25),
+            )
+          else
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(20.r),
               ),
-
-            SizedBox(height: 24.h),
-
-            Text(
-              title,
-              style: TextStyle(
-                fontFamily: isQuote ? 'PlayfairDisplay' : 'Poppins',
-                fontSize: isQuote ? 26.sp : 24.sp,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-                fontStyle: isQuote ? FontStyle.italic : FontStyle.normal,
-                height: 1.5,
+              child: Text(
+                'Wellness Tip',
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
               ),
             ),
 
-            if (!isQuote && body.isNotEmpty) ...[
-              SizedBox(height: 20.h),
-              Text(
-                body,
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w400,
-                  color: Colors.white.withValues(alpha: 0.85),
-                  height: 1.6,
-                ),
-              ),
-            ],
+          SizedBox(height: 24.h),
 
-            SizedBox(height: 32.h),
+          Text(
+            title,
+            style: TextStyle(
+              fontFamily: isQuote ? 'PlayfairDisplay' : 'Poppins',
+              fontSize: isQuote ? 26.sp : 24.sp,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+              fontStyle: isQuote ? FontStyle.italic : FontStyle.normal,
+              height: 1.5,
+            ),
+          ),
 
-            if (author.isNotEmpty)
-              Row(
-                children: [
-                  Container(
-                    width: 30.w,
-                    height: 1.h,
-                    color: Colors.white.withValues(alpha: 0.4),
-                  ),
-                  SizedBox(width: 12.w),
-                  if (authorAvatar != null && authorAvatar!.isNotEmpty) ...[
-                    CircleAvatar(
-                      radius: 14.r,
-                      backgroundImage: NetworkImage(authorAvatar!),
-                      onBackgroundImageError: (_, __) {},
-                      backgroundColor: Colors.white.withValues(alpha: 0.2),
-                    ),
-                    SizedBox(width: 8.w),
-                  ],
-                  Flexible(
-                    child: Text(
-                      isQuote ? '— $author' : author,
-                      style: TextStyle(
-                        fontFamily: 'Poppins',
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white.withValues(alpha: 0.8),
-                      ),
-                    ),
-                  ),
-                ],
+          if (!isQuote && body.isNotEmpty) ...[
+            SizedBox(height: 20.h),
+            Text(
+              body,
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w400,
+                color: Colors.white.withValues(alpha: 0.85),
+                height: 1.6,
               ),
+            ),
           ],
-        ),
+
+          SizedBox(height: 32.h),
+
+          if (author.isNotEmpty)
+            Row(
+              children: [
+                Container(
+                  width: 30.w,
+                  height: 1.h,
+                  color: Colors.white.withValues(alpha: 0.4),
+                ),
+                SizedBox(width: 12.w),
+                if (authorAvatar != null && authorAvatar!.isNotEmpty) ...[
+                  CircleAvatar(
+                    radius: 14.r,
+                    backgroundImage: NetworkImage(authorAvatar!),
+                    onBackgroundImageError: (_, __) {},
+                    backgroundColor: Colors.white.withValues(alpha: 0.2),
+                  ),
+                  SizedBox(width: 8.w),
+                ],
+                Flexible(
+                  child: Text(
+                    isQuote ? '— $author' : author,
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white.withValues(alpha: 0.8),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+        ],
       ),
     );
+
+    if (isLocked) {
+      return SafeArea(
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            ImageFiltered(
+              imageFilter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+              child: contentColumn,
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24.w),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20.r),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                      vertical: 32.h,
+                      horizontal: 24.w,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.4),
+                      borderRadius: BorderRadius.circular(20.r),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.1),
+                        width: 1,
+                      ),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(16.w),
+                          decoration: BoxDecoration(
+                            color: Theme.of(
+                              context,
+                            ).primaryColor.withValues(alpha: 0.2),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Theme.of(
+                                context,
+                              ).primaryColor.withValues(alpha: 0.5),
+                              width: 2,
+                            ),
+                          ),
+                          child: Icon(
+                            Icons.lock_rounded,
+                            color: Colors.white,
+                            size: 40.sp,
+                          ),
+                        ),
+                        SizedBox(height: 20.h),
+                        Text(
+                          'Premium Content',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 22.sp,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Poppins',
+                            letterSpacing: 0.5,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(height: 12.h),
+                        Text(
+                          'Unlock this exclusive wellness tip with Resilio Premium.',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.9),
+                            fontSize: 16.sp,
+                            fontFamily: 'Poppins',
+                            height: 1.5,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(height: 30.h),
+                        ElevatedButton(
+                          onPressed: onUnlockTap,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context).primaryColor,
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 32.w,
+                              vertical: 14.h,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30.r),
+                            ),
+                            elevation: 8,
+                          ),
+                          child: Text(
+                            'Upgrade to Premium',
+                            style: TextStyle(
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Poppins',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return SafeArea(child: contentColumn);
   }
 }
 
@@ -1151,8 +1287,9 @@ class _BottomActions extends StatelessWidget {
                 contentId: isQuoteMode
                     ? quotes![currentIndex].id
                     : tips![currentIndex].id,
-                contentType:
-                    isQuoteMode ? FavoriteType.quote : FavoriteType.tip,
+                contentType: isQuoteMode
+                    ? FavoriteType.quote
+                    : FavoriteType.tip,
                 size: 28.sp,
                 color: Colors.white,
                 padding: EdgeInsets.all(12.r),
@@ -1172,7 +1309,9 @@ class _BottomActions extends StatelessWidget {
           ),
           if (showSlideshowButton)
             _ActionBtn(
-              icon: isSlideshowEnabled ? Icons.stop_rounded : Icons.slideshow_rounded,
+              icon: isSlideshowEnabled
+                  ? Icons.stop_rounded
+                  : Icons.slideshow_rounded,
               label: isSlideshowEnabled ? 'Stop' : 'Slideshow',
               isActive: isSlideshowEnabled,
               activeColor: const Color(0xFFF59E0B),
@@ -1180,16 +1319,14 @@ class _BottomActions extends StatelessWidget {
             ),
           if (showFullScreenIcon)
             _ActionBtn(
-              icon: isFullScreen ? Icons.fullscreen_exit_rounded : Icons.fullscreen_rounded,
+              icon: isFullScreen
+                  ? Icons.fullscreen_exit_rounded
+                  : Icons.fullscreen_rounded,
               label: 'Fullscreen',
               isActive: isFullScreen,
               onTap: onFullScreen,
             ),
-          _ActionBtn(
-            icon: Icons.share_rounded,
-            label: 'Share',
-            onTap: onShare,
-          ),
+          _ActionBtn(icon: Icons.share_rounded, label: 'Share', onTap: onShare),
         ],
       ),
     );

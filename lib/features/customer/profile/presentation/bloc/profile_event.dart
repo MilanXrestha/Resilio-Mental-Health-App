@@ -17,3 +17,14 @@ class UpdateProfileEvent extends ProfileEvent {
   @override
   List<Object?> get props => [profile];
 }
+
+/// Upload a new avatar to Cloudinary, then save the resulting URL to the backend.
+class UploadAvatarEvent extends ProfileEvent {
+  final String filePath;
+  final ProfileEntity currentProfile;
+
+  const UploadAvatarEvent({required this.filePath, required this.currentProfile});
+
+  @override
+  List<Object?> get props => [filePath, currentProfile];
+}

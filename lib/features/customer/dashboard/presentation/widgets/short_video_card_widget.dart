@@ -5,10 +5,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../../../core/routing/route_names.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/widgets/premium_tag_widget.dart';
 import '../../../video/domain/entities/video_entity.dart';
 import '../../../favorites/domain/entities/favorite_entity.dart';
 import '../../../favorites/presentation/widgets/favorite_button.dart';
+import '../../../subscription/presentation/bloc/subscription_bloc.dart';
+import '../../../subscription/presentation/bloc/subscription_state.dart';
 
 // Process-level in-memory cache: videoUrl → thumbnail bytes (or null = failed).
 final Map<String, Uint8List?> _thumbnailCache = {};
@@ -20,11 +27,17 @@ final Map<String, Uint8List?> _thumbnailCache = {};
 class ShortVideoCardWidget extends StatelessWidget {
   final VideoEntity video;
   final VoidCallback? onTap;
+  final double? width;
+  final double? containerWidth;
+  final EdgeInsetsGeometry? margin;
 
   const ShortVideoCardWidget({
     super.key,
     required this.video,
     this.onTap,
+    this.width,
+    this.containerWidth,
+    this.margin,
   });
 
   @override
@@ -32,18 +45,32 @@ class ShortVideoCardWidget extends StatelessWidget {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        if (video.isPremium) {
+          final state = context.read<SubscriptionBloc>().state;
+          final isPremiumUser = state is SubscriptionLoaded && state.subscription.isActive;
+          if (!isPremiumUser) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Premium subscription required to play this content.')),
+            );
+            context.pushNamed(RouteNames.subscription);
+            return;
+          }
+        }
+        if (onTap != null) onTap!();
+      },
       child: Container(
-        width: 150.w,
-        margin: EdgeInsets.only(right: 10.w),
+        width: width ?? 150.w,
+        margin: margin ?? EdgeInsets.only(right: 10.w),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: width != null ? CrossAxisAlignment.stretch : CrossAxisAlignment.start,
           children: [
             Stack(
+              fit: width != null ? StackFit.loose : StackFit.loose,
               children: [
                 Container(
                   height: 200.h,
-                  width: 145.w,
+                  width: containerWidth ?? 145.w,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12.r),
                     color: isDarkMode ? context.surfaceColor : Colors.white,
@@ -87,15 +114,11 @@ class ShortVideoCardWidget extends StatelessWidget {
                   ),
                 ),
 
-                // Favorite button
-                Positioned(
-                  top: 8.h,
-                  left: 8.w,
-                  child: FavoriteButton(
-                    contentId: video.id,
-                    contentType: FavoriteType.video,
-                    size: 18.sp,
-                  ),
+                // Premium Tag
+                PremiumTagWidget(
+                  isPremium: video.isPremium,
+                  top: 8,
+                  left: 8,
                 ),
 
                 // Play overlay
