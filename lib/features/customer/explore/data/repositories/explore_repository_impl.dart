@@ -1,11 +1,14 @@
 import 'package:dartz/dartz.dart';
+import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 
+import '../../../../../core/constants/api_endpoints.dart';
 import '../../../../../core/errors/failures.dart';
 import '../../../audio/data/datasources/audio_remote_datasource.dart';
 import '../../../audio/domain/entities/audio_entity.dart';
 import '../../../categories/data/datasources/remote/category_remote_data_source.dart';
 import '../../../dashboard/data/datasources/remote/quote_remote_data_source.dart';
+import '../../../dashboard/domain/entities/quote_entity.dart';
 import '../../../images/data/datasources/remote/image_remote_data_source.dart';
 import '../../../tips/data/datasources/remote/tip_remote_data_source.dart';
 import '../../../video/data/datasources/remote/video_remote_data_source.dart';
@@ -15,6 +18,7 @@ import '../datasources/explore_local_data_source.dart';
 
 @LazySingleton(as: ExploreRepository)
 class ExploreRepositoryImpl implements ExploreRepository {
+  final Dio _dio;
   final AudioRemoteDataSource _audioDataSource;
   final VideoRemoteDataSource _videoDataSource;
   final QuoteRemoteDataSource _quoteDataSource;
@@ -24,6 +28,7 @@ class ExploreRepositoryImpl implements ExploreRepository {
   final ExploreLocalDataSource _localDataSource;
 
   ExploreRepositoryImpl(
+      this._dio,
       this._audioDataSource,
       this._videoDataSource,
       this._quoteDataSource,
@@ -107,13 +112,159 @@ class ExploreRepositoryImpl implements ExploreRepository {
     }
   }
 
-  Future<List<ExploreItemEntity>> _fetchAudioItems() async {
+  @override
+  Future<Either<Failure, List<ExploreItemEntity>>> getExploreItemsByCategory(
+      String categoryId) async {
     try {
-      final tracks = await _audioDataSource.getFeaturedAudio(limit: 50);
-      return tracks.map((track) => _mapAudioToExploreItem(track)).toList();
+      final response = await _dio.get(
+        '${ApiEndpoints.categoryContent}/$categoryId/content',
+        options: Options(responseType: ResponseType.json),
+      );
+
+      if (response.statusCode != 200 || response.data == null) {
+        return Left(ServerFailure('Failed to fetch category content'));
+      }
+
+      final data = response.data as Map<String, dynamic>;
+      final allItems = <ExploreItemEntity>[];
+
+      // Audio
+      final audioList = (data['audio'] as List?) ?? [];
+      for (final a in audioList) {
+        allItems.add(ExploreItemEntity(
+          id: a['id'] ?? '',
+          title: a['title'] ?? '',
+          subtitle: a['artistName'] ?? '',
+          description: a['description'],
+          imageUrl: a['coverImageUrl'],
+          thumbnailUrl: a['thumbnailUrl'],
+          type: ExploreItemType.audio,
+          tags: List<String>.from(a['moodTags'] ?? []),
+          categoryIds: (a['categoryId'] as String?)?.isNotEmpty == true
+              ? [a['categoryId']]
+              : [],
+          isFeatured: a['isFeatured'] ?? false,
+          isPremium: a['isPremium'] ?? false,
+          durationSeconds: a['durationSeconds'] as int?,
+          createdAt: _parseDate(a['createdAt']),
+          metadata: {'audioUrl': a['audioUrl'] ?? ''},
+        ));
+      }
+
+      // Short videos
+      final shortList = (data['shortVideos'] as List?) ?? [];
+      for (final v in shortList) {
+        allItems.add(_videoToEntity(v, ExploreItemType.shortVideo));
+      }
+
+      // Long videos
+      final longList = (data['longVideos'] as List?) ?? [];
+      for (final v in longList) {
+        allItems.add(_videoToEntity(v, ExploreItemType.longVideo));
+      }
+
+      // Quotes
+      final quoteList = (data['quotes'] as List?) ?? [];
+      for (final q in quoteList) {
+        allItems.add(ExploreItemEntity(
+          id: q['id'] ?? '',
+          title: q['quoteText'] ?? '',
+          subtitle: q['author'],
+          imageUrl: q['authorIconUrl'],
+          type: ExploreItemType.quote,
+          tags: const [],
+          categoryIds: (q['categoryId'] as String?)?.isNotEmpty == true
+              ? [q['categoryId']]
+              : [],
+          isFeatured: q['isFeatured'] ?? false,
+          isPremium: q['isPremium'] ?? false,
+          createdAt: _parseDate(q['createdAt']),
+        ));
+      }
+
+      // Tips
+      final tipList = (data['tips'] as List?) ?? [];
+      for (final t in tipList) {
+        allItems.add(ExploreItemEntity(
+          id: t['id'] ?? '',
+          title: t['title'] ?? '',
+          subtitle: t['author'],
+          description: t['tipText'],
+          imageUrl: t['authorIconUrl'],
+          type: ExploreItemType.tip,
+          tags: t['tipType'] != null ? [t['tipType'].toString()] : [],
+          categoryIds: (t['categoryId'] as String?)?.isNotEmpty == true
+              ? [t['categoryId']]
+              : [],
+          isFeatured: t['isFeatured'] ?? false,
+          isPremium: t['isPremium'] ?? false,
+          createdAt: _parseDate(t['createdAt']),
+          metadata: {'tipType': t['tipType']?.toString() ?? ''},
+        ));
+      }
+
+      // Images
+      final imageList = (data['images'] as List?) ?? [];
+      for (final img in imageList) {
+        allItems.add(ExploreItemEntity(
+          id: img['id'] ?? '',
+          title: img['title'] ?? '',
+          subtitle: img['author'],
+          description: img['description'],
+          imageUrl: img['imageUrl'],
+          thumbnailUrl: img['thumbnailUrl'],
+          type: ExploreItemType.image,
+          tags: const [],
+          categoryIds: (img['categoryId'] as String?)?.isNotEmpty == true
+              ? [img['categoryId']]
+              : [],
+          isFeatured: img['isFeatured'] ?? false,
+          isPremium: img['isPremium'] ?? false,
+          createdAt: _parseDate(img['createdAt']),
+        ));
+      }
+
+      allItems.sort((a, b) {
+        if (a.isFeatured != b.isFeatured) return a.isFeatured ? -1 : 1;
+        return b.createdAt.compareTo(a.createdAt);
+      });
+
+      return Right(allItems);
     } catch (e) {
-      return [];
+      return Left(ServerFailure('Failed to fetch category content: $e'));
     }
+  }
+
+  ExploreItemEntity _videoToEntity(Map<String, dynamic> v, ExploreItemType type) {
+    return ExploreItemEntity(
+      id: v['id'] ?? '',
+      title: v['title'] ?? '',
+      subtitle: v['artistName'],
+      description: v['description'],
+      imageUrl: v['coverImageUrl'],
+      thumbnailUrl: v['thumbnailUrl'],
+      type: type,
+      tags: List<String>.from(v['moodTags'] ?? []),
+      categoryIds: (v['categoryId'] as String?)?.isNotEmpty == true
+          ? [v['categoryId']]
+          : [],
+      isFeatured: v['isFeatured'] ?? false,
+      isPremium: v['isPremium'] ?? false,
+      durationSeconds: v['durationSeconds'] as int?,
+      createdAt: _parseDate(v['createdAt']),
+      metadata: {'videoUrl': v['videoUrl'] ?? ''},
+    );
+  }
+
+  DateTime _parseDate(dynamic value) {
+    if (value == null) return DateTime.now();
+    if (value is String) return DateTime.tryParse(value) ?? DateTime.now();
+    return DateTime.now();
+  }
+
+  Future<List<ExploreItemEntity>> _fetchAudioItems() async {
+    final tracks = await _audioDataSource.getAllAudio(limit: 100);
+    return tracks.map((track) => _mapAudioToExploreItem(track)).toList();
   }
 
   Future<List<ExploreItemEntity>> _fetchVideoItems() async {
@@ -169,7 +320,8 @@ class ExploreRepositoryImpl implements ExploreRepository {
 
   Future<List<ExploreItemEntity>> _fetchQuoteItems() async {
     try {
-      final quotes = await _quoteDataSource.getFeaturedQuotes(limit: 50);
+      final result = await _quoteDataSource.listQuotes(limit: 100);
+      final quotes = (result['quotes'] as List?)?.cast<QuoteEntity>() ?? [];
       return quotes.map((quote) => ExploreItemEntity(
         id: quote.id,
         title: quote.quoteText,
@@ -189,7 +341,8 @@ class ExploreRepositoryImpl implements ExploreRepository {
 
   Future<List<ExploreItemEntity>> _fetchTipItems() async {
     try {
-      final tips = await _tipDataSource.getFeaturedTips(limit: 50);
+      final result = await _tipDataSource.listTips(limit: 100);
+      final tips = result.tips;
       return tips.map((tip) => ExploreItemEntity(
         id: tip.id,
         title: tip.title,
@@ -211,7 +364,8 @@ class ExploreRepositoryImpl implements ExploreRepository {
 
   Future<List<ExploreItemEntity>> _fetchImageItems() async {
     try {
-      final images = await _imageDataSource.getFeaturedImages(limit: 50);
+      final result = await _imageDataSource.listImages(limit: 100);
+      final images = result.images;
       return images.map((image) => ExploreItemEntity(
         id: image.id,
         title: image.title,

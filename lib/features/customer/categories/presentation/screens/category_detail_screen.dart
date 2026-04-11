@@ -4,13 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import 'package:go_router/go_router.dart';
+
 import '../../../../../core/di/injection.dart';
+import '../../../../../core/routing/route_names.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../audio/domain/entities/audio_entity.dart';
 import '../../../dashboard/domain/entities/quote_entity.dart';
 import '../../../dashboard/presentation/widgets/audio_card_widget.dart';
 import '../../../dashboard/presentation/widgets/long_video_card_widget.dart';
-import '../../../dashboard/presentation/widgets/quote_card_widget.dart';
 import '../../../dashboard/presentation/widgets/short_video_card_widget.dart';
 import '../../../explore/domain/entities/explore_item_entity.dart';
 import '../../../explore/presentation/bloc/explore_bloc.dart';
@@ -23,8 +25,14 @@ import '../../domain/entities/category_card_entity.dart';
 /// Full-page category detail screen — shown when user taps "See All" on a category.
 class CategoryDetailScreen extends StatefulWidget {
   final CategoryCardEntity category;
+  /// When set and category.id is empty, loads only this content type.
+  final ExploreItemType? contentType;
 
-  const CategoryDetailScreen({super.key, required this.category});
+  const CategoryDetailScreen({
+    super.key,
+    required this.category,
+    this.contentType,
+  });
 
   @override
   State<CategoryDetailScreen> createState() => _CategoryDetailScreenState();
@@ -32,18 +40,7 @@ class CategoryDetailScreen extends StatefulWidget {
 
 class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
   final TextEditingController _searchController = TextEditingController();
-  ExploreItemType? _selectedType;
   String _searchQuery = '';
-
-  final Map<ExploreItemType?, String> _typeLabels = {
-    null: 'All',
-    ExploreItemType.audio: 'Audio',
-    ExploreItemType.shortVideo: 'Shorts',
-    ExploreItemType.longVideo: 'Videos',
-    ExploreItemType.quote: 'Quotes',
-    ExploreItemType.tip: 'Tips',
-    ExploreItemType.image: 'Images',
-  };
 
   @override
   void dispose() {
@@ -54,12 +51,10 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
   List<ExploreItemEntity> _filtered(List<ExploreItemEntity> items) {
     return items.where((item) {
       if (item.type == ExploreItemType.category) return false;
-      final matchesType = _selectedType == null || item.type == _selectedType;
-      final matchesSearch = _searchQuery.isEmpty ||
-          item.title.toLowerCase().contains(_searchQuery) ||
+      if (_searchQuery.isEmpty) return true;
+      return item.title.toLowerCase().contains(_searchQuery) ||
           (item.subtitle?.toLowerCase().contains(_searchQuery) ?? false) ||
           item.tags.any((t) => t.toLowerCase().contains(_searchQuery));
-      return matchesType && matchesSearch;
     }).toList();
   }
 
@@ -68,21 +63,28 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return BlocProvider(
-      create: (_) => getIt<ExploreBloc>()..add(const LoadExploreItems()),
+      create: (_) {
+        final bloc = getIt<ExploreBloc>();
+        if (widget.category.id.isNotEmpty) {
+          bloc.add(LoadExploreItemsForCategory(widget.category.id));
+        } else if (widget.contentType != null) {
+          bloc.add(LoadExploreItemsByType(widget.contentType!));
+        } else {
+          bloc.add(const LoadExploreItems());
+        }
+        return bloc;
+      },
       child: Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: BlocBuilder<ExploreBloc, ExploreState>(
           builder: (context, state) {
             List<ExploreItemEntity> items = [];
             if (state is ExploreLoaded) {
-              items = state.allItems.where((item) =>
-                item.categoryIds.isEmpty ||
-                item.categoryIds.contains(widget.category.id),
-              ).toList();
+              items = state.allItems;
             }
 
             final filtered = _filtered(items);
-            final isLoading = state is ExploreLoading;
+            final isLoading = state is ExploreLoading || state is ExploreInitial;
 
             return CustomScrollView(
               physics: const BouncingScrollPhysics(),
@@ -140,11 +142,6 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
                   ),
                 ),
 
-                // ── Type filter chips ─────────────────────────────────
-                SliverToBoxAdapter(
-                  child: _buildFilterChips(isDarkMode),
-                ),
-
                 SliverToBoxAdapter(child: SizedBox(height: 8.h)),
 
                 // ── Content ───────────────────────────────────────────
@@ -180,7 +177,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
                         (context, index) {
                           return Padding(
                             padding: EdgeInsets.only(bottom: 16.h),
-                            child: _buildCard(filtered[index]),
+                            child: _buildCard(filtered[index], index, filtered),
                           );
                         },
                         childCount: filtered.length,
@@ -239,6 +236,8 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
                       color: context.textSecondaryColor.withOpacity(0.5),
                     ),
                     border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
                     isDense: true,
                     contentPadding: EdgeInsets.symmetric(vertical: 12.h),
                   ),
@@ -263,112 +262,201 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
     );
   }
 
-  Widget _buildFilterChips(bool isDarkMode) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      physics: const BouncingScrollPhysics(),
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-      child: Row(
-        children: _typeLabels.entries.map((entry) {
-          final isSelected = _selectedType == entry.key;
-          return Padding(
-            padding: EdgeInsets.only(right: 8.w),
-            child: GestureDetector(
-              onTap: () => setState(() => _selectedType = entry.key),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding:
-                    EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? context.primaryColor
-                      : (isDarkMode
-                          ? Colors.white.withOpacity(0.08)
-                          : Colors.black.withOpacity(0.06)),
-                  borderRadius: BorderRadius.circular(20.r),
-                ),
-                child: Text(
-                  entry.value,
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w600,
-                    color: isSelected
-                        ? Colors.white
-                        : context.textSecondaryColor,
-                  ),
-                ),
-              ),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  Widget _buildCard(ExploreItemEntity item) {
+  Widget _buildCard(ExploreItemEntity item, int index, List<ExploreItemEntity> all) {
     switch (item.type) {
       case ExploreItemType.audio:
-        return AudioCardWidget(track: _toAudio(item), onTap: () {});
+        return AudioCardWidget(
+          track: _toAudio(item),
+          onTap: () => context.pushNamed(RouteNames.mediaPlayer, extra: _toAudio(item)),
+        );
       case ExploreItemType.shortVideo:
-        return ShortVideoCardWidget(video: _toVideo(item), onTap: () {});
+        final shorts = all.where((e) => e.type == ExploreItemType.shortVideo).map(_toVideo).toList();
+        final shortIdx = shorts.indexWhere((v) => v.id == item.id);
+        return ShortVideoCardWidget(
+          video: _toVideo(item),
+          onTap: () => context.pushNamed(RouteNames.shortsPlayer,
+              extra: shorts, queryParameters: {'index': '${shortIdx < 0 ? 0 : shortIdx}'}),
+        );
       case ExploreItemType.longVideo:
-        return LongVideoCardWidget(video: _toVideo(item), onTap: () {});
+        return LongVideoCardWidget(
+          video: _toVideo(item),
+          onTap: () => context.pushNamed(RouteNames.longVideoPlayer, extra: _toVideo(item)),
+        );
       case ExploreItemType.quote:
-        return QuoteCardWidget(quote: _toQuote(item), onTap: () {});
+        final quotes = all.where((e) => e.type == ExploreItemType.quote).map(_toQuote).toList();
+        final quoteIdx = quotes.indexWhere((q) => q.id == item.id);
+        return GestureDetector(
+          onTap: () => context.pushNamed(RouteNames.contentViewer, extra: {
+            'quotes': quotes,
+            'initialIndex': quoteIdx < 0 ? 0 : quoteIdx,
+            'title': widget.category.name,
+          }),
+          child: _buildQuoteListItem(_toQuote(item)),
+        );
       case ExploreItemType.tip:
-        return TipCardWidget(tip: _toTip(item), onTap: () {});
+        final tips = all.where((e) => e.type == ExploreItemType.tip).map(_toTip).toList();
+        final tipIdx = tips.indexWhere((t) => t.id == item.id);
+        return TipCardWidget(
+          tip: _toTip(item),
+          onTap: () => context.pushNamed(RouteNames.contentViewer, extra: {
+            'tips': tips,
+            'initialIndex': tipIdx < 0 ? 0 : tipIdx,
+            'title': widget.category.name,
+          }),
+        );
       case ExploreItemType.image:
-        return _buildImageItem(item);
+        return _buildImageItem(item, all);
       case ExploreItemType.category:
         return const SizedBox.shrink();
     }
   }
 
-  Widget _buildImageItem(ExploreItemEntity item) {
+  Widget _buildImageItem(ExploreItemEntity item, List<ExploreItemEntity> all) {
+    final images = all.where((e) => e.type == ExploreItemType.image).toList();
+    final imgIdx = images.indexWhere((i) => i.id == item.id);
+    return GestureDetector(
+      onTap: () => context.pushNamed(RouteNames.imageViewer, extra: {
+        'images': images.map((e) => e.imageUrl ?? '').toList(),
+        'titles': images.map((e) => e.title).toList(),
+        'subtitles': images.map((e) => e.subtitle ?? '').toList(),
+        'initialIndex': imgIdx < 0 ? 0 : imgIdx,
+        'categoryName': widget.category.name,
+      }),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16.r),
+        child: AspectRatio(
+          aspectRatio: 16 / 9,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              if (item.imageUrl?.isNotEmpty ?? false)
+                Image.network(item.imageUrl!, fit: BoxFit.cover)
+              else
+                Container(
+                  color: Colors.grey.shade800,
+                  child: Icon(Icons.image_not_supported_rounded,
+                      size: 40.sp, color: Colors.white30),
+                ),
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  padding: EdgeInsets.all(12.w),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                      colors: [
+                        Colors.black.withOpacity(0.7),
+                        Colors.transparent
+                      ],
+                    ),
+                  ),
+                  child: Text(
+                    item.title,
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuoteListItem(QuoteEntity quote) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return ClipRRect(
       borderRadius: BorderRadius.circular(16.r),
-      child: AspectRatio(
-        aspectRatio: 16 / 9,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            if (item.imageUrl?.isNotEmpty ?? false)
-              Image.network(item.imageUrl!, fit: BoxFit.cover)
-            else
-              Container(
-                color: Colors.grey.shade800,
-                child: Icon(Icons.image_not_supported_rounded,
-                    size: 40.sp, color: Colors.white30),
-              ),
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                padding: EdgeInsets.all(12.w),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
-                    colors: [
-                      Colors.black.withOpacity(0.7),
-                      Colors.transparent
-                    ],
-                  ),
-                ),
-                child: Text(
-                  item.title,
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+        child: Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: isDarkMode
+                ? const Color(0xFF1E1E2C).withOpacity(0.85)
+                : Colors.white,
+            borderRadius: BorderRadius.circular(16.r),
+            border: Border.all(
+              color: isDarkMode
+                  ? Colors.white.withOpacity(0.08)
+                  : Colors.black.withOpacity(0.06),
+              width: 1.w,
             ),
-          ],
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(isDarkMode ? 0.3 : 0.06),
+                blurRadius: 12.r,
+                offset: Offset(0, 4.h),
+              ),
+            ],
+          ),
+          padding: EdgeInsets.all(16.w),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.format_quote_rounded,
+                size: 24.sp,
+                color: context.primaryColor.withOpacity(0.5),
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                '"${quote.quoteText}"',
+                style: TextStyle(
+                  fontFamily: 'PlayfairDisplay',
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w600,
+                  color: context.textPrimaryColor,
+                ),
+              ),
+              SizedBox(height: 12.h),
+              Row(
+                children: [
+                  if (quote.authorIconUrl?.isNotEmpty ?? false) ...[
+                    CircleAvatar(
+                      radius: 10.r,
+                      backgroundColor: context.primaryColor.withOpacity(0.1),
+                      child: ClipOval(
+                        child: Image.network(
+                          quote.authorIconUrl!,
+                          width: 20.r,
+                          height: 20.r,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Icon(
+                            Icons.person_rounded,
+                            size: 12.sp,
+                            color: context.primaryColor.withOpacity(0.5),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 6.w),
+                  ],
+                  Expanded(
+                    child: Text(
+                      '— ${quote.author}',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 12.sp,
+                        color: context.textSecondaryColor,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -438,7 +526,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
         id: e.id,
         quoteText: e.title,
         author: e.subtitle ?? '',
-        authorIconUrl: e.metadata?['authorIconUrl'] as String?,
+        authorIconUrl: e.imageUrl,
         categoryId: e.categoryIds.firstOrNull,
         preferenceIds: const [],
         isFeatured: e.isFeatured,

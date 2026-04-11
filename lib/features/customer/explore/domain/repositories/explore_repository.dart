@@ -22,6 +22,10 @@ abstract class ExploreRepository {
   /// Clears recent searches
   Future<void> clearRecentSearches();
 
+  /// Fetches all explore items that belong to a specific category
+  Future<Either<Failure, List<ExploreItemEntity>>> getExploreItemsByCategory(
+      String categoryId);
+
   /// Gets popular/trending searches (can be static or from backend)
   Future<List<String>> getTrendingSearches();
 }

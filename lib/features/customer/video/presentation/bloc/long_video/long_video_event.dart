@@ -13,11 +13,12 @@ class LoadLongVideos extends LongVideoEvent {
   final String? categoryId;
   final int limit;
   final int offset;
+  final bool? isFeatured;
 
-  const LoadLongVideos({this.categoryId, this.limit = 20, this.offset = 0});
+  const LoadLongVideos({this.categoryId, this.limit = 20, this.offset = 0, this.isFeatured});
 
   @override
-  List<Object?> get props => [categoryId, limit, offset];
+  List<Object?> get props => [categoryId, limit, offset, isFeatured];
 }
 
 /// Load more long videos (pagination)

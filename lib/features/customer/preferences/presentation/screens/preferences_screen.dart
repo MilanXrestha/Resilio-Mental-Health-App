@@ -8,6 +8,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flip_card/flip_card.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shimmer/shimmer.dart';
 
 import 'package:Resilio/core/di/injection.dart';
 import 'package:Resilio/core/routing/route_names.dart';
@@ -180,14 +181,9 @@ class _PreferencesViewState extends State<PreferencesView> {
       _cachedLoadedState = state;
     }
 
-    // Initial load - show spinner
+    // Initial load - show shimmer
     if ((state is PreferencesInitial || state is PreferencesLoading) && _cachedLoadedState == null) {
-      return Center(
-        child: CircularProgressIndicator(
-          strokeWidth: 4.w,
-          valueColor: AlwaysStoppedAnimation<Color>(context.primaryColor),
-        ),
-      );
+      return _PreferencesShimmer(isDark: isDark);
     }
 
     // Save in progress - keep showing content (overlay handles loading)
@@ -672,6 +668,113 @@ class _PreferencesViewState extends State<PreferencesView> {
                     ),
                   ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Shimmer loading placeholder that mirrors the real preferences UI layout:
+/// a header card at the top followed by a 2-column grid of flip-card placeholders.
+class _PreferencesShimmer extends StatelessWidget {
+  final bool isDark;
+  const _PreferencesShimmer({required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    final baseColor = isDark ? Colors.grey[800]! : Colors.grey[300]!;
+    final highlightColor = isDark ? Colors.grey[700]! : Colors.grey[100]!;
+
+    return Shimmer.fromColors(
+      baseColor: baseColor,
+      highlightColor: highlightColor,
+      child: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: CustomScrollView(
+                slivers: [
+                  // Header card placeholder
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.fromLTRB(0, 24.h, 0, 0),
+                      child: Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.all(24.w),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16.r),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 200.w,
+                              height: 24.h,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(6.r),
+                              ),
+                            ),
+                            SizedBox(height: 10.h),
+                            Container(
+                              width: double.infinity,
+                              height: 14.h,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(4.r),
+                              ),
+                            ),
+                            SizedBox(height: 6.h),
+                            Container(
+                              width: 220.w,
+                              height: 14.h,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(4.r),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  SliverPadding(
+                    padding: EdgeInsets.symmetric(vertical: 16.h),
+                    sliver: SliverGrid(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) => Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16.r),
+                          ),
+                        ),
+                        childCount: 8,
+                      ),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 12.w,
+                        mainAxisSpacing: 12.h,
+                        childAspectRatio: 1.6,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Save button placeholder
+            Padding(
+              padding: EdgeInsets.fromLTRB(0, 8.h, 0, 16.h),
+              child: Container(
+                height: 50.h,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

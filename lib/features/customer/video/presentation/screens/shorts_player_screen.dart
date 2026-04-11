@@ -26,13 +26,14 @@ class ShortsPlayerScreen extends StatefulWidget {
 
 class _ShortsPlayerScreenState extends State<ShortsPlayerScreen> {
   late PageController _pageController;
-  int _currentIndex = 0;
+  late int _currentIndex;
   Map<int, VideoPlayerController> _controllers = {};
   bool _isPlaying = true;
 
   @override
   void initState() {
     super.initState();
+    _currentIndex = widget.initialIndex;
     _pageController = PageController(initialPage: widget.initialIndex);
     _initializeVideo(widget.initialIndex);
   }

@@ -37,11 +37,13 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
         final bytes = response.data as List<int>;
         final user = User.fromBuffer(bytes);
 
+        final rawName = user.displayName.isNotEmpty
+            ? user.displayName
+            : (user.username.isNotEmpty ? user.username : 'User');
         return UserProfile(
           uid: user.id,
-          firstName: user.displayName.isNotEmpty
-              ? user.displayName
-              : (user.username.isNotEmpty ? user.username : 'User'),
+          // Take only the first word so "Hello, John" not "Hello, John Doe"
+          firstName: rawName.trim().split(' ').first,
           lastName: '',
           email: user.email,
           profilePictureUrl: user.photoUrl.isNotEmpty ? user.photoUrl : null,

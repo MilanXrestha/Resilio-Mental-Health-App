@@ -16,11 +16,13 @@ class VideoRepositoryImpl implements VideoRepository {
   Future<Either<Failure, List<VideoEntity>>> getShortVideos({
     int limit = 20,
     int offset = 0,
+    bool? isFeatured,
   }) async {
     try {
       final videos = await remoteDataSource.getShortVideos(
         limit: limit,
         offset: offset,
+        isFeatured: isFeatured,
       );
       return Right(videos);
     } catch (e) {
@@ -33,12 +35,14 @@ class VideoRepositoryImpl implements VideoRepository {
     String? categoryId,
     int limit = 20,
     int offset = 0,
+    bool? isFeatured,
   }) async {
     try {
       final videos = await remoteDataSource.getLongVideos(
         categoryId: categoryId,
         limit: limit,
         offset: offset,
+        isFeatured: isFeatured,
       );
       return Right(videos);
     } catch (e) {

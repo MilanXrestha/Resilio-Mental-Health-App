@@ -9,14 +9,17 @@ import '../../../domain/repositories/video_repository.dart';
 
 abstract class VideoRemoteDataSource {
   Future<List<VideoEntity>> getShortVideos({
+    String? categoryId,
     int limit = 20,
     int offset = 0,
+    bool? isFeatured,
   });
 
   Future<List<VideoEntity>> getLongVideos({
     String? categoryId,
     int limit = 20,
     int offset = 0,
+    bool? isFeatured,
   });
 
   Future<List<VideoEntity>> getFeaturedVideos({
@@ -44,16 +47,24 @@ class VideoRemoteDataSourceImpl implements VideoRemoteDataSource {
 
   @override
   Future<List<VideoEntity>> getShortVideos({
+    String? categoryId,
     int limit = 20,
     int offset = 0,
+    bool? isFeatured,
   }) async {
     try {
+      final queryParams = <String, dynamic>{
+        'limit': limit.toString(),
+        'offset': offset.toString(),
+      };
+      if (categoryId != null && categoryId.isNotEmpty) {
+        queryParams['category_id'] = categoryId;
+      }
+      if (isFeatured != null) queryParams['featured'] = isFeatured.toString();
+
       final response = await _dio.get(
         ApiEndpoints.videoShorts,
-        queryParameters: {
-          'limit': limit.toString(),
-          'offset': offset.toString(),
-        },
+        queryParameters: queryParams,
         options: _protoOptions,
       );
 
@@ -77,6 +88,7 @@ class VideoRemoteDataSourceImpl implements VideoRemoteDataSource {
     String? categoryId,
     int limit = 20,
     int offset = 0,
+    bool? isFeatured,
   }) async {
     try {
       final queryParams = <String, dynamic>{
@@ -87,6 +99,7 @@ class VideoRemoteDataSourceImpl implements VideoRemoteDataSource {
       if (categoryId != null && categoryId.isNotEmpty) {
         queryParams['category_id'] = categoryId;
       }
+      if (isFeatured != null) queryParams['featured'] = isFeatured.toString();
 
       final response = await _dio.get(
         ApiEndpoints.videoLong,

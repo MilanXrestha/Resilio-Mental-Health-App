@@ -69,7 +69,7 @@ class ImagesSection extends StatelessWidget {
           children: [
             SectionHeaderWidget(
               title: 'Inspirational Images',
-              subtitle: 'Beautiful wallpapers for your wellness journey',
+              subtitle: 'Beautiful wallpapers to inspire you',
               onSeeAll: () => context.push('/images'),
             ),
             SizedBox(height: 16.h),

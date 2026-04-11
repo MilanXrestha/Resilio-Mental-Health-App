@@ -18,6 +18,7 @@ import '../../features/customer/tips/presentation/screens/content_viewer_screen.
 import '../../features/customer/images/presentation/screens/images_screen.dart';
 import '../../features/customer/images/presentation/screens/image_viewer_screen.dart';
 import '../../features/customer/categories/presentation/screens/category_detail_screen.dart';
+import '../../features/customer/explore/domain/entities/explore_item_entity.dart';
 import '../../features/customer/explore/presentation/screens/explore_screen.dart';
 import '../../features/customer/main/presentation/screens/main_screen.dart';
 import '../../features/customer/onboarding/presentation/screens/onboarding_screen.dart';
@@ -187,7 +188,15 @@ class AppRouter {
         name: RouteNames.categoryDetail,
         builder: (context, state) {
           final category = state.extra as CategoryCardEntity;
-          return CategoryDetailScreen(category: category);
+          final contentTypeStr = state.uri.queryParameters['contentType'];
+          ExploreItemType? contentType;
+          if (contentTypeStr == 'audio') contentType = ExploreItemType.audio;
+          else if (contentTypeStr == 'shortVideo') contentType = ExploreItemType.shortVideo;
+          else if (contentTypeStr == 'longVideo') contentType = ExploreItemType.longVideo;
+          else if (contentTypeStr == 'tip') contentType = ExploreItemType.tip;
+          else if (contentTypeStr == 'quote') contentType = ExploreItemType.quote;
+          else if (contentTypeStr == 'image') contentType = ExploreItemType.image;
+          return CategoryDetailScreen(category: category, contentType: contentType);
         },
       ),
       GoRoute(

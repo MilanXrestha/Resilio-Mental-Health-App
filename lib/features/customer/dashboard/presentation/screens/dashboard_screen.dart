@@ -77,15 +77,15 @@ class DashboardScreen extends StatelessWidget {
           create: (_) =>
           getIt<AudioBloc>()..add(const LoadFeaturedAudio(limit: 10)),
         ),
-        // Short videos bloc
+        // Short videos bloc — featured only on dashboard
         BlocProvider(
           create: (_) =>
-          getIt<ShortVideoBloc>()..add(const LoadShortVideos(limit: 10)),
+          getIt<ShortVideoBloc>()..add(const LoadShortVideos(limit: 10, isFeatured: true)),
         ),
-        // Long videos bloc
+        // Long videos bloc — featured only on dashboard
         BlocProvider(
           create: (_) =>
-          getIt<LongVideoBloc>()..add(const LoadLongVideos(limit: 10)),
+          getIt<LongVideoBloc>()..add(const LoadLongVideos(limit: 10, isFeatured: true)),
         ),
         // Tips bloc
         BlocProvider(
@@ -163,10 +163,10 @@ class _DashboardView extends StatelessWidget {
                         .add(const LoadFeaturedAudio(limit: 10));
                     context
                         .read<ShortVideoBloc>()
-                        .add(const LoadShortVideos(limit: 10));
+                        .add(const LoadShortVideos(limit: 10, isFeatured: true));
                     context
                         .read<LongVideoBloc>()
-                        .add(const LoadLongVideos(limit: 10));
+                        .add(const LoadLongVideos(limit: 10, isFeatured: true));
                     context
                         .read<TipBloc>()
                         .add(const LoadFeaturedTips(limit: 10));
@@ -608,19 +608,16 @@ class _FeaturedAudioSection extends StatelessWidget {
               title: 'Calming Audio',
               subtitle: 'Meditation & wellness sessions',
               onSeeAll: () {
-                final categories = context.read<CategoryBloc>().state;
-                if (categories is CategoryLoaded && categories.categories.isNotEmpty) {
-                  final cat = categories.categories.first;
-                   context.pushNamed(
-                    RouteNames.categoryDetail,
-                    extra: CategoryCardEntity(
-                      id: cat.id,
-                      name: cat.name,
-                      imageUrl: cat.imageUrl,
-                      description: cat.description,
-                    ),
-                  );
-                }
+                context.pushNamed(
+                  RouteNames.categoryDetail,
+                  extra: const CategoryCardEntity(
+                    id: '',
+                    name: 'Calming Audio',
+                    imageUrl: '',
+                    description: 'All audio content',
+                  ),
+                  queryParameters: {'contentType': 'audio'},
+                );
               },
             ),
             SizedBox(height: 16.h),
@@ -736,15 +733,19 @@ class _ShortVideosSection extends StatelessWidget {
             SectionHeaderWidget(
               title: 'Short Videos',
               subtitle: 'Quick mindfulness moments',
-              onSeeAll: () {
-                 // Open CategoryDetail with shortVideo filter
-                 // We don't have a direct category for "Short Videos" but we can pass a dummy or a specific one if needed.
-                 // For now, let's just keep it or navigate to a general category detail if category logic allows.
-              },
+              onSeeAll: shortVideos.isEmpty
+                  ? null
+                  : () {
+                      context.pushNamed(
+                        RouteNames.shortsPlayer,
+                        extra: shortVideos,
+                        queryParameters: {'index': '0'},
+                      );
+                    },
             ),
             SizedBox(height: 16.h),
             SizedBox(
-              height: 220.h,
+              height: 245.h,
               child: ListView.separated(
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
                 scrollDirection: Axis.horizontal,
@@ -852,7 +853,20 @@ class _LongVideosSection extends StatelessWidget {
             SectionHeaderWidget(
               title: 'Featured Videos',
               subtitle: 'In-depth wellness content',
-              onSeeAll: () {},
+              onSeeAll: longVideos.isEmpty
+                  ? null
+                  : () {
+                      context.pushNamed(
+                        RouteNames.categoryDetail,
+                        extra: const CategoryCardEntity(
+                          id: '',
+                          name: 'Featured Videos',
+                          imageUrl: '',
+                          description: 'All video content',
+                        ),
+                        queryParameters: {'contentType': 'longVideo'},
+                      );
+                    },
             ),
             SizedBox(height: 16.h),
             SizedBox(
@@ -1022,7 +1036,16 @@ class _QuotesListSection extends StatelessWidget {
               title: 'More Quotes',
               subtitle: 'Discover words to lift your spirit',
               onSeeAll: () {
-                // TODO: Navigate to quotes directory
+                context.pushNamed(
+                  RouteNames.categoryDetail,
+                  extra: const CategoryCardEntity(
+                    id: '',
+                    name: 'All Quotes',
+                    imageUrl: '',
+                    description: 'All quotes',
+                  ),
+                  queryParameters: {'contentType': 'quote'},
+                );
               },
             ),
             SizedBox(height: 16.h),

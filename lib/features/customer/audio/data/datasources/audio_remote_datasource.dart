@@ -48,6 +48,29 @@ class AudioRemoteDataSource {
     }
   }
 
+  /// Fetch all audio tracks (no featured filter) — used by Explore / See All.
+  Future<List<AudioTrack>> getAllAudio({int limit = 100}) async {
+    try {
+      final response = await _dio.get(
+        ApiEndpoints.audio,
+        queryParameters: {'limit': limit.toString()},
+        options: Options(
+          headers: {'Accept': 'application/x-protobuf'},
+          responseType: ResponseType.bytes,
+        ),
+      );
+      if (response.statusCode == 200 && response.data != null) {
+        final result = GetAudioTracksResponse.fromBuffer(response.data as List<int>);
+        return result.tracks;
+      }
+      throw ServerFailure('Failed to fetch audio: status ${response.statusCode}');
+    } on DioException catch (e) {
+      throw ServerFailure('Network error: ${e.message ?? 'Unknown error'}');
+    } catch (e) {
+      throw ServerFailure('Failed to get all audio: $e');
+    }
+  }
+
   Future<GetAudioTracksResponse> getAudioByCategory({
     required String categoryId,
     int limit = 20,

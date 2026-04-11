@@ -6,12 +6,14 @@ abstract class VideoRepository {
   Future<Either<Failure, List<VideoEntity>>> getShortVideos({
     int limit = 20,
     int offset = 0,
+    bool? isFeatured,
   });
 
   Future<Either<Failure, List<VideoEntity>>> getLongVideos({
     String? categoryId,
     int limit = 20,
     int offset = 0,
+    bool? isFeatured,
   });
 
   Future<Either<Failure, List<VideoEntity>>> getFeaturedVideos({

@@ -6,6 +6,7 @@ import 'package:injectable/injectable.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../../domain/entities/explore_item_entity.dart';
+import '../../domain/repositories/explore_repository.dart';
 import '../../domain/usecases/explore_usecases.dart';
 
 part 'explore_event.dart';
@@ -16,13 +17,17 @@ class ExploreBloc extends Bloc<ExploreEvent, ExploreState> {
   final GetAllExploreItems _getAllExploreItems;
   final SearchExploreItems _searchExploreItems;
   final ManageRecentSearches _manageRecentSearches;
+  final ExploreRepository _exploreRepository;
 
   ExploreBloc(
       this._getAllExploreItems,
       this._searchExploreItems,
       this._manageRecentSearches,
+      this._exploreRepository,
       ) : super(const ExploreInitial()) {
     on<LoadExploreItems>(_onLoadExploreItems);
+    on<LoadExploreItemsForCategory>(_onLoadExploreItemsForCategory);
+    on<LoadExploreItemsByType>(_onLoadExploreItemsByType);
     on<RefreshExploreItems>(_onRefreshExploreItems);
     on<UpdateSearchQuery>(
       _onUpdateSearchQuery,
@@ -61,6 +66,46 @@ class ExploreBloc extends Bloc<ExploreEvent, ExploreState> {
         filter: const ExploreFilter(),
         recentSearches: recentSearches,
         trendingSearches: trendingSearches,
+      )),
+    );
+  }
+
+  Future<void> _onLoadExploreItemsForCategory(
+      LoadExploreItemsForCategory event,
+      Emitter<ExploreState> emit,
+      ) async {
+    emit(const ExploreLoading());
+
+    final result =
+        await _exploreRepository.getExploreItemsByCategory(event.categoryId);
+
+    result.fold(
+      (failure) => emit(ExploreError(failure.message)),
+      (items) => emit(ExploreLoaded(
+        allItems: items,
+        filteredItems: items,
+        filter: const ExploreFilter(),
+      )),
+    );
+  }
+
+  Future<void> _onLoadExploreItemsByType(
+      LoadExploreItemsByType event,
+      Emitter<ExploreState> emit,
+      ) async {
+    emit(const ExploreLoading());
+
+    final result = await _exploreRepository.getExploreItemsByType(
+      event.contentType,
+      limit: 200,
+    );
+
+    result.fold(
+      (failure) => emit(ExploreError(failure.message)),
+      (items) => emit(ExploreLoaded(
+        allItems: items,
+        filteredItems: items,
+        filter: const ExploreFilter(),
       )),
     );
   }

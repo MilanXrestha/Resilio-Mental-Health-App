@@ -12,11 +12,12 @@ abstract class ShortVideoEvent extends Equatable {
 class LoadShortVideos extends ShortVideoEvent {
   final int limit;
   final int offset;
+  final bool? isFeatured;
 
-  const LoadShortVideos({this.limit = 20, this.offset = 0});
+  const LoadShortVideos({this.limit = 20, this.offset = 0, this.isFeatured});
 
   @override
-  List<Object?> get props => [limit, offset];
+  List<Object?> get props => [limit, offset, isFeatured];
 }
 
 /// Load more short videos (pagination)

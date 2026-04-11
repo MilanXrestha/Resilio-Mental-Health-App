@@ -145,19 +145,17 @@ class TipCardWidget extends StatelessWidget {
                     SizedBox(height: 8.h),
 
                     // Preview Text (Informative)
-                    Expanded(
-                      child: Text(
-                        tip.tipText,
-                        style: TextStyle(
-                          fontFamily: 'Poppins',
-                          fontSize: 13.sp,
-                          fontWeight: FontWeight.w400,
-                          height: 1.5,
-                          color: context.textSecondaryColor,
-                        ),
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
+                    Text(
+                      tip.tipText,
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w400,
+                        height: 1.5,
+                        color: context.textSecondaryColor,
                       ),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
                     ),
 
                     // Author line with subtle accent line

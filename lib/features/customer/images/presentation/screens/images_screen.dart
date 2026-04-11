@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../../../core/di/injection.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../bloc/image_bloc.dart';
 import '../bloc/image_event.dart';
@@ -10,6 +11,18 @@ import '../widgets/image_card_widget.dart';
 
 class ImagesScreen extends StatelessWidget {
   const ImagesScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => getIt<ImageBloc>()..add(const LoadFeaturedImages(limit: 20)),
+      child: const _ImagesView(),
+    );
+  }
+}
+
+class _ImagesView extends StatelessWidget {
+  const _ImagesView();
 
   @override
   Widget build(BuildContext context) {

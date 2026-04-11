@@ -37,6 +37,12 @@ class _ReminderSettingsSheetState extends State<ReminderSettingsSheet> {
 
   Future<void> _initPlugin() async {
     tz.initializeTimeZones();
+    // Set the local timezone so scheduled notifications fire at the correct
+    // local time instead of UTC.
+    // On Android 7+ DateTime.now().timeZoneName returns the IANA name
+    // (e.g. "Asia/Kathmandu"). On older devices it may be an abbreviation
+    // or "GMT+HH:MM" — we try the name first, then fall back to UTC.
+    _setLocalTimezone();
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
     const ios = DarwinInitializationSettings(
       requestAlertPermission: true,
@@ -53,6 +59,25 @@ class _ReminderSettingsSheetState extends State<ReminderSettingsSheet> {
       await androidPlugin.requestNotificationsPermission();
       await androidPlugin.requestExactAlarmsPermission();
     }
+  }
+
+  void _setLocalTimezone() {
+    // Try the IANA name that Dart exposes on modern Android/iOS.
+    final tzName = DateTime.now().timeZoneName;
+    try {
+      tz.setLocalLocation(tz.getLocation(tzName));
+      return;
+    } catch (_) {}
+    // Fallback: match by UTC offset (picks the first zone with the same offset).
+    final offsetSeconds = DateTime.now().timeZoneOffset.inSeconds;
+    for (final loc in tz.timeZoneDatabase.locations.values) {
+      if (loc.currentTimeZone.offset == offsetSeconds) {
+        tz.setLocalLocation(loc);
+        return;
+      }
+    }
+    // Last resort: stay with UTC — notification fires at the wrong clock time
+    // but at least it fires.
   }
 
   Future<void> _loadPrefs() async {
@@ -128,7 +153,6 @@ class _ReminderSettingsSheetState extends State<ReminderSettingsSheet> {
   }
 
   Future<void> _scheduleDaily() async {
-    tz.initializeTimeZones();
     final now = tz.TZDateTime.now(tz.local);
     var scheduledDate = tz.TZDateTime(
       tz.local,

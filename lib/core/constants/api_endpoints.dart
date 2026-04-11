@@ -19,6 +19,7 @@ class ApiEndpoints {
 
   // Categories
   static const String categories = '/categories';
+  static const String categoryContent = '/categories';
 
   // Quotes
   static const String quotes = '/quotes';

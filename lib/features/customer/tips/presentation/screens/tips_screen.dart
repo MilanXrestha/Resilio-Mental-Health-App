@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../../../core/di/injection.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../domain/entities/tip_entity.dart';
 import '../bloc/tip_bloc.dart';
@@ -15,7 +16,10 @@ class TipsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => context.read<TipBloc>()..add(const LoadFeaturedTips(limit: 20)),
+      // Create a fresh TipBloc from the service locator — never try to read
+      // one from the parent context, since this screen can be pushed as a
+      // standalone route where no TipBloc provider exists above it.
+      create: (_) => getIt<TipBloc>()..add(const LoadFeaturedTips(limit: 20)),
       child: const _TipsView(),
     );
   }

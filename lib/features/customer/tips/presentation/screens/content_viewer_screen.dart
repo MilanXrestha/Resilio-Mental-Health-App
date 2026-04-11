@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -60,11 +61,16 @@ class _ContentViewerScreenState extends State<ContentViewerScreen>
   bool _isFullScreen = false;
   bool _showSwipeHint = false;
 
-  // Local "settings" (reference uses a SettingsProvider, but we keep it local here).
+  // Local "settings" — persisted to SharedPreferences.
   int _settingsCountdown = 5;
   bool _settingsShowFullScreenIcon = true;
   bool _settingsShowSwipeIndicator = true;
   bool _settingsSlideshowEnabled = true;
+
+  static const _kCountdown = 'cv_settings_countdown';
+  static const _kFullScreen = 'cv_settings_fullscreen';
+  static const _kSwipeHint = 'cv_settings_swipe_hint';
+  static const _kSlideshow = 'cv_settings_slideshow';
 
   int get _itemCount =>
       widget.tips?.length ?? widget.quotes?.length ?? 0;
@@ -134,18 +140,37 @@ class _ContentViewerScreenState extends State<ContentViewerScreen>
       duration: const Duration(milliseconds: 800),
     )..forward();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => _setupTts());
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _loadSettings();
+      _setupTts();
+    });
+  }
 
-    _countdown = _settingsCountdown;
-
-    // Swipe hint visibility (like reference: show briefly on load).
-    _showSwipeHint = _settingsShowSwipeIndicator && _itemCount > 1 && _currentIndex == 0;
+  Future<void> _loadSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    setState(() {
+      _settingsCountdown = prefs.getInt(_kCountdown) ?? 5;
+      _settingsShowFullScreenIcon = prefs.getBool(_kFullScreen) ?? true;
+      _settingsShowSwipeIndicator = prefs.getBool(_kSwipeHint) ?? true;
+      _settingsSlideshowEnabled = prefs.getBool(_kSlideshow) ?? true;
+      _countdown = _settingsCountdown;
+      _showSwipeHint = _settingsShowSwipeIndicator && _itemCount > 1 && _currentIndex == 0;
+    });
     if (_showSwipeHint) {
       Future.delayed(const Duration(seconds: 3)).then((_) {
         if (!mounted) return;
         setState(() => _showSwipeHint = false);
       });
     }
+  }
+
+  Future<void> _saveSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_kCountdown, _settingsCountdown);
+    await prefs.setBool(_kFullScreen, _settingsShowFullScreenIcon);
+    await prefs.setBool(_kSwipeHint, _settingsShowSwipeIndicator);
+    await prefs.setBool(_kSlideshow, _settingsSlideshowEnabled);
   }
 
   bool _userHasPremiumAccess() {
@@ -705,6 +730,7 @@ class _ContentViewerScreenState extends State<ContentViewerScreen>
                                     });
                                   }
                                 });
+                                _saveSettings();
                                 Navigator.pop(dialogContext);
                               },
                               style: FilledButton.styleFrom(

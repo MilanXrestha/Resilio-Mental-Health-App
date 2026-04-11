@@ -28,6 +28,7 @@ class ShortVideoBloc extends Bloc<ShortVideoEvent, ShortVideoState> {
       final result = await videoRepository.getShortVideos(
         limit: event.limit,
         offset: event.offset,
+        isFeatured: event.isFeatured,
       );
 
       result.fold(

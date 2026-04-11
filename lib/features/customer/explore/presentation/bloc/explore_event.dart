@@ -12,6 +12,24 @@ class LoadExploreItems extends ExploreEvent {
   const LoadExploreItems();
 }
 
+/// Load explore items filtered by a specific category (server-side)
+class LoadExploreItemsForCategory extends ExploreEvent {
+  final String categoryId;
+  const LoadExploreItemsForCategory(this.categoryId);
+
+  @override
+  List<Object?> get props => [categoryId];
+}
+
+/// Load explore items filtered by a specific content type
+class LoadExploreItemsByType extends ExploreEvent {
+  final ExploreItemType contentType;
+  const LoadExploreItemsByType(this.contentType);
+
+  @override
+  List<Object?> get props => [contentType];
+}
+
 /// Refresh explore items
 class RefreshExploreItems extends ExploreEvent {
   const RefreshExploreItems();

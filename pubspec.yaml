@@ -87,6 +87,7 @@ dependencies:
   synchronized: ^3.4.0
 
   # Media & Files
+  video_thumbnail: ^0.5.3
   cached_network_image: ^3.4.1
   image_picker: ^1.1.2
   crop_image: ^1.0.16

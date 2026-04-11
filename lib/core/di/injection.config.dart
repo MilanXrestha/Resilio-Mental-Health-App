@@ -435,6 +435,7 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i694.ExploreRepository>(
       () => _i923.ExploreRepositoryImpl(
+        gh<_i361.Dio>(),
         gh<_i343.AudioRemoteDataSource>(),
         gh<_i1067.VideoRemoteDataSource>(),
         gh<_i927.QuoteRemoteDataSource>(),
@@ -549,6 +550,7 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i772.GetAllExploreItems>(),
         gh<_i772.SearchExploreItems>(),
         gh<_i772.ManageRecentSearches>(),
+        gh<_i694.ExploreRepository>(),
       ),
     );
     gh.lazySingleton<_i184.AuthRepository>(

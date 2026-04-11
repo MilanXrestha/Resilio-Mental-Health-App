@@ -1,12 +1,21 @@
+import 'dart:typed_data';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
 
 import '../../../../../core/theme/app_colors.dart';
 import '../../../video/domain/entities/video_entity.dart';
 import '../../../favorites/domain/entities/favorite_entity.dart';
 import '../../../favorites/presentation/widgets/favorite_button.dart';
 
-/// Beautiful long video card widget (16:9 aspect ratio)
+// Per-session cache shared across all long video cards.
+final Map<String, Uint8List?> _longVideoThumbnailCache = {};
+
+/// Beautiful long video card widget (16:9 aspect ratio).
+/// Generates a thumbnail from the video URL (same approach as ShortVideoCardWidget),
+/// falling back to coverImageUrl / thumbnailUrl if generation fails.
 class LongVideoCardWidget extends StatelessWidget {
   final VideoEntity video;
   final VoidCallback? onTap;
@@ -49,16 +58,16 @@ class LongVideoCardWidget extends StatelessWidget {
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(12.r),
-                      child: video.coverImageUrl.isNotEmpty
-                          ? Image.network(
-                              video.coverImageUrl,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => _buildPlaceholder(context, isDarkMode),
-                            )
-                          : _buildPlaceholder(context, isDarkMode),
+                      child: _LongVideoThumbnail(
+                        videoUrl: video.videoUrl,
+                        fallbackUrl: video.coverImageUrl.isNotEmpty
+                            ? video.coverImageUrl
+                            : video.thumbnailUrl,
+                        isDarkMode: isDarkMode,
+                      ),
                     ),
                   ),
-                  
+
                   // Play button overlay
                   Positioned.fill(
                     child: Center(
@@ -107,7 +116,7 @@ class LongVideoCardWidget extends StatelessWidget {
               ),
               SizedBox(height: 12.h),
 
-              // Info section matching reference
+              // Info row
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -116,9 +125,9 @@ class LongVideoCardWidget extends StatelessWidget {
                     radius: 18.r,
                     backgroundColor: context.primaryColor.withValues(alpha: 0.15),
                     child: Text(
-                      video.artistName.isNotEmpty 
-                        ? video.artistName[0].toUpperCase() 
-                        : '?',
+                      video.artistName.isNotEmpty
+                          ? video.artistName[0].toUpperCase()
+                          : '?',
                       style: TextStyle(
                         fontFamily: 'Poppins',
                         color: context.primaryColor,
@@ -190,7 +199,101 @@ class LongVideoCardWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildPlaceholder(BuildContext context, bool isDarkMode) {
+  String _formatViewCount(int count) {
+    if (count >= 1000000) return '${(count / 1000000).toStringAsFixed(1)}M';
+    if (count >= 1000) return '${(count / 1000).toStringAsFixed(1)}K';
+    return count.toString();
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Internal thumbnail widget — generates from video URL via video_thumbnail,
+// with in-memory caching and CachedNetworkImage fallback.
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _LongVideoThumbnail extends StatefulWidget {
+  final String videoUrl;
+  final String fallbackUrl;
+  final bool isDarkMode;
+
+  const _LongVideoThumbnail({
+    required this.videoUrl,
+    required this.fallbackUrl,
+    required this.isDarkMode,
+  });
+
+  @override
+  State<_LongVideoThumbnail> createState() => _LongVideoThumbnailState();
+}
+
+class _LongVideoThumbnailState extends State<_LongVideoThumbnail> {
+  late Future<Uint8List?> _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = _loadThumbnail();
+  }
+
+  Future<Uint8List?> _loadThumbnail() async {
+    if (widget.videoUrl.isEmpty) return null;
+
+    if (_longVideoThumbnailCache.containsKey(widget.videoUrl)) {
+      return _longVideoThumbnailCache[widget.videoUrl];
+    }
+
+    try {
+      final bytes = await VideoThumbnail.thumbnailData(
+        video: widget.videoUrl,
+        imageFormat: ImageFormat.JPEG,
+        maxWidth: 600, // wider for 16:9 cards
+        quality: 75,
+      );
+      _longVideoThumbnailCache[widget.videoUrl] = bytes;
+      return bytes;
+    } catch (_) {
+      _longVideoThumbnailCache[widget.videoUrl] = null;
+      return null;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<Uint8List?>(
+      future: _future,
+      builder: (context, snapshot) {
+        // Generated thumbnail ready
+        if (snapshot.connectionState == ConnectionState.done &&
+            snapshot.data != null) {
+          return Image.memory(
+            snapshot.data!,
+            fit: BoxFit.cover,
+            gaplessPlayback: true,
+          );
+        }
+
+        // While generating (or on failure) — show cover/thumbnail URL
+        if (widget.fallbackUrl.isNotEmpty) {
+          return CachedNetworkImage(
+            imageUrl: widget.fallbackUrl,
+            fit: BoxFit.cover,
+            placeholder: (_, __) => _Placeholder(isDarkMode: widget.isDarkMode),
+            errorWidget: (_, __, ___) => _Placeholder(isDarkMode: widget.isDarkMode),
+          );
+        }
+
+        return _Placeholder(isDarkMode: widget.isDarkMode);
+      },
+    );
+  }
+}
+
+class _Placeholder extends StatelessWidget {
+  final bool isDarkMode;
+  const _Placeholder({required this.isDarkMode});
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       color: isDarkMode ? Colors.grey[900] : Colors.grey[200],
       child: Center(
@@ -201,15 +304,5 @@ class LongVideoCardWidget extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String _formatViewCount(int count) {
-    if (count >= 1000000) {
-      return '${(count / 1000000).toStringAsFixed(1)}M';
-    } else if (count >= 1000) {
-      return '${(count / 1000).toStringAsFixed(1)}K';
-    } else {
-      return count.toString();
-    }
   }
 }

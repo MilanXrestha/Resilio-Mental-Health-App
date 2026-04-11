@@ -29,6 +29,7 @@ class LongVideoBloc extends Bloc<LongVideoEvent, LongVideoState> {
         categoryId: event.categoryId,
         limit: event.limit,
         offset: event.offset,
+        isFeatured: event.isFeatured,
       );
 
       result.fold(
