@@ -57,50 +57,47 @@ import '../../../subscription/presentation/bloc/subscription_state.dart';
 class DashboardScreen extends StatelessWidget {
   final VoidCallback onViewAllCategories;
 
-  const DashboardScreen({
-    super.key,
-    required this.onViewAllCategories,
-  });
+  const DashboardScreen({super.key, required this.onViewAllCategories});
 
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (_) =>
-          getIt<DashboardBloc>()..add(const LoadDashboard()),
+          create: (_) => getIt<DashboardBloc>()..add(const LoadDashboard()),
         ),
         BlocProvider(
           create: (_) =>
-          getIt<QuoteBloc>()..add(const LoadFeaturedQuotes(limit: 4)),
+              getIt<QuoteBloc>()..add(const LoadFeaturedQuotes(limit: 4)),
+        ),
+        BlocProvider(
+          create: (_) => getIt<CategoryBloc>()..add(LoadCategoriesEvent()),
         ),
         BlocProvider(
           create: (_) =>
-          getIt<CategoryBloc>()..add(LoadCategoriesEvent()),
-        ),
-        BlocProvider(
-          create: (_) =>
-          getIt<AudioBloc>()..add(const LoadFeaturedAudio(limit: 10)),
+              getIt<AudioBloc>()..add(const LoadFeaturedAudio(limit: 10)),
         ),
         // Short videos bloc — featured only on dashboard
         BlocProvider(
           create: (_) =>
-          getIt<ShortVideoBloc>()..add(const LoadShortVideos(limit: 10, isFeatured: true)),
+              getIt<ShortVideoBloc>()
+                ..add(const LoadShortVideos(limit: 10, isFeatured: true)),
         ),
         // Long videos bloc — featured only on dashboard
         BlocProvider(
           create: (_) =>
-          getIt<LongVideoBloc>()..add(const LoadLongVideos(limit: 10, isFeatured: true)),
+              getIt<LongVideoBloc>()
+                ..add(const LoadLongVideos(limit: 10, isFeatured: true)),
         ),
         // Tips bloc
         BlocProvider(
           create: (_) =>
-          getIt<TipBloc>()..add(const LoadFeaturedTips(limit: 10)),
+              getIt<TipBloc>()..add(const LoadFeaturedTips(limit: 10)),
         ),
         // Images bloc
         BlocProvider(
           create: (_) =>
-          getIt<ImageBloc>()..add(const LoadFeaturedImages(limit: 10)),
+              getIt<ImageBloc>()..add(const LoadFeaturedImages(limit: 10)),
         ),
       ],
       child: _DashboardView(onViewAllCategories: onViewAllCategories),
@@ -156,28 +153,26 @@ class _DashboardView extends StatelessWidget {
                 // Main scrollable content
                 RefreshIndicator(
                   onRefresh: () async {
-                    context
-                        .read<DashboardBloc>()
-                        .add(const RefreshDashboard());
-                    context
-                        .read<QuoteBloc>()
-                        .add(const LoadFeaturedQuotes(limit: 6));
+                    context.read<DashboardBloc>().add(const RefreshDashboard());
+                    context.read<QuoteBloc>().add(
+                      const LoadFeaturedQuotes(limit: 6),
+                    );
                     context.read<CategoryBloc>().add(LoadCategoriesEvent());
-                    context
-                        .read<AudioBloc>()
-                        .add(const LoadFeaturedAudio(limit: 10));
-                    context
-                        .read<ShortVideoBloc>()
-                        .add(const LoadShortVideos(limit: 10, isFeatured: true));
-                    context
-                        .read<LongVideoBloc>()
-                        .add(const LoadLongVideos(limit: 10, isFeatured: true));
-                    context
-                        .read<TipBloc>()
-                        .add(const LoadFeaturedTips(limit: 10));
-                    context
-                        .read<ImageBloc>()
-                        .add(const LoadFeaturedImages(limit: 10));
+                    context.read<AudioBloc>().add(
+                      const LoadFeaturedAudio(limit: 10),
+                    );
+                    context.read<ShortVideoBloc>().add(
+                      const LoadShortVideos(limit: 10, isFeatured: true),
+                    );
+                    context.read<LongVideoBloc>().add(
+                      const LoadLongVideos(limit: 10, isFeatured: true),
+                    );
+                    context.read<TipBloc>().add(
+                      const LoadFeaturedTips(limit: 10),
+                    );
+                    context.read<ImageBloc>().add(
+                      const LoadFeaturedImages(limit: 10),
+                    );
                   },
                   color: context.primaryColor,
                   child: SingleChildScrollView(
@@ -200,9 +195,7 @@ class _DashboardView extends StatelessWidget {
                         SizedBox(height: 36.h),
 
                         // 3 ─ Categories
-                        _CategoriesSection(
-                          onViewAll: onViewAllCategories,
-                        ),
+                        _CategoriesSection(onViewAll: onViewAllCategories),
 
                         SizedBox(height: 36.h),
 
@@ -245,8 +238,6 @@ class _DashboardView extends StatelessWidget {
                         const _LongVideosSection(),
 
                         SizedBox(height: 36.h),
-
-
                       ],
                     ),
                   ),
@@ -285,9 +276,9 @@ class _Header extends StatelessWidget {
 
               final ImageProvider? image = _resolveImage(photoUrl);
 
-              final bool isPremium = context
-                  .watch<SubscriptionBloc>()
-                  .state is SubscriptionLoaded &&
+              final bool isPremium =
+                  context.watch<SubscriptionBloc>().state
+                      is SubscriptionLoaded &&
                   (context.read<SubscriptionBloc>().state as SubscriptionLoaded)
                       .subscription
                       .isActive;
@@ -310,10 +301,7 @@ class _Header extends StatelessWidget {
                           shape: BoxShape.circle,
                           gradient: LinearGradient(
                             colors: isPremium
-                                ? const [
-                                    Color(0xFFD4AF37),
-                                    Color(0xFF8B6914),
-                                  ]
+                                ? const [Color(0xFFD4AF37), Color(0xFF8B6914)]
                                 : [
                                     context.primaryColor,
                                     context.primaryColor.withOpacity(0.4),
@@ -322,8 +310,9 @@ class _Header extends StatelessWidget {
                           boxShadow: isPremium
                               ? [
                                   BoxShadow(
-                                    color: const Color(0xFFD4AF37)
-                                        .withValues(alpha: 0.45),
+                                    color: const Color(
+                                      0xFFD4AF37,
+                                    ).withValues(alpha: 0.45),
                                     blurRadius: 10,
                                     spreadRadius: 1,
                                   ),
@@ -401,7 +390,41 @@ class _Header extends StatelessWidget {
 
 // ── Notification button ─────────────────────────────────────────────────────
 
-class _NotificationButton extends StatelessWidget {
+class _NotificationButton extends StatefulWidget {
+  @override
+  State<_NotificationButton> createState() => _NotificationButtonState();
+}
+
+class _NotificationButtonState extends State<_NotificationButton> {
+  final _dio = getIt<Dio>();
+  int _unreadCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUnreadCount();
+  }
+
+  Future<void> _loadUnreadCount() async {
+    try {
+      final res = await _dio.get(
+        '/notifications',
+        queryParameters: {'limit': 50},
+      );
+      final raw = res.data;
+      final rawList = (raw is Map
+          ? (raw['notifications'] ?? raw['data'] ?? raw['items'] ?? [])
+          : raw is List
+              ? raw
+              : []) as List<dynamic>;
+      final list = rawList.cast<Map<String, dynamic>>();
+      final unread = list.where((n) => n['is_read'] == false).length;
+      if (mounted) setState(() => _unreadCount = unread);
+    } catch (_) {
+      if (mounted) setState(() => _unreadCount = 0);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -422,7 +445,10 @@ class _NotificationButton extends StatelessWidget {
         shape: const CircleBorder(),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: () => context.pushNamed(RouteNames.notifications),
+          onTap: () async {
+            await context.pushNamed(RouteNames.notifications);
+            if (mounted) _loadUnreadCount();
+          },
           child: Padding(
             padding: EdgeInsets.all(10.w),
             child: Stack(
@@ -433,22 +459,23 @@ class _NotificationButton extends StatelessWidget {
                   size: 24.sp,
                   color: context.textPrimaryColor,
                 ),
-                Positioned(
-                  top: -1,
-                  right: -1,
-                  child: Container(
-                    width: 9.w,
-                    height: 9.w,
-                    decoration: BoxDecoration(
-                      color: context.primaryColor,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: context.surfaceColor,
-                        width: 1.8.w,
+                if (_unreadCount > 0)
+                  Positioned(
+                    top: -1,
+                    right: -1,
+                    child: Container(
+                      width: 9.w,
+                      height: 9.w,
+                      decoration: BoxDecoration(
+                        color: context.primaryColor,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: context.surfaceColor,
+                          width: 1.8.w,
+                        ),
                       ),
                     ),
                   ),
-                ),
               ],
             ),
           ),
@@ -469,7 +496,8 @@ class _RemindersCardSection extends StatefulWidget {
   State<_RemindersCardSection> createState() => _RemindersCardSectionState();
 }
 
-class _RemindersCardSectionState extends State<_RemindersCardSection> with SingleTickerProviderStateMixin {
+class _RemindersCardSectionState extends State<_RemindersCardSection>
+    with SingleTickerProviderStateMixin {
   AnimationController? _lottieController;
 
   @override
@@ -531,7 +559,9 @@ class _RemindersCardSectionState extends State<_RemindersCardSection> with Singl
                       child: Icon(
                         Icons.access_time_rounded,
                         size: 110.sp,
-                        color: context.primaryColor.withOpacity(isDarkMode ? 0.05 : 0.05),
+                        color: context.primaryColor.withOpacity(
+                          isDarkMode ? 0.05 : 0.05,
+                        ),
                       ),
                     ),
                     Row(
@@ -549,7 +579,11 @@ class _RemindersCardSectionState extends State<_RemindersCardSection> with Singl
                                     _lottieController?.repeat();
                                   },
                                   errorBuilder: (context, error, stackTrace) =>
-                                    Icon(Icons.access_time_filled_rounded, size: 50.sp, color: context.primaryColor),
+                                      Icon(
+                                        Icons.access_time_filled_rounded,
+                                        size: 50.sp,
+                                        color: context.primaryColor,
+                                      ),
                                 )
                               : const SizedBox.shrink(),
                         ),
@@ -683,10 +717,7 @@ class _FeaturedAudioSection extends StatelessWidget {
                   return AudioCardWidget(
                     track: track,
                     onTap: () {
-                      context.pushNamed(
-                        RouteNames.mediaPlayer,
-                        extra: track,
-                      );
+                      context.pushNamed(RouteNames.mediaPlayer, extra: track);
                     },
                   );
                 },
@@ -1443,8 +1474,7 @@ class _ErrorBody extends StatelessWidget {
               style: FilledButton.styleFrom(
                 backgroundColor: context.primaryColor,
                 foregroundColor: Colors.white,
-                padding:
-                EdgeInsets.symmetric(horizontal: 28.w, vertical: 14.h),
+                padding: EdgeInsets.symmetric(horizontal: 28.w, vertical: 14.h),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14.r),
                 ),
@@ -1473,7 +1503,8 @@ class CustomGamingFab extends StatefulWidget {
   State<CustomGamingFab> createState() => _CustomGamingFabState();
 }
 
-class _CustomGamingFabState extends State<CustomGamingFab> with SingleTickerProviderStateMixin {
+class _CustomGamingFabState extends State<CustomGamingFab>
+    with SingleTickerProviderStateMixin {
   AnimationController? _lottieController;
 
   @override
@@ -1499,12 +1530,13 @@ class _CustomGamingFabState extends State<CustomGamingFab> with SingleTickerProv
         width: 60.w,
         height: 60.w,
         decoration: BoxDecoration(
-          color: isDarkMode
-              ? const Color(0xFF1A1A1A)
-              : const Color(0xFF262626),
+          color: isDarkMode ? const Color(0xFF1A1A1A) : const Color(0xFF262626),
           borderRadius: BorderRadius.circular(16.r),
           border: isDarkMode
-              ? Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1.w)
+              ? Border.all(
+                  color: Colors.white.withValues(alpha: 0.1),
+                  width: 1.w,
+                )
               : null,
           boxShadow: [
             BoxShadow(
@@ -1545,7 +1577,7 @@ class CustomFabLocation extends FloatingActionButtonLocation {
           20.w -
           scaffoldGeometry.floatingActionButtonSize.width,
       scaffoldGeometry.scaffoldSize.height -
-          70.h -
+          80.h -
           scaffoldGeometry.floatingActionButtonSize.height,
     );
   }
@@ -1578,11 +1610,13 @@ class _TherapySectionState extends State<_TherapySection> {
     try {
       final res = await _dio.get('/appointments');
       final raw = res.data;
-      final rawList = (raw is Map
-          ? (raw['appointments'] ?? raw['data'] ?? raw['items'] ?? [])
-          : raw is List
-              ? raw
-              : []) as List<dynamic>;
+      final rawList =
+          (raw is Map
+                  ? (raw['appointments'] ?? raw['data'] ?? raw['items'] ?? [])
+                  : raw is List
+                  ? raw
+                  : [])
+              as List<dynamic>;
       final hasAny = rawList.isNotEmpty;
       if (mounted) setState(() => _hasBooking = hasAny);
     } catch (_) {
@@ -1662,7 +1696,9 @@ class _TherapySectionState extends State<_TherapySection> {
                     height: 20,
                     width: 20,
                     child: CircularProgressIndicator(
-                        color: Colors.white, strokeWidth: 2),
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
                   )
                 else
                   Row(
@@ -1675,7 +1711,9 @@ class _TherapySectionState extends State<_TherapySection> {
                           backgroundColor: Colors.white,
                           foregroundColor: context.primaryColor,
                           padding: EdgeInsets.symmetric(
-                              horizontal: 16.w, vertical: 10.h),
+                            horizontal: 16.w,
+                            vertical: 10.h,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12.r),
                           ),
@@ -1696,9 +1734,13 @@ class _TherapySectionState extends State<_TherapySection> {
                           style: OutlinedButton.styleFrom(
                             foregroundColor: Colors.white,
                             padding: EdgeInsets.symmetric(
-                                horizontal: 16.w, vertical: 10.h),
+                              horizontal: 16.w,
+                              vertical: 10.h,
+                            ),
                             side: const BorderSide(
-                                color: Colors.white60, width: 1.2),
+                              color: Colors.white60,
+                              width: 1.2,
+                            ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12.r),
                             ),

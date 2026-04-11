@@ -28,6 +28,7 @@ class VideoEntity extends Equatable {
   final int playCount;
   final int likeCount;
   final int shareCount;
+  final int commentCount;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -51,6 +52,7 @@ class VideoEntity extends Equatable {
     this.playCount = 0,
     this.likeCount = 0,
     this.shareCount = 0,
+    this.commentCount = 0,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -76,6 +78,7 @@ class VideoEntity extends Equatable {
     int? playCount,
     int? likeCount,
     int? shareCount,
+    int? commentCount,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -99,6 +102,7 @@ class VideoEntity extends Equatable {
       playCount: playCount ?? this.playCount,
       likeCount: likeCount ?? this.likeCount,
       shareCount: shareCount ?? this.shareCount,
+      commentCount: commentCount ?? this.commentCount,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -144,6 +148,7 @@ class VideoEntity extends Equatable {
         playCount,
         likeCount,
         shareCount,
+        commentCount,
         createdAt,
         updatedAt,
       ];

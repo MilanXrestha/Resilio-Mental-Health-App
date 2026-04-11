@@ -122,6 +122,7 @@ class _FavoriteViewState extends State<_FavoriteView>
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      context.read<ExploreBloc>().add(const RefreshExploreItems());
       final auth = context.read<AuthBloc>().state;
       if (auth is AuthAuthenticated) {
         context.read<FavoriteBloc>().add(LoadFavorites(auth.user.id));
@@ -159,23 +160,33 @@ class _FavoriteViewState extends State<_FavoriteView>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: context.backgroundColor,
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _Header(selectedTabIndex: _selectedIndex),
-          _TabPills(
-            tabController: _tabController,
-            selectedIndex: _selectedIndex,
-            computeCounts: (state) => _computeCounts(state),
-            onTabSelected: (i) {
-              _tabController.animateTo(i);
-              setState(() => _selectedIndex = i);
-            },
-          ),
-          Expanded(child: _TabContent(tabController: _tabController)),
-        ],
+    return BlocListener<AuthBloc, AuthState>(
+      listenWhen: (prev, next) =>
+          prev is! AuthAuthenticated && next is AuthAuthenticated,
+      listener: (context, authState) {
+        if (authState is AuthAuthenticated) {
+          context.read<FavoriteBloc>().add(LoadFavorites(authState.user.id));
+          context.read<ExploreBloc>().add(const RefreshExploreItems());
+        }
+      },
+      child: Scaffold(
+        backgroundColor: context.backgroundColor,
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _Header(selectedTabIndex: _selectedIndex),
+            _TabPills(
+              tabController: _tabController,
+              selectedIndex: _selectedIndex,
+              computeCounts: (state) => _computeCounts(state),
+              onTabSelected: (i) {
+                _tabController.animateTo(i);
+                setState(() => _selectedIndex = i);
+              },
+            ),
+            Expanded(child: _TabContent(tabController: _tabController)),
+          ],
+        ),
       ),
     );
   }
@@ -515,60 +526,178 @@ class _FavoriteTabPage extends StatelessWidget {
     required this.allItems,
   });
 
-  List<ExploreItemEntity> _resolve() {
-    final result = <ExploreItemEntity>[];
-    for (final fav in allFavorites) {
-      final matches = tab.type == FavoriteType.video
-          ? (fav.contentType == FavoriteType.video ||
-              fav.contentType == FavoriteType.longVideo ||
-              fav.contentType == FavoriteType.shortVideo)
-          : fav.contentType == tab.type;
-      if (!matches) continue;
-      final item = allItems.where((e) => e.id == fav.contentId).firstOrNull;
-      if (item != null) result.add(item);
+  bool _favMatchesTab(FavoriteEntity fav) {
+    if (tab.type == FavoriteType.video) {
+      return fav.contentType == FavoriteType.video ||
+          fav.contentType == FavoriteType.longVideo ||
+          fav.contentType == FavoriteType.shortVideo;
     }
-    return result;
+    return fav.contentType == tab.type;
+  }
+
+  /// Rows keep every server favorite for this tab. Items missing from Explore
+  /// still appear as [orphan] rows (they were hidden before when the catalog
+  /// did not include that id yet).
+  List<({FavoriteEntity fav, ExploreItemEntity? item})> _rows() {
+    final out = <({FavoriteEntity fav, ExploreItemEntity? item})>[];
+    for (final fav in allFavorites) {
+      if (!_favMatchesTab(fav)) continue;
+      ExploreItemEntity? match;
+      for (final e in allItems) {
+        if (e.id == fav.contentId) {
+          match = e;
+          break;
+        }
+      }
+      out.add((fav: fav, item: match));
+    }
+    return out;
+  }
+
+  List<ExploreItemEntity> _resolvedItemsOnly(
+    List<({FavoriteEntity fav, ExploreItemEntity? item})> rows,
+  ) {
+    return [for (final r in rows) if (r.item != null) r.item!];
   }
 
   @override
   Widget build(BuildContext context) {
-    final items = _resolve();
+    final rows = _rows();
 
-    if (items.isEmpty) return _EmptyTabState(tab: tab);
+    if (rows.isEmpty) return _EmptyTabState(tab: tab);
+
+    final resolvedOnly = _resolvedItemsOnly(rows);
 
     if (tab.type == FavoriteType.image) {
-      return _ImageGrid(items: items);
+      return GridView.builder(
+        padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 100.h),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          childAspectRatio: 150 / 280,
+          crossAxisSpacing: 12.w,
+          mainAxisSpacing: 12.h,
+        ),
+        itemCount: rows.length,
+        itemBuilder: (ctx, i) {
+          final row = rows[i];
+          if (row.item != null) {
+            return _CardItem(
+              item: row.item!,
+              index: i,
+              allItems: resolvedOnly,
+            );
+          }
+          return _OrphanFavoriteTile(favorite: row.fav, tab: tab);
+        },
+      );
     }
 
     return ListView.separated(
       padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 100.h),
-      itemCount: items.length,
+      itemCount: rows.length,
       separatorBuilder: (_, _) => SizedBox(height: 16.h),
-      itemBuilder: (ctx, i) =>
-          _CardItem(item: items[i], index: i, allItems: items),
+      itemBuilder: (ctx, i) {
+        final row = rows[i];
+        if (row.item != null) {
+          return _CardItem(
+            item: row.item!,
+            index: i,
+            allItems: resolvedOnly,
+          );
+        }
+        return _OrphanFavoriteTile(favorite: row.fav, tab: tab);
+      },
     );
   }
 }
 
-// ── Image grid ────────────────────────────────────────────────────────────────
+// ── Favorite exists on server but Explore catalog has no row yet ─────────────
 
-class _ImageGrid extends StatelessWidget {
-  final List<ExploreItemEntity> items;
-  const _ImageGrid({required this.items});
+class _OrphanFavoriteTile extends StatelessWidget {
+  final FavoriteEntity favorite;
+  final _TabMeta tab;
+
+  const _OrphanFavoriteTile({
+    required this.favorite,
+    required this.tab,
+  });
+
+  String? _userId(BuildContext context) {
+    final auth = context.read<AuthBloc>().state;
+    if (auth is AuthAuthenticated) return auth.user.id;
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
-    return GridView.builder(
-      padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 100.h),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 150 / 280,
-        crossAxisSpacing: 12.w,
-        mainAxisSpacing: 12.h,
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+      decoration: BoxDecoration(
+        color: isDark
+            ? Colors.white.withOpacity(0.06)
+            : Colors.black.withOpacity(0.04),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(
+          color: context.borderColor.withOpacity(0.25),
+        ),
       ),
-      itemCount: items.length,
-      itemBuilder: (ctx, i) =>
-          _CardItem(item: items[i], index: i, allItems: items),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 22.r,
+            backgroundColor: tab.gradient.first.withOpacity(0.2),
+            child: Icon(tab.icon, color: tab.gradient.first, size: 22.sp),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Saved ${tab.label.toLowerCase()}',
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w600,
+                    color: context.textPrimaryColor,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  'This favorite is not in your Explore feed yet. Open Explore and pull to refresh, or browse that content again.',
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 12.sp,
+                    color: context.textSecondaryColor,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            tooltip: 'Remove from favorites',
+            onPressed: () {
+              final uid = _userId(context);
+              if (uid == null || uid.isEmpty) return;
+              context.read<FavoriteBloc>().add(
+                    ToggleFavorite(
+                      userId: uid,
+                      contentId: favorite.contentId,
+                      contentType: favorite.contentType,
+                    ),
+                  );
+            },
+            icon: Icon(
+              Icons.favorite_rounded,
+              color: Colors.redAccent,
+              size: 26.sp,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

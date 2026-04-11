@@ -1,11 +1,20 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:video_player/video_player.dart';
 import 'package:chewie/chewie.dart';
 
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../../../core/di/injection.dart';
+import '../../../../../core/routing/route_names.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../domain/entities/video_entity.dart';
+import '../bloc/long_video/long_video_bloc.dart';
+import '../bloc/long_video/long_video_event.dart';
+import '../bloc/long_video/long_video_state.dart';
+import '../widgets/comment_sheet_widget.dart';
 import '../../../favorites/presentation/widgets/favorite_button.dart';
 import '../../../favorites/domain/entities/favorite_entity.dart';
 
@@ -13,10 +22,7 @@ import '../../../favorites/domain/entities/favorite_entity.dart';
 class LongVideoPlayerScreen extends StatefulWidget {
   final VideoEntity video;
 
-  const LongVideoPlayerScreen({
-    super.key,
-    required this.video,
-  });
+  const LongVideoPlayerScreen({super.key, required this.video});
 
   @override
   State<LongVideoPlayerScreen> createState() => _LongVideoPlayerScreenState();
@@ -46,12 +52,13 @@ class _LongVideoPlayerScreenState extends State<LongVideoPlayerScreen> {
       autoPlay: true,
       looping: false,
       showControlsOnInitialize: true,
+      // Hides the ⋮ menu (playback speed on Material / desktop). iOS Cupertino
+      // still exposes speed via its dedicated control when applicable.
+      showOptions: false,
       placeholder: Container(
         color: Colors.black,
         child: Center(
-          child: CircularProgressIndicator(
-            color: context.primaryColor,
-          ),
+          child: CircularProgressIndicator(color: context.primaryColor),
         ),
       ),
       errorBuilder: (context, errorMessage) {
@@ -102,15 +109,6 @@ class _LongVideoPlayerScreenState extends State<LongVideoPlayerScreen> {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            actions: [
-              FavoriteButton(
-                contentId: widget.video.id,
-                contentType: FavoriteType.longVideo,
-                size: 28.sp,
-                color: Colors.white,
-                padding: EdgeInsets.symmetric(horizontal: 16.w),
-              ),
-            ],
           ),
 
           if (_isLoading)
@@ -119,9 +117,7 @@ class _LongVideoPlayerScreenState extends State<LongVideoPlayerScreen> {
                 height: 250.h,
                 color: Colors.black,
                 child: Center(
-                  child: CircularProgressIndicator(
-                    color: context.primaryColor,
-                  ),
+                  child: CircularProgressIndicator(color: context.primaryColor),
                 ),
               ),
             )
@@ -156,11 +152,13 @@ class _LongVideoPlayerScreenState extends State<LongVideoPlayerScreen> {
                   children: [
                     CircleAvatar(
                       radius: 20.r,
-                      backgroundColor: context.primaryColor.withValues(alpha: 0.2),
+                      backgroundColor: context.primaryColor.withValues(
+                        alpha: 0.2,
+                      ),
                       child: Text(
-                        widget.video.artistName.isNotEmpty 
-                          ? widget.video.artistName[0].toUpperCase() 
-                          : '?',
+                        widget.video.artistName.isNotEmpty
+                            ? widget.video.artistName[0].toUpperCase()
+                            : '?',
                         style: TextStyle(
                           color: context.primaryColor,
                           fontSize: 18.sp,
@@ -183,7 +181,7 @@ class _LongVideoPlayerScreenState extends State<LongVideoPlayerScreen> {
                             ),
                           ),
                           Text(
-                            '${widget.video.playCount} views • ${_formatDate(widget.video.createdAt)}',
+                            _formatDate(widget.video.createdAt),
                             style: TextStyle(
                               fontFamily: 'Poppins',
                               fontSize: 12.sp,
@@ -194,12 +192,12 @@ class _LongVideoPlayerScreenState extends State<LongVideoPlayerScreen> {
                       ),
                     ),
                     // Action buttons
-                    IconButton(
-                      icon: Icon(Icons.thumb_up_outlined),
-                      onPressed: () {
-                        // TODO: Like video
-                      },
-                      tooltip: 'Like',
+                    FavoriteButton(
+                      contentId: widget.video.id,
+                      contentType: FavoriteType.longVideo,
+                      size: 24.sp,
+                      color: context.textPrimaryColor,
+                      padding: EdgeInsets.symmetric(horizontal: 16.w),
                     ),
                     IconButton(
                       icon: Icon(Icons.share_rounded),
@@ -246,6 +244,11 @@ class _LongVideoPlayerScreenState extends State<LongVideoPlayerScreen> {
                     ],
                   ),
                 ),
+
+                SizedBox(height: 24.h),
+
+                // Comment preview box
+                _CommentPreviewBox(video: widget.video),
 
                 SizedBox(height: 24.h),
 
@@ -308,15 +311,49 @@ class _LongVideoPlayerScreenState extends State<LongVideoPlayerScreen> {
             ),
           ),
 
-          // Related Videos List (placeholder)
+          // Related Videos List
           SliverPadding(
             padding: EdgeInsets.symmetric(vertical: 8.h),
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  return _RelatedVideoCard(video: widget.video);
-                },
-                childCount: 3, // Placeholder count
+            sliver: SliverToBoxAdapter(
+              child: BlocProvider(
+                create: (_) => getIt<LongVideoBloc>()
+                  ..add(
+                    LoadLongVideos(
+                      categoryId: widget.video.categoryId,
+                      limit: 5,
+                    ),
+                  ),
+                child: BlocBuilder<LongVideoBloc, LongVideoState>(
+                  builder: (context, state) {
+                    if (state is LongVideoLoading) {
+                      return Padding(
+                        padding: EdgeInsets.all(20.h),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: context.primaryColor,
+                          ),
+                        ),
+                      );
+                    }
+                    if (state is LongVideoLoaded) {
+                      final related = state.videos
+                          .where((v) => v.id != widget.video.id)
+                          .toList();
+                      if (related.isEmpty) return const SizedBox.shrink();
+
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        padding: EdgeInsets.zero,
+                        itemCount: related.length,
+                        itemBuilder: (context, index) {
+                          return _RelatedVideoCard(video: related[index]);
+                        },
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
               ),
             ),
           ),
@@ -354,35 +391,137 @@ class _RelatedVideoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Thumbnail
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12.r),
-            child: Container(
-              width: 160.w,
-              height: 90.h,
-              color: context.primaryColor.withValues(alpha: 0.1),
-              child: Icon(
-                Icons.play_circle_outline_rounded,
-                size: 40.sp,
-                color: context.primaryColor,
+    return InkWell(
+      onTap: () {
+        context.pushReplacementNamed(RouteNames.longVideoPlayer, extra: video);
+      },
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12.r),
+              child: SizedBox(
+                width: 160.w,
+                height: 90.h,
+                child: _relatedThumbnail(context, video),
               ),
             ),
+            SizedBox(width: 12.w),
+            // Info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    video.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                      color: context.textPrimaryColor,
+                    ),
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    video.artistName,
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 12.sp,
+                      color: context.textSecondaryColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _relatedThumbnail(BuildContext context, VideoEntity video) {
+    final url = video.thumbnailUrl.isNotEmpty
+        ? video.thumbnailUrl
+        : video.coverImageUrl;
+    if (url.isEmpty) {
+      return ColoredBox(
+        color: context.primaryColor.withValues(alpha: 0.1),
+        child: Center(
+          child: Icon(
+            Icons.play_circle_outline_rounded,
+            size: 40.sp,
+            color: context.primaryColor,
           ),
-          SizedBox(width: 12.w),
-          // Info
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        ),
+      );
+    }
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        CachedNetworkImage(
+          imageUrl: url,
+          fit: BoxFit.cover,
+          placeholder: (_, __) => ColoredBox(
+            color: context.primaryColor.withValues(alpha: 0.08),
+          ),
+          errorWidget: (_, __, ___) => ColoredBox(
+            color: context.primaryColor.withValues(alpha: 0.1),
+            child: Icon(
+              Icons.play_circle_outline_rounded,
+              size: 40.sp,
+              color: context.primaryColor,
+            ),
+          ),
+        ),
+        Center(
+          child: Icon(
+            Icons.play_circle_outline_rounded,
+            size: 40.sp,
+            color: Colors.white.withValues(alpha: 0.9),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// COMMENT PREVIEW BOX
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _CommentPreviewBox extends StatelessWidget {
+  final VideoEntity video;
+
+  const _CommentPreviewBox({required this.video});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (context) => CommentSheetWidget(videoId: video.id),
+        );
+      },
+      child: Container(
+        padding: EdgeInsets.all(12.w),
+        decoration: BoxDecoration(
+          color: context.primaryColor.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
                 Text(
-                  'Related Therapy Session ${DateTime.now().millisecond}',
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                  'Comments',
                   style: TextStyle(
                     fontFamily: 'Poppins',
                     fontSize: 14.sp,
@@ -390,35 +529,45 @@ class _RelatedVideoCard extends StatelessWidget {
                     color: context.textPrimaryColor,
                   ),
                 ),
-                SizedBox(height: 4.h),
-                Text(
-                  video.artistName,
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 12.sp,
-                    color: context.textSecondaryColor,
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  '${video.playCount} views',
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 11.sp,
-                    color: context.textSecondaryColor,
-                  ),
+                const Spacer(),
+                Icon(
+                  Icons.unfold_more_rounded,
+                  color: context.textSecondaryColor,
+                  size: 20.sp,
                 ),
               ],
             ),
-          ),
-          // More button
-          IconButton(
-            icon: Icon(Icons.more_vert_rounded, size: 24.sp),
-            onPressed: () {},
-            padding: EdgeInsets.zero,
-            constraints: BoxConstraints(),
-          ),
-        ],
+            if (video.commentCount > 0) ...[
+              SizedBox(height: 8.h),
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 12.r,
+                    backgroundColor: context.primaryColor.withValues(alpha: 0.2),
+                    child: Icon(
+                      Icons.person,
+                      size: 16.sp,
+                      color: context.primaryColor,
+                    ),
+                  ),
+                  SizedBox(width: 8.w),
+                  Expanded(
+                    child: Text(
+                      'Tap to view comments...',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 13.sp,
+                        color: context.textPrimaryColor,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }

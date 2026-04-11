@@ -2,14 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:video_player/video_player.dart';
-import 'package:hugeicons/hugeicons.dart';
 
-import '../../../../../core/theme/app_colors.dart';
 import '../../domain/entities/video_entity.dart';
-import '../../../favorites/presentation/widgets/favorite_button.dart';
-import '../../../favorites/domain/entities/favorite_entity.dart';
+import '../widgets/shorts_reels_widgets.dart';
 
-/// Beautiful TikTok/Instagram Reels style vertical video player
+/// TikTok / Reels-style vertical player (same chrome as the main Reels tab).
 class ShortsPlayerScreen extends StatefulWidget {
   final List<VideoEntity> videos;
   final int initialIndex;
@@ -27,7 +24,7 @@ class ShortsPlayerScreen extends StatefulWidget {
 class _ShortsPlayerScreenState extends State<ShortsPlayerScreen> {
   late PageController _pageController;
   late int _currentIndex;
-  Map<int, VideoPlayerController> _controllers = {};
+  final Map<int, VideoPlayerController> _controllers = {};
   bool _isPlaying = true;
 
   @override
@@ -45,8 +42,8 @@ class _ShortsPlayerScreenState extends State<ShortsPlayerScreen> {
     final controller = VideoPlayerController.networkUrl(
       Uri.parse(video.videoUrl),
     )..addListener(() {
-      if (mounted) setState(() {});
-    });
+        if (mounted) setState(() {});
+      });
 
     await controller.initialize();
     controller.setLooping(true);
@@ -61,351 +58,151 @@ class _ShortsPlayerScreenState extends State<ShortsPlayerScreen> {
 
   @override
   void dispose() {
-    for (var controller in _controllers.values) {
-      controller.dispose();
+    for (final c in _controllers.values) {
+      c.dispose();
     }
     _pageController.dispose();
     super.dispose();
   }
 
   void _onPageChanged(int index) {
-    // Pause previous video
-    if (_controllers.containsKey(_currentIndex)) {
-      _controllers[_currentIndex]?.pause();
-    }
+    _controllers[_currentIndex]?.pause();
 
     setState(() {
       _currentIndex = index;
     });
 
-    // Initialize and play new video
     if (!_controllers.containsKey(index)) {
       _initializeVideo(index);
     } else {
       _controllers[index]?.play();
+      setState(() => _isPlaying = true);
     }
+  }
+
+  void _togglePlayPause() {
+    final c = _controllers[_currentIndex];
+    if (c == null) return;
+    setState(() {
+      if (c.value.isPlaying) {
+        c.pause();
+        _isPlaying = false;
+      } else {
+        c.play();
+        _isPlaying = true;
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final bottomPad = MediaQuery.of(context).padding.bottom;
+    final current = _currentIndex < widget.videos.length
+        ? widget.videos[_currentIndex]
+        : null;
+    final activeController = _controllers[_currentIndex];
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // Video Pages
           PageView.builder(
             controller: _pageController,
             scrollDirection: Axis.vertical,
             itemCount: widget.videos.length,
             onPageChanged: _onPageChanged,
             itemBuilder: (context, index) {
-              final video = widget.videos[index];
-              return _VideoPage(
-                video: video,
-                controller: _controllers[index],
-                isPlaying: _currentIndex == index && _isPlaying,
-                onPlayPause: () {
-                  if (_isPlaying) {
-                    _controllers[index]?.pause();
-                  } else {
-                    _controllers[index]?.play();
-                  }
-                  setState(() {
-                    _isPlaying = !_isPlaying;
-                  });
-                },
+              return GestureDetector(
+                onTap: _togglePlayPause,
+                child: ShortsReelVideoSurface(controller: _controllers[index]),
               );
             },
           ),
 
-          // Top Bar
+          // Top bar — same gradient treatment as Reels tab; close instead of title
           Positioned(
-            top: 40.h,
-            left: 16.w,
-            right: 16.w,
-            child: Row(
-              children: [
-                GestureDetector(
-                  onTap: () => context.pop(),
-                  child: Container(
-                    padding: EdgeInsets.all(8.w),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.3),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.close_rounded,
-                      color: Colors.white,
-                      size: 24.sp,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Bottom Info Panel
-          if (_currentIndex < widget.videos.length)
-            Positioned(
-              left: 16.w,
-              right: 80.w,
-              bottom: MediaQuery.of(context).padding.bottom + 16.h,
-              child: _VideoInfo(video: widget.videos[_currentIndex]),
-            ),
-
-          // Right side action buttons
-          if (_currentIndex < widget.videos.length)
-            Positioned(
-              right: 8.w,
-              bottom: MediaQuery.of(context).padding.bottom + 80.h,
-              child: _ActionButtons(video: widget.videos[_currentIndex]),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// VIDEO PAGE
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _VideoPage extends StatelessWidget {
-  final VideoEntity video;
-  final VideoPlayerController? controller;
-  final bool isPlaying;
-  final VoidCallback onPlayPause;
-
-  const _VideoPage({
-    required this.video,
-    this.controller,
-    required this.isPlaying,
-    required this.onPlayPause,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onPlayPause,
-      onDoubleTap: onPlayPause,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          // Video
-          if (controller != null && controller!.value.isInitialized)
-            AspectRatio(
-              aspectRatio: controller!.value.aspectRatio,
-              child: VideoPlayer(controller!),
-            )
-          else
-            Container(
-              color: Colors.black,
-              child: Center(
-                child: CircularProgressIndicator(
-                  color: context.primaryColor,
-                ),
-              ),
-            ),
-
-          // Play/Pause Indicator
-          if (!isPlaying)
-            Container(
-              color: Colors.black.withValues(alpha: 0.3),
-              child: Icon(
-                Icons.play_arrow_rounded,
-                size: 80.sp,
-                color: Colors.white.withValues(alpha: 0.8),
-              ),
-            ),
-
-          // Gradient overlay for better visibility
-          Positioned.fill(
-            child: DecoratedBox(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.black.withValues(alpha: 0.2),
+                    Colors.black.withValues(alpha: 0.6),
                     Colors.transparent,
-                    Colors.black.withValues(alpha: 0.5),
                   ],
-                  stops: const [0.0, 0.4, 1.0],
+                ),
+              ),
+              child: SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                  child: Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () => context.pop(),
+                        child: Container(
+                          padding: EdgeInsets.all(8.w),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.3),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.close_rounded,
+                            color: Colors.white,
+                            size: 24.sp,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
-        ],
-      ),
-    );
-  }
-}
 
-// ─────────────────────────────────────────────────────────────────────────────
-// VIDEO INFO PANEL
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _VideoInfo extends StatelessWidget {
-  final VideoEntity video;
-
-  const _VideoInfo({required this.video});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Artist name
-        Row(
-          children: [
-            CircleAvatar(
-              radius: 20.r,
-              backgroundColor: context.primaryColor.withValues(alpha: 0.2),
-              child: Text(
-                video.artistName.isNotEmpty ? video.artistName[0].toUpperCase() : '?',
-                style: TextStyle(
-                  color: context.primaryColor,
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+          if (current != null)
+            Positioned(
+              right: 12.w,
+              bottom: bottomPad + 165.h,
+              child: ShortsReelsActionColumn(video: current),
             ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '@${video.artistName}',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Text(
-                    video.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.9),
-                      fontSize: 14.sp,
-                    ),
-                  ),
-                ],
-              ),
+
+          if (current != null)
+            Positioned(
+              left: 16.w,
+              right: 80.w,
+              bottom: bottomPad + 85.h,
+              child: ShortsReelsInfoPanel(video: current),
             ),
-          ],
-        ),
 
-        SizedBox(height: 16.h),
+          if (current != null && activeController != null)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: bottomPad + 55.h,
+              child: ShortsReelsProgressBar(controller: activeController),
+            ),
 
-        // Mood tags
-        if (video.moodTags.isNotEmpty)
-          Wrap(
-            spacing: 8.w,
-            runSpacing: 8.h,
-            children: video.moodTags.take(3).map((tag) {
-              return Container(
-                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-                decoration: BoxDecoration(
-                  color: context.primaryColor.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(20.r),
-                ),
-                child: Text(
-                  '#$tag',
-                  style: TextStyle(
+          if (!_isPlaying)
+            IgnorePointer(
+              child: Center(
+                child: Container(
+                  padding: EdgeInsets.all(20.w),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.4),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.play_arrow_rounded,
                     color: Colors.white,
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w500,
+                    size: 80.w,
                   ),
                 ),
-              );
-            }).toList(),
-          ),
-      ],
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// ACTION BUTTONS
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _ActionButtons extends StatelessWidget {
-  final VideoEntity video;
-
-  const _ActionButtons({required this.video});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        FavoriteButton(
-          contentId: video.id,
-          contentType: FavoriteType.shortVideo,
-          size: 28.sp,
-          color: Colors.white,
-        ),
-        SizedBox(height: 24.h),
-        _ActionButton(
-          icon: Icons.chat_bubble_outline_rounded,
-          label: 'Comment',
-          onTap: () {
-            // TODO: Show comments
-          },
-        ),
-        SizedBox(height: 24.h),
-        _ActionButton(
-          icon: Icons.share_rounded,
-          label: 'Share',
-          onTap: () {
-            // TODO: Share video
-          },
-        ),
-      ],
-    );
-  }
-}
-
-class _ActionButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  const _ActionButton({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        children: [
-          Container(
-            padding: EdgeInsets.all(12.w),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              shape: BoxShape.circle,
+              ),
             ),
-            child: Icon(
-              icon,
-              color: Colors.white,
-              size: 28.sp,
-            ),
-          ),
-          SizedBox(height: 4.h),
-          Text(
-            label,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
         ],
       ),
     );

@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import '../../../../../core/errors/failures.dart';
 import '../entities/video_entity.dart';
+import '../entities/video_comment_entity.dart';
 
 abstract class VideoRepository {
   Future<Either<Failure, List<VideoEntity>>> getShortVideos({
@@ -23,4 +24,13 @@ abstract class VideoRepository {
   Future<Either<Failure, VideoEntity>> getVideoById(String videoId);
 
   Future<Either<Failure, int>> incrementPlayCount(String videoId);
+
+  Future<Either<Failure, List<VideoCommentEntity>>> getVideoComments(
+      String videoId);
+
+  Future<Either<Failure, VideoCommentEntity>> addVideoComment({
+    required String videoId,
+    required String userId,
+    required String content,
+  });
 }

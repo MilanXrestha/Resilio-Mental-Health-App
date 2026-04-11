@@ -3,6 +3,7 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../../core/errors/failures.dart';
 import '../../domain/entities/video_entity.dart';
+import '../../domain/entities/video_comment_entity.dart';
 import '../../domain/repositories/video_repository.dart';
 import '../datasources/remote/video_remote_data_source.dart';
 
@@ -77,6 +78,35 @@ class VideoRepositoryImpl implements VideoRepository {
     try {
       final count = await remoteDataSource.incrementPlayCount(videoId);
       return Right(count);
+    } catch (e) {
+      return Left(NetworkFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<VideoCommentEntity>>> getVideoComments(
+      String videoId) async {
+    try {
+      final comments = await remoteDataSource.getVideoComments(videoId);
+      return Right(comments);
+    } catch (e) {
+      return Left(NetworkFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, VideoCommentEntity>> addVideoComment({
+    required String videoId,
+    required String userId,
+    required String content,
+  }) async {
+    try {
+      final comment = await remoteDataSource.addVideoComment(
+        videoId: videoId,
+        userId: userId,
+        content: content,
+      );
+      return Right(comment);
     } catch (e) {
       return Left(NetworkFailure(e.toString()));
     }

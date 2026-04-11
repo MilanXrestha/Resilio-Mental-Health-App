@@ -5,6 +5,7 @@ import '../../../../../../core/constants/api_endpoints.dart';
 import '../../../../../../core/errors/failures.dart';
 import '../../../../../../core/proto_generated/video.pb.dart';
 import '../../../domain/entities/video_entity.dart';
+import '../../../domain/entities/video_comment_entity.dart';
 import '../../../domain/repositories/video_repository.dart';
 
 abstract class VideoRemoteDataSource {
@@ -29,6 +30,14 @@ abstract class VideoRemoteDataSource {
   Future<VideoEntity> getVideoById(String videoId);
 
   Future<int> incrementPlayCount(String videoId);
+
+  Future<List<VideoCommentEntity>> getVideoComments(String videoId);
+
+  Future<VideoCommentEntity> addVideoComment({
+    required String videoId,
+    required String userId,
+    required String content,
+  });
 }
 
 @LazySingleton(as: VideoRemoteDataSource)
@@ -192,6 +201,55 @@ class VideoRemoteDataSourceImpl implements VideoRemoteDataSource {
       throw NetworkFailure('Failed to increment play count: ${e.message}');
     } catch (e) {
       throw NetworkFailure('Failed to increment play count: $e');
+    }
+  }
+
+  @override
+  Future<List<VideoCommentEntity>> getVideoComments(String videoId) async {
+    try {
+      final response = await _dio.get(
+        '${ApiEndpoints.video}/$videoId/comments',
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        final List<dynamic> data = response.data['data'];
+        return data.map((json) => VideoCommentEntity.fromJson(json)).toList();
+      }
+
+      return [];
+    } on DioException catch (e) {
+      throw NetworkFailure('Failed to fetch comments: ${e.message}');
+    } catch (error) {
+      throw NetworkFailure('Failed to fetch comments: $error');
+    }
+  }
+
+  @override
+  Future<VideoCommentEntity> addVideoComment({
+    required String videoId,
+    required String userId,
+    required String content,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '${ApiEndpoints.video}/$videoId/comments',
+        data: {
+          'user_id': userId,
+          'content': content,
+        },
+      );
+
+      if ((response.statusCode == 200 || response.statusCode == 201) &&
+          response.data != null) {
+        final dynamic data = response.data['data'];
+        return VideoCommentEntity.fromJson(data);
+      }
+
+      throw NetworkFailure('Failed to post comment: ${response.statusCode}');
+    } on DioException catch (e) {
+      throw NetworkFailure('Failed to post comment: ${e.message}');
+    } catch (error) {
+      throw NetworkFailure('Failed to post comment: $error');
     }
   }
 

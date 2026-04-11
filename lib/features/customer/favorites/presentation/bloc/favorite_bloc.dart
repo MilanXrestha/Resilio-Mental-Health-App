@@ -90,12 +90,10 @@ class FavoriteBloc extends Bloc<FavoriteEvent, FavoriteState> {
         final newMap = Map<String, bool>.from(currentState.favoriteStatusMap);
         newMap[event.contentId] = isFavorited;
         emit(currentState.copyWith(favoriteStatusMap: newMap));
-      } else {
-        emit(FavoritesLoaded(
-          favorites: const [],
-          favoriteStatusMap: {event.contentId: isFavorited},
-        ));
       }
+      // Do not emit FavoritesLoaded with an empty list here — that overwrote
+      // a real favorites payload and made the Favorites tab look empty until
+      // the next full reload (e.g. after toggling a heart).
     } catch (e) {
       // Ignore errors for single status checks
     }

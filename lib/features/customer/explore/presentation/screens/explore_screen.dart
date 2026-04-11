@@ -124,30 +124,27 @@ class _ExploreViewState extends State<_ExploreView> {
 
   Widget _buildLoadingState(BuildContext context) {
     final isDarkMode = context.isDarkMode;
-    final baseColor = isDarkMode
-        ? context.surfaceColor
-        : context.backgroundColor;
-    final highlightColor = isDarkMode
-        ? context.surfaceColor.withOpacity(0.5)
-        : Colors.grey.shade100;
+    final baseColor = isDarkMode ? Colors.grey.shade800 : Colors.grey.shade300;
+    final highlightColor =
+        isDarkMode ? Colors.grey.shade700 : Colors.grey.shade100;
 
-    return SingleChildScrollView(
-      physics: const NeverScrollableScrollPhysics(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header placeholder
-          Padding(
-            padding: EdgeInsets.fromLTRB(20.w, 32.h, 20.w, 16.h),
-            child: Shimmer.fromColors(
-              baseColor: baseColor,
-              highlightColor: highlightColor,
+    return Shimmer.fromColors(
+      baseColor: baseColor,
+      highlightColor: highlightColor,
+      child: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Mirrors [_buildHeader]: Explore title + subtitle + search bar
+            Padding(
+              padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 12.h),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    width: 150.w,
-                    height: 32.h,
+                    width: 160.w,
+                    height: 34.h,
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(8.r),
@@ -155,140 +152,122 @@ class _ExploreViewState extends State<_ExploreView> {
                   ),
                   SizedBox(height: 8.h),
                   Container(
-                    width: 200.w,
-                    height: 16.h,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(4.r),
-                    ),
-                  ),
-                  SizedBox(height: 24.h),
-                  Container(
-                    width: double.infinity,
-                    height: 50.h,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16.r),
-                    ),
-                  ),
-                  SizedBox(height: 16.h),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: List.generate(
-                        4,
-                        (index) => Padding(
-                          padding: EdgeInsets.only(right: 8.w),
-                          child: Container(
-                            width: 80.w,
-                            height: 36.h,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(20.r),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Section placeholders
-          ...List.generate(
-            3,
-            (index) => _buildShimmerSection(context, baseColor, highlightColor),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildShimmerSection(
-    BuildContext context,
-    Color baseColor,
-    Color highlightColor,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: EdgeInsets.fromLTRB(20.w, 36.h, 20.w, 16.h),
-          child: Shimmer.fromColors(
-            baseColor: baseColor,
-            highlightColor: highlightColor,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  width: 140.w,
-                  height: 24.h,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(6.r),
-                  ),
-                ),
-                Container(
-                  width: 60.w,
-                  height: 16.h,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(4.r),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        SizedBox(
-          height: 220.h,
-          child: ListView.separated(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
-            scrollDirection: Axis.horizontal,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: 3,
-            separatorBuilder: (_, __) => SizedBox(width: 16.w),
-            itemBuilder: (_, __) => Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Shimmer.fromColors(
-                  baseColor: baseColor,
-                  highlightColor: highlightColor,
-                  child: Container(
-                    width: 160.w,
-                    height: 150.h,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16.r),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 12.h),
-                Shimmer.fromColors(
-                  baseColor: baseColor,
-                  highlightColor: highlightColor,
-                  child: Container(
-                    width: 130.w,
+                    width: 260.w,
                     height: 14.h,
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(4.r),
                     ),
                   ),
-                ),
-                SizedBox(height: 6.h),
-                Shimmer.fromColors(
-                  baseColor: baseColor,
-                  highlightColor: highlightColor,
-                  child: Container(
-                    width: 90.w,
+                  SizedBox(height: 16.h),
+                  Container(
+                    width: double.infinity,
+                    height: 52.h,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16.r),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            ...List.generate(
+              3,
+              (index) => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildShimmerSection(context),
+                  if (index < 2) SizedBox(height: 32.h),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Section header + horizontal cards (aligned with [_CategoryContentSection]).
+  Widget _buildShimmerSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 16.h),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 180.w,
+                    height: 22.h,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(6.r),
+                    ),
+                  ),
+                  SizedBox(height: 6.h),
+                  Container(
+                    width: 120.w,
                     height: 12.h,
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(4.r),
                     ),
+                  ),
+                ],
+              ),
+              Container(
+                width: 72.w,
+                height: 28.h,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20.r),
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(
+          height: 248.h,
+          child: ListView.separated(
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            scrollDirection: Axis.horizontal,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: 4,
+            separatorBuilder: (_, _) => SizedBox(width: 24.w),
+            itemBuilder: (_, __) => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 160.w,
+                  height: 168.h,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16.r),
+                  ),
+                ),
+                SizedBox(height: 12.h),
+                Container(
+                  width: 140.w,
+                  height: 14.h,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(4.r),
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                Container(
+                  width: 96.w,
+                  height: 12.h,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(4.r),
                   ),
                 ),
               ],
@@ -510,32 +489,37 @@ class _ExploreViewState extends State<_ExploreView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ...categories.map((category) {
+        ...categories.expand((category) {
           final items = itemsByCategory[category.id] ?? [];
-          if (items.isEmpty) return const SizedBox.shrink();
-          return _CategoryContentSection(
-            categoryTitle: category.title,
-            items: items,
-            allItems: state.allItems,
-            onSeeAll: () {
-              context.pushNamed(
-                RouteNames.categoryDetail,
-                extra: CategoryCardEntity(
-                  id: category.id,
-                  name: category.title,
-                  imageUrl: category.imageUrl ?? '',
-                  description: category.description ?? '',
-                ),
-              );
-            },
-          );
+          if (items.isEmpty) return <Widget>[];
+          return <Widget>[
+            _CategoryContentSection(
+              categoryTitle: category.title,
+              items: items,
+              allItems: state.allItems,
+              onSeeAll: () {
+                context.pushNamed(
+                  RouteNames.categoryDetail,
+                  extra: CategoryCardEntity(
+                    id: category.id,
+                    name: category.title,
+                    imageUrl: category.imageUrl ?? '',
+                    description: category.description ?? '',
+                  ),
+                );
+              },
+            ),
+            SizedBox(height: 32.h),
+          ];
         }),
-        if (uncategorized.isNotEmpty)
+        if (uncategorized.isNotEmpty) ...[
           _CategoryContentSection(
             categoryTitle: 'Other Content',
             items: uncategorized,
             allItems: state.allItems,
           ),
+          SizedBox(height: 32.h),
+        ],
         SizedBox(height: 100.h),
       ],
     );
@@ -845,7 +829,7 @@ class _CategoryContentSection extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
             itemCount: items.length,
-            separatorBuilder: (_, __) => SizedBox(width: 16.w),
+            separatorBuilder: (_, __) => SizedBox(width: 24.w),
             itemBuilder: (context, index) {
               final item = items[index];
               return Align(
