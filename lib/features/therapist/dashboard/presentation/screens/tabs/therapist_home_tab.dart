@@ -10,7 +10,8 @@ import '../../bloc/therapist_state.dart';
 import 'package:intl/intl.dart';
 
 class TherapistHomeTab extends StatelessWidget {
-  const TherapistHomeTab({super.key});
+  final VoidCallback? onNavigateToSessions;
+  const TherapistHomeTab({super.key, this.onNavigateToSessions});
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +58,10 @@ class TherapistHomeTab extends StatelessWidget {
                           _NextSessionCard(appointment: state.nextAppointment!),
                         if (state.pendingRequests > 0) ...[
                           SizedBox(height: 24.h),
-                          _PendingRequestsBanner(count: state.pendingRequests),
+                          _PendingRequestsBanner(
+                            count: state.pendingRequests,
+                            onNavigate: onNavigateToSessions,
+                          ),
                         ],
                         SizedBox(height: 28.h),
                         _SessionChart(chart: state.sessionChart),
@@ -467,12 +471,16 @@ class _NextSessionCard extends StatelessWidget {
 // ── Pending Requests Banner ────────────────────────────────────────────────────
 class _PendingRequestsBanner extends StatelessWidget {
   final int count;
-  const _PendingRequestsBanner({required this.count});
+  final VoidCallback? onNavigate;
+  const _PendingRequestsBanner({required this.count, this.onNavigate});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => context.read<TherapistCubit>().loadAppointments(filter: 'pending'),
+      onTap: () {
+        context.read<TherapistCubit>().loadAppointments(filter: 'pending');
+        onNavigate?.call();
+      },
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(

@@ -36,18 +36,28 @@ class _AppointmentChatScreenState extends State<AppointmentChatScreen> {
   String? _msgError;
   Timer? _pollTimer;
 
-  // Derived from appointment extra
   late final Map<String, dynamic>? _appt;
   late final Map<String, dynamic>? _therapist;
+
+  // ── Participant IDs extracted from appointment extra ──────────────────────
+  late final String? _therapistId;
+  late final String? _patientId;
 
   @override
   void initState() {
     super.initState();
     _appt = widget.appointment;
     _therapist = _appt?['therapist'] as Map<String, dynamic>?;
+
+    // Resolve therapist + patient IDs for shared conversation endpoint
+    _therapistId = _appt?['therapistId'] as String? ??
+        _appt?['therapist_id'] as String?;
+    _patientId = _appt?['patientId'] as String? ??
+        _appt?['patient_id'] as String?;
+
     _fetchMessages();
-    // Poll every 10 s for new messages (no socket)
-    _pollTimer = Timer.periodic(const Duration(seconds: 10), (_) {
+    // Poll every 8 s for new messages
+    _pollTimer = Timer.periodic(const Duration(seconds: 8), (_) {
       _fetchMessages(silent: true);
     });
   }
@@ -60,21 +70,28 @@ class _AppointmentChatScreenState extends State<AppointmentChatScreen> {
     super.dispose();
   }
 
+  /// Returns the shared-conversation URL if we know both IDs, otherwise
+  /// falls back to the per-appointment URL.
+  String get _messagesUrl {
+    if (_therapistId != null && _patientId != null) {
+      return '/appointments/conversation/$_therapistId/$_patientId/messages';
+    }
+    return '/appointments/${widget.appointmentId}/messages';
+  }
+
   Future<void> _fetchMessages({bool silent = false}) async {
     if (!silent && mounted) setState(() => _loadingMessages = true);
     try {
-      final res = await _dio
-          .get('/appointments/${widget.appointmentId}/messages');
+      final res = await _dio.get(_messagesUrl);
       final raw = res.data;
       final list = (raw is Map
               ? (raw['messages'] ?? raw['data'] ?? raw['items'] ?? [])
               : raw is List
                   ? raw
                   : []) as List<dynamic>;
-      final msgs = list.cast<Map<String, dynamic>>();
       if (mounted) {
         setState(() {
-          _messages = msgs;
+          _messages = list.cast<Map<String, dynamic>>();
           _loadingMessages = false;
           _msgError = null;
         });
@@ -102,7 +119,6 @@ class _AppointmentChatScreenState extends State<AppointmentChatScreen> {
     setState(() => _sending = true);
     _textCtrl.clear();
 
-    // Optimistic insert
     final optimistic = <String, dynamic>{
       'content': text,
       'senderRole': 'patient',
@@ -113,25 +129,20 @@ class _AppointmentChatScreenState extends State<AppointmentChatScreen> {
     _scrollToBottom();
 
     try {
+      // Always send to the specific appointment (even if we display shared convo)
       await _dio.post(
         '/appointments/${widget.appointmentId}/messages',
         data: {'content': text},
       );
-      // Refresh to get server-assigned id + any new therapist messages
       await _fetchMessages(silent: true);
     } on DioException catch (e) {
       if (mounted) {
-        // Remove optimistic message on failure
         setState(() {
-          _messages = _messages
-              .where((m) => m['_optimistic'] != true)
-              .toList();
+          _messages = _messages.where((m) => m['_optimistic'] != true).toList();
           _sending = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(
-            e.response?.data?['error']?.toString() ?? 'Failed to send',
-          ),
+          content: Text(e.response?.data?['error']?.toString() ?? 'Failed to send'),
           backgroundColor: context.errorColor,
         ));
         return;
@@ -153,24 +164,38 @@ class _AppointmentChatScreenState extends State<AppointmentChatScreen> {
     });
   }
 
-  // ── Helpers ──────────────────────────────────────────────────────────────────
+  // ── Session time gate ─────────────────────────────────────────────────────
+  bool get _canJoinNow {
+    final s = _appt?['scheduledTime'] as String? ??
+        _appt?['scheduled_time'] as String?;
+    if (s == null) return false;
+    final dt = DateTime.tryParse(s)?.toLocal();
+    if (dt == null) return false;
+    final now = DateTime.now();
+    final status = (_appt?['status'] as String? ?? '').toLowerCase();
+    if (status != 'confirmed' && status != 'accepted' && status != 'scheduled') {
+      return false;
+    }
+    return dt.isBefore(now.add(const Duration(minutes: 15))) &&
+        dt.isAfter(now.subtract(const Duration(hours: 2)));
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
 
   String _therapistName() {
-    final t = _therapist;
-    if (t != null) {
-      return t['displayName'] as String? ??
-          t['display_name'] as String? ??
-          t['name'] as String? ??
+    if (_therapist != null) {
+      return _therapist!['displayName'] as String? ??
+          _therapist!['display_name'] as String? ??
+          _therapist!['name'] as String? ??
           'Therapist';
     }
     return 'Therapist';
   }
 
   String? _therapistAvatar() {
-    final t = _therapist;
-    if (t == null) return null;
-    return t['profileImageUrl'] as String? ??
-        t['profile_image_url'] as String?;
+    if (_therapist == null) return null;
+    return _therapist!['profileImageUrl'] as String? ??
+        _therapist!['profile_image_url'] as String?;
   }
 
   String _sessionLabel() {
@@ -188,8 +213,7 @@ class _AppointmentChatScreenState extends State<AppointmentChatScreen> {
   }
 
   Color _statusColor() {
-    final status = (_appt?['status'] as String? ?? '').toLowerCase();
-    switch (status) {
+    switch ((_appt?['status'] as String? ?? '').toLowerCase()) {
       case 'confirmed':
       case 'accepted':
       case 'scheduled':
@@ -213,6 +237,7 @@ class _AppointmentChatScreenState extends State<AppointmentChatScreen> {
   Widget build(BuildContext context) {
     final name = _therapistName();
     final avatar = _therapistAvatar();
+    final canJoin = _canJoinNow;
 
     return Scaffold(
       backgroundColor: context.backgroundColor,
@@ -226,8 +251,7 @@ class _AppointmentChatScreenState extends State<AppointmentChatScreen> {
               : Brightness.dark,
         ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_rounded,
-              color: context.textPrimaryColor),
+          icon: Icon(Icons.arrow_back_rounded, color: context.textPrimaryColor),
           onPressed: () => context.pop(),
         ),
         titleSpacing: 0,
@@ -268,12 +292,9 @@ class _AppointmentChatScreenState extends State<AppointmentChatScreen> {
                   Row(
                     children: [
                       Container(
-                        width: 6.w,
-                        height: 6.w,
+                        width: 6.w, height: 6.w,
                         decoration: BoxDecoration(
-                          color: _statusColor(),
-                          shape: BoxShape.circle,
-                        ),
+                          color: _statusColor(), shape: BoxShape.circle),
                       ),
                       SizedBox(width: 4.w),
                       Text(
@@ -293,55 +314,77 @@ class _AppointmentChatScreenState extends State<AppointmentChatScreen> {
           ],
         ),
         actions: [
-          TextButton.icon(
-            onPressed: () {
-              final apptId = widget.appointmentId;
-              final userId = _appt?['patientId'] as String? ??
-                  _appt?['patient_id'] as String? ??
-                  '';
-              context.push('/video-call/$apptId/$userId');
-            },
-            icon: Icon(Icons.video_call_rounded,
-                size: 20.sp, color: context.primaryColor),
-            label: Text(
-              'Join',
-              style: TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 13.sp,
-                fontWeight: FontWeight.w600,
-                color: context.primaryColor,
+          // ── Join Session (only active within session window) ───────────
+          if (canJoin)
+            TextButton.icon(
+              onPressed: () async {
+                final apptId = widget.appointmentId;
+                final userId = _patientId ?? '';
+                // Notify therapist
+                try {
+                  await _dio.post('/appointments/$apptId/call/notify');
+                } catch (_) {}
+                if (!context.mounted) return;
+                context.push('/video-call/$apptId/$userId',
+                    extra: {'callerName': name});
+              },
+              icon: Icon(Icons.video_call_rounded,
+                  size: 20.sp, color: context.primaryColor),
+              label: Text(
+                'Join',
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600,
+                  color: context.primaryColor,
+                ),
               ),
+            )
+          else
+            Padding(
+              padding: EdgeInsets.only(right: 12.w),
+              child: Icon(Icons.videocam_off_rounded,
+                  color: context.textSecondaryColor, size: 22.sp),
             ),
-          ),
         ],
       ),
 
-      // ── Session info banner ──────────────────────────────────────────────────
       body: Column(
         children: [
+          // ── Session info banner ─────────────────────────────────────────
           Container(
             width: double.infinity,
             padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
             color: context.primaryColor.withValues(alpha: 0.06),
             child: Row(
               children: [
-                Icon(Icons.event_rounded,
-                    size: 14.sp, color: context.primaryColor),
+                Icon(Icons.event_rounded, size: 14.sp, color: context.primaryColor),
                 SizedBox(width: 6.w),
-                Text(
-                  _sessionLabel(),
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 12.sp,
-                    color: context.primaryColor,
-                    fontWeight: FontWeight.w500,
+                Expanded(
+                  child: Text(
+                    _sessionLabel(),
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 12.sp,
+                      color: context.primaryColor,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
+                if (!canJoin)
+                  Text(
+                    'Call available 15 min before',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 10.sp,
+                      color: context.textSecondaryColor,
+                    ),
+                  ),
               ],
             ),
           ),
 
-          // ── Message list ───────────────────────────────────────────────────
+          // ── Message list ────────────────────────────────────────────────
           Expanded(
             child: _loadingMessages
                 ? const Center(child: CircularProgressIndicator())
@@ -357,32 +400,26 @@ class _AppointmentChatScreenState extends State<AppointmentChatScreen> {
                             icon: Icons.chat_bubble_outline_rounded,
                             message: 'No messages yet',
                             subtitle:
-                                'Send a message to start the conversation with your therapist.',
+                                'Send a message to start the conversation.',
                             iconColor: context.textSecondaryColor,
                           )
                         : ListView.builder(
                             controller: _scrollCtrl,
-                            padding: EdgeInsets.fromLTRB(
-                                16.w, 12.h, 16.w, 12.h),
+                            padding:
+                                EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 12.h),
                             itemCount: _messages.length,
                             itemBuilder: (context, i) {
                               final msg = _messages[i];
                               final fromMe = _isFromMe(msg);
-                              final isOpt =
-                                  msg['_optimistic'] == true;
-
-                              // Date separator
                               final showDate = i == 0 ||
-                                  _shouldShowDate(
-                                      _messages[i - 1], msg);
-
+                                  _shouldShowDate(_messages[i - 1], msg);
                               return Column(
                                 children: [
                                   if (showDate) _DateSeparator(msg),
                                   _MessageBubble(
                                     message: msg,
                                     fromMe: fromMe,
-                                    isOptimistic: isOpt,
+                                    isOptimistic: msg['_optimistic'] == true,
                                     therapistName: name,
                                     therapistAvatar: avatar,
                                   ),
@@ -392,7 +429,7 @@ class _AppointmentChatScreenState extends State<AppointmentChatScreen> {
                           ),
           ),
 
-          // ── Input bar ──────────────────────────────────────────────────────
+          // ── Input bar ───────────────────────────────────────────────────
           _InputBar(
             controller: _textCtrl,
             sending: _sending,
@@ -403,8 +440,7 @@ class _AppointmentChatScreenState extends State<AppointmentChatScreen> {
     );
   }
 
-  bool _shouldShowDate(
-      Map<String, dynamic> prev, Map<String, dynamic> curr) {
+  bool _shouldShowDate(Map<String, dynamic> prev, Map<String, dynamic> curr) {
     final p = _msgDate(prev);
     final c = _msgDate(curr);
     if (p == null || c == null) return false;
@@ -431,9 +467,7 @@ class _DateSeparator extends StatelessWidget {
         msg['created_at'] as String? ??
         msg['timestamp'] as String?;
     final dt = s != null ? DateTime.tryParse(s)?.toLocal() : null;
-    final label = dt != null
-        ? DateFormat('MMMM d, y').format(dt)
-        : 'Earlier';
+    final label = dt != null ? DateFormat('MMMM d, y').format(dt) : 'Earlier';
 
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 12.h),
@@ -442,14 +476,12 @@ class _DateSeparator extends StatelessWidget {
           Expanded(child: Divider(color: context.dividerColor)),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 12.w),
-            child: Text(
-              label,
-              style: TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 11.sp,
-                color: context.textSecondaryColor,
-              ),
-            ),
+            child: Text(label,
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 11.sp,
+                  color: context.textSecondaryColor,
+                )),
           ),
           Expanded(child: Divider(color: context.dividerColor)),
         ],
@@ -477,10 +509,7 @@ class _MessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final text = message['content'] as String? ??
-        message['message'] as String? ??
-        message['text'] as String? ??
-        '';
+    final text = message['content'] as String? ?? '';
     final s = message['createdAt'] as String? ??
         message['created_at'] as String? ??
         message['timestamp'] as String?;
@@ -497,8 +526,7 @@ class _MessageBubble extends StatelessWidget {
           if (!fromMe) ...[
             CircleAvatar(
               radius: 14.r,
-              backgroundColor:
-                  context.primaryColor.withValues(alpha: 0.12),
+              backgroundColor: context.primaryColor.withValues(alpha: 0.12),
               backgroundImage: therapistAvatar != null
                   ? NetworkImage(therapistAvatar!)
                   : null,
@@ -508,11 +536,10 @@ class _MessageBubble extends StatelessWidget {
                           ? therapistName[0].toUpperCase()
                           : 'T',
                       style: TextStyle(
-                        fontFamily: 'Poppins',
-                        fontSize: 10.sp,
-                        fontWeight: FontWeight.w700,
-                        color: context.primaryColor,
-                      ),
+                          fontFamily: 'Poppins',
+                          fontSize: 10.sp,
+                          fontWeight: FontWeight.w700,
+                          color: context.primaryColor),
                     )
                   : null,
             ),
@@ -520,17 +547,14 @@ class _MessageBubble extends StatelessWidget {
           ],
           Flexible(
             child: Column(
-              crossAxisAlignment: fromMe
-                  ? CrossAxisAlignment.end
-                  : CrossAxisAlignment.start,
+              crossAxisAlignment:
+                  fromMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: 14.w, vertical: 10.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
                   decoration: BoxDecoration(
-                    color: fromMe
-                        ? context.primaryColor
-                        : context.surfaceColor,
+                    color: fromMe ? context.primaryColor : context.surfaceColor,
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(18.r),
                       topRight: Radius.circular(18.r),
@@ -543,12 +567,10 @@ class _MessageBubble extends StatelessWidget {
                     ),
                     border: fromMe
                         ? null
-                        : Border.all(
-                            color: context.borderColor, width: 0.5),
+                        : Border.all(color: context.borderColor, width: 0.5),
                     boxShadow: [
                       BoxShadow(
-                        color:
-                            Colors.black.withValues(alpha: 0.04),
+                        color: Colors.black.withValues(alpha: 0.04),
                         blurRadius: 4,
                         offset: const Offset(0, 1),
                       ),
@@ -559,9 +581,7 @@ class _MessageBubble extends StatelessWidget {
                     style: TextStyle(
                       fontFamily: 'Poppins',
                       fontSize: 14.sp,
-                      color: fromMe
-                          ? Colors.white
-                          : context.textPrimaryColor,
+                      color: fromMe ? Colors.white : context.textPrimaryColor,
                       height: 1.4,
                     ),
                   ),
@@ -570,14 +590,12 @@ class _MessageBubble extends StatelessWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      timeStr,
-                      style: TextStyle(
-                        fontFamily: 'Poppins',
-                        fontSize: 10.sp,
-                        color: context.textSecondaryColor,
-                      ),
-                    ),
+                    Text(timeStr,
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          fontSize: 10.sp,
+                          color: context.textSecondaryColor,
+                        )),
                     if (fromMe) ...[
                       SizedBox(width: 4.w),
                       Icon(
@@ -632,8 +650,7 @@ class _InputBar extends StatelessWidget {
               decoration: BoxDecoration(
                 color: context.surfaceColor,
                 borderRadius: BorderRadius.circular(24.r),
-                border:
-                    Border.all(color: context.borderColor, width: 0.5),
+                border: Border.all(color: context.borderColor, width: 0.5),
               ),
               child: TextField(
                 controller: controller,
@@ -654,8 +671,8 @@ class _InputBar extends StatelessWidget {
                     color: context.textSecondaryColor,
                   ),
                   border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(
-                      horizontal: 16.w, vertical: 10.h),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
                 ),
                 onSubmitted: (_) => onSend(),
               ),
@@ -677,12 +694,9 @@ class _InputBar extends StatelessWidget {
                   ? Padding(
                       padding: EdgeInsets.all(12.w),
                       child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
+                          strokeWidth: 2, color: Colors.white),
                     )
-                  : Icon(Icons.send_rounded,
-                      size: 20.sp, color: Colors.white),
+                  : Icon(Icons.send_rounded, size: 20.sp, color: Colors.white),
             ),
           ),
         ],
@@ -714,30 +728,25 @@ class _EmptyChat extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon,
-                size: 56.sp, color: iconColor.withValues(alpha: 0.4)),
+            Icon(icon, size: 56.sp, color: iconColor.withValues(alpha: 0.4)),
             SizedBox(height: 14.h),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 15.sp,
-                fontWeight: FontWeight.w600,
-                color: context.textPrimaryColor,
-              ),
-            ),
+            Text(message,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w600,
+                  color: context.textPrimaryColor,
+                )),
             SizedBox(height: 6.h),
-            Text(
-              subtitle,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 12.sp,
-                color: context.textSecondaryColor,
-                height: 1.5,
-              ),
-            ),
+            Text(subtitle,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 12.sp,
+                  color: context.textSecondaryColor,
+                  height: 1.5,
+                )),
           ],
         ),
       ),

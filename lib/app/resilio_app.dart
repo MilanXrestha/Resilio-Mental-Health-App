@@ -3,12 +3,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import '../core/di/injection.dart';
 import '../core/routing/app_router.dart';
 import '../core/routing/route_names.dart';
+import '../core/routing/navigation_service.dart';
 import '../core/theme/app_theme.dart';
 import '../core/theme/cubit/theme_cubit.dart';
 import '../core/services/push_notification_service.dart';
+import '../features/shared/video_call/presentation/widgets/incoming_call_overlay.dart';
 
 import '../l10n/app_localizations.dart';
 import '../features/customer/auth/presentation/bloc/auth_bloc.dart';
@@ -104,16 +107,52 @@ class _FavoriteAuthSyncState extends State<_FavoriteAuthSync> {
 
     pushService.onTokenRefresh = (token) {};
 
+    // ── Foreground FCM: show small incoming-call banner overlay ───────────────
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      final data = message.data;
+      final action = (data['action'] ?? data['actionType'] ?? '').toUpperCase();
+      if (action == 'INCOMING_CALL') {
+        final appointmentId = data['appointmentId'] ?? '';
+        if (appointmentId.isNotEmpty) {
+          final navKey = getIt<NavigationService>().navigatorKey;
+          final overlay = navKey.currentState?.overlay;
+          if (overlay == null) return;
+
+          // Resolve current user id from auth state (synchronous read — no async gap)
+          final authState = navKey.currentContext?.read<AuthBloc>().state;
+          final userId = authState is AuthAuthenticated
+              ? authState.user.id
+              : (data['roomId'] as String? ?? appointmentId);
+
+          final callerName = message.notification?.title
+                  ?.replaceAll(RegExp(r'📞\s*'), '')
+                  .trim() ??
+              data['callerName'] as String? ??
+              'Incoming Call';
+
+          IncomingCallOverlayManager.show(
+            overlayState: overlay,
+            appointmentId: appointmentId,
+            callerName: callerName,
+            userId: userId,
+          );
+        }
+      }
+    });
+
     pushService.onNotificationTap = (actionType, payload) {
       final type = actionType?.toUpperCase();
       if (type == 'INCOMING_CALL' && payload != null) {
-        // Patient taps the incoming call notification → join video session
+        // Show incoming call overlay when tapped from notification
         final appointmentId = payload['appointmentId'] as String?;
         final roomId = payload['roomId'] as String?;
-        final userId = (payload['userId'] as String?) ?? '';
         if (appointmentId != null && appointmentId.isNotEmpty) {
           final room = (roomId != null && roomId.isNotEmpty) ? roomId : appointmentId;
-          AppRouter.router.push('/video-call/$appointmentId/${userId.isNotEmpty ? userId : room}');
+          AppRouter.router.push('/incoming-call', extra: {
+            'appointmentId': appointmentId,
+            'roomId': room,
+            'callerName': payload['callerName'] ?? 'Your Therapist',
+          });
         }
       } else if (type == 'OPEN_APPOINTMENT' ||
           type == 'APPOINTMENT_CONFIRMED' ||

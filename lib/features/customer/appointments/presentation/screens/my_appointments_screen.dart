@@ -8,6 +8,7 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest_all.dart' as tz_data;
 import '../../../../../core/di/injection.dart';
 import '../../../../../core/routing/route_names.dart';
+import '../../../../../core/services/auth_token_service.dart';
 import '../../../../../core/theme/app_colors.dart';
 
 class MyAppointmentsScreen extends StatefulWidget {
@@ -555,10 +556,9 @@ class _AppointmentCard extends StatelessWidget {
             status == 'accepted' ||
             status == 'scheduled');
 
-    final userId = appointment['patientId'] as String? ??
-        appointment['patient_id'] as String? ??
-        appointment['userId'] as String? ??
-        '';
+    // Always use the real authenticated user ID — never derive from appointment
+    // map fields because the fallback chain can resolve to the meetingRoomId.
+    final userId = getIt<AuthTokenService>().userId ?? '';
 
     return GestureDetector(
       onTap: () => context.push('/appointments/$appointmentId/chat',
@@ -737,8 +737,15 @@ class _AppointmentCard extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: () {
-                    context.push('/video-call/$appointmentId/$userId');
+                  onPressed: () async {
+                    // Notify the therapist that the patient is calling
+                    try {
+                      final dio = getIt<Dio>();
+                      await dio.post('/appointments/$appointmentId/call/notify');
+                    } catch (_) {}
+                    if (!context.mounted) return;
+                    context.push('/video-call/$appointmentId/$userId',
+                        extra: {'callerName': therapistName});
                   },
                   icon: Icon(Icons.video_call_rounded, size: 18.sp),
                   label: const Text('Join Session'),

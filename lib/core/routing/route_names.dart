@@ -36,4 +36,5 @@ class RouteNames {
   static const String notifications = 'notifications';
   static const String myAppointments = 'myAppointments';
   static const String appointmentChat = 'appointmentChat';
+  static const String incomingCall = 'incomingCall';
 }

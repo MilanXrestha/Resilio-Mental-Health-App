@@ -23,15 +23,20 @@ class TherapistDashboardScreen extends StatefulWidget {
 
 class _TherapistDashboardScreenState extends State<TherapistDashboardScreen> {
   int _currentIndex = 0;
+  late final List<Widget> _tabs;
 
-  static const _tabs = [
-    TherapistHomeTab(),
-    TherapistAppointmentsTab(),
-    TherapistPatientsTab(),
-    TherapistEarningsTab(),
-    TherapistContentHubTab(),
-    TherapistSettingsTab(),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _tabs = [
+      TherapistHomeTab(onNavigateToSessions: () => setState(() => _currentIndex = 1)),
+      const TherapistAppointmentsTab(),
+      const TherapistPatientsTab(),
+      const TherapistEarningsTab(),
+      const TherapistContentHubTab(),
+      const TherapistSettingsTab(),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {

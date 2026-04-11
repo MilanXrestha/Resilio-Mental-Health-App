@@ -42,6 +42,7 @@ import '../../features/customer/booking/presentation/screens/session_booking_scr
 import '../../features/customer/therapist/presentation/screens/therapist_list_screen.dart';
 import '../../features/customer/therapist/presentation/screens/therapist_detail_screen.dart';
 import '../../features/shared/video_call/presentation/screens/video_call_screen.dart';
+import '../../features/shared/video_call/presentation/screens/incoming_call_screen.dart';
 import '../../features/customer/notifications/presentation/screens/notifications_screen.dart';
 import '../../features/customer/appointments/presentation/screens/my_appointments_screen.dart';
 import '../../features/customer/appointments/presentation/screens/appointment_chat_screen.dart';
@@ -332,9 +333,23 @@ class AppRouter {
         builder: (context, state) {
           final appointmentId = state.pathParameters['appointmentId'] ?? '';
           final userId = state.pathParameters['userId'] ?? '';
+          final extra = state.extra as Map<String, dynamic>?;
           return VideoCallScreen(
             appointmentId: appointmentId,
             currentUserId: userId,
+            callerName: extra?['callerName'] as String? ?? '',
+          );
+        },
+      ),
+      GoRoute(
+        path: '/incoming-call',
+        name: RouteNames.incomingCall,
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return IncomingCallScreen(
+            appointmentId: extra['appointmentId'] as String? ?? '',
+            roomId: extra['roomId'] as String? ?? '',
+            callerName: extra['callerName'] as String? ?? 'Incoming Call',
           );
         },
       ),

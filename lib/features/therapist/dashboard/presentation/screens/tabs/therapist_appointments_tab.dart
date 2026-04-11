@@ -4,6 +4,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../../../core/theme/app_colors.dart';
+import '../../../../../../features/customer/auth/presentation/bloc/auth_bloc.dart';
+import '../../../../../../features/customer/auth/presentation/bloc/auth_state.dart';
 import '../../bloc/therapist_cubit.dart';
 import '../../bloc/therapist_state.dart';
 
@@ -25,6 +27,18 @@ class _TherapistAppointmentsTabState extends State<TherapistAppointmentsTab> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<TherapistCubit>().loadAppointments(filter: _activeFilter);
     });
+  }
+
+  /// Returns true when now is within the joinable window:
+  /// up to 15 min before the session starts, up to 2 h after.
+  bool _canJoinNow(Map<String, dynamic> appt) {
+    final timeStr = appt['scheduledTime'] as String?;
+    if (timeStr == null) return false;
+    final dt = DateTime.tryParse(timeStr)?.toLocal();
+    if (dt == null) return false;
+    final now = DateTime.now();
+    return dt.isBefore(now.add(const Duration(minutes: 15))) &&
+        dt.isAfter(now.subtract(const Duration(hours: 2)));
   }
 
   void _setFilter(String f) {
@@ -126,25 +140,31 @@ class _TherapistAppointmentsTabState extends State<TherapistAppointmentsTab> {
                       itemCount: state.appointments.length,
                       separatorBuilder: (_, __) => SizedBox(height: 12.h),
                       itemBuilder: (context, index) {
+                        final appt = state.appointments[index];
+                        final id = appt['id'] as String? ?? '';
+                        final room = appt['meetingRoomId'] as String? ?? id;
+                        final patientName = (appt['patient'] as Map<String, dynamic>?)?['displayName'] as String? ?? 'Patient';
+                        final joinable = _canJoinNow(appt);
                         return _SessionCard(
-                          appointment: state.appointments[index],
+                          appointment: appt,
+                          canJoin: joinable,
                           onAccept: () => context.read<TherapistCubit>().updateAppointmentStatus(
-                            state.appointments[index]['id'] as String,
-                            'confirmed',
-                            currentFilter: _activeFilter,
+                            id, 'confirmed', currentFilter: _activeFilter,
                           ),
                           onDecline: () => context.read<TherapistCubit>().updateAppointmentStatus(
-                            state.appointments[index]['id'] as String,
-                            'cancelled',
-                            currentFilter: _activeFilter,
+                            id, 'cancelled', currentFilter: _activeFilter,
                           ),
-                          onJoin: () {
-                            final appt = state.appointments[index];
-                            final id = appt['id'] as String? ?? '';
-                            final room = appt['meetingRoomId'] as String? ?? id;
+                          onJoin: joinable ? () {
+                            final auth = context.read<AuthBloc>().state;
+                            final currentUserId = auth is AuthAuthenticated ? auth.user.id : room;
                             context.read<TherapistCubit>().notifyCallStart(id);
-                            context.push('/video-call/$id/$room');
-                          },
+                            context.push('/video-call/$id/$currentUserId',
+                                extra: {'callerName': patientName});
+                          } : null,
+                          onChat: () => context.push(
+                            '/appointments/$id/chat',
+                            extra: appt,
+                          ),
                         );
                       },
                     ),
@@ -185,15 +205,19 @@ class _TherapistAppointmentsTabState extends State<TherapistAppointmentsTab> {
 // ── Session Card ───────────────────────────────────────────────────────────────
 class _SessionCard extends StatelessWidget {
   final Map<String, dynamic> appointment;
+  final bool canJoin;
   final VoidCallback onAccept;
   final VoidCallback onDecline;
-  final VoidCallback onJoin;
+  final VoidCallback? onJoin;
+  final VoidCallback onChat;
 
   const _SessionCard({
     required this.appointment,
+    required this.canJoin,
     required this.onAccept,
     required this.onDecline,
     required this.onJoin,
+    required this.onChat,
   });
 
   Color _statusColor(String status) {
@@ -269,36 +293,56 @@ class _SessionCard extends StatelessWidget {
           if (status == 'pending') ...[
             Divider(height: 0, color: context.dividerColor),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-              child: Row(
+              padding: EdgeInsets.fromLTRB(12.w, 8.h, 12.w, 8.h),
+              child: Column(
                 children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: onDecline,
-                      icon: Icon(Icons.close_rounded, size: 16.sp),
-                      label: const Text('Decline'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: context.errorColor,
-                        side: BorderSide(color: context.errorColor.withOpacity(0.4)),
-                        padding: EdgeInsets.symmetric(vertical: 8.h),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
-                        textStyle: TextStyle(fontFamily: 'Poppins', fontSize: 13.sp, fontWeight: FontWeight.w600),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: onDecline,
+                          icon: Icon(Icons.close_rounded, size: 16.sp),
+                          label: const Text('Decline'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: context.errorColor,
+                            side: BorderSide(color: context.errorColor.withOpacity(0.4)),
+                            padding: EdgeInsets.symmetric(vertical: 8.h),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+                            textStyle: TextStyle(fontFamily: 'Poppins', fontSize: 13.sp, fontWeight: FontWeight.w600),
+                          ),
+                        ),
                       ),
-                    ),
+                      SizedBox(width: 10.w),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: onAccept,
+                          icon: Icon(Icons.check_rounded, size: 16.sp),
+                          label: const Text('Accept'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: context.primaryColor,
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(vertical: 8.h),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+                            textStyle: TextStyle(fontFamily: 'Poppins', fontSize: 13.sp, fontWeight: FontWeight.w600),
+                            elevation: 0,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  SizedBox(width: 10.w),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: onAccept,
-                      icon: Icon(Icons.check_rounded, size: 16.sp),
-                      label: const Text('Accept'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: context.primaryColor,
-                        foregroundColor: Colors.white,
+                  SizedBox(height: 6.h),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: onChat,
+                      icon: Icon(Icons.chat_bubble_outline_rounded, size: 16.sp),
+                      label: const Text('Message Patient'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: context.primaryColor,
+                        side: BorderSide(color: context.primaryColor.withOpacity(0.35)),
                         padding: EdgeInsets.symmetric(vertical: 8.h),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
                         textStyle: TextStyle(fontFamily: 'Poppins', fontSize: 13.sp, fontWeight: FontWeight.w600),
-                        elevation: 0,
                       ),
                     ),
                   ),
@@ -308,22 +352,54 @@ class _SessionCard extends StatelessWidget {
           ] else if (status == 'confirmed') ...[
             Divider(height: 0, color: context.dividerColor),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: onJoin,
-                  icon: Icon(Icons.video_call_rounded, size: 18.sp),
-                  label: const Text('Join Session'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: context.primaryColor,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: 10.h),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
-                    textStyle: TextStyle(fontFamily: 'Poppins', fontSize: 14.sp, fontWeight: FontWeight.w600),
-                    elevation: 0,
+              padding: EdgeInsets.fromLTRB(12.w, 8.h, 12.w, 8.h),
+              child: Column(
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: onJoin,
+                      icon: Icon(Icons.video_call_rounded, size: 18.sp),
+                      label: Text(canJoin ? 'Join Session' : 'Not Session Time'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: canJoin ? context.primaryColor : context.textSecondaryColor.withOpacity(0.3),
+                        foregroundColor: canJoin ? Colors.white : context.textSecondaryColor,
+                        padding: EdgeInsets.symmetric(vertical: 10.h),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+                        textStyle: TextStyle(fontFamily: 'Poppins', fontSize: 14.sp, fontWeight: FontWeight.w600),
+                        elevation: 0,
+                      ),
+                    ),
                   ),
-                ),
+                  if (!canJoin) ...[
+                    SizedBox(height: 4.h),
+                    Text(
+                      'Join button activates 15 min before session',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 10.sp,
+                        color: context.textSecondaryColor,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                  SizedBox(height: 6.h),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: onChat,
+                      icon: Icon(Icons.chat_bubble_outline_rounded, size: 16.sp),
+                      label: const Text('Message Patient'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: context.primaryColor,
+                        side: BorderSide(color: context.primaryColor.withOpacity(0.35)),
+                        padding: EdgeInsets.symmetric(vertical: 8.h),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+                        textStyle: TextStyle(fontFamily: 'Poppins', fontSize: 13.sp, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
