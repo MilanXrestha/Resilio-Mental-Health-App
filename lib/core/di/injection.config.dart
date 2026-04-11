@@ -213,12 +213,50 @@ import 'package:Resilio/features/customer/video/presentation/bloc/long_video/lon
     as _i599;
 import 'package:Resilio/features/customer/video/presentation/bloc/short_video/short_video_bloc.dart'
     as _i329;
+import 'package:Resilio/features/therapist/appointments/data/datasources/remote/appointments_remote_datasource.dart'
+    as _i740;
+import 'package:Resilio/features/therapist/appointments/data/repositories/appointments_repository_impl.dart'
+    as _i453;
+import 'package:Resilio/features/therapist/appointments/domain/repositories/appointments_repository.dart'
+    as _i748;
+import 'package:Resilio/features/therapist/content/data/datasources/remote/content_remote_datasource.dart'
+    as _i48;
+import 'package:Resilio/features/therapist/content/data/repositories/content_repository_impl.dart'
+    as _i309;
+import 'package:Resilio/features/therapist/content/domain/repositories/content_repository.dart'
+    as _i1064;
+import 'package:Resilio/features/therapist/dashboard/data/datasources/remote/dashboard_remote_datasource.dart'
+    as _i518;
+import 'package:Resilio/features/therapist/dashboard/data/repositories/dashboard_repository_impl.dart'
+    as _i997;
 import 'package:Resilio/features/therapist/dashboard/data/repositories/therapist_repository_impl.dart'
     as _i217;
+import 'package:Resilio/features/therapist/dashboard/domain/repositories/dashboard_repository.dart'
+    as _i451;
 import 'package:Resilio/features/therapist/dashboard/domain/repositories/therapist_repository.dart'
     as _i120;
+import 'package:Resilio/features/therapist/dashboard/presentation/bloc/therapist_content_cubit.dart'
+    as _i197;
 import 'package:Resilio/features/therapist/dashboard/presentation/bloc/therapist_cubit.dart'
     as _i196;
+import 'package:Resilio/features/therapist/earnings/data/datasources/remote/earnings_remote_datasource.dart'
+    as _i324;
+import 'package:Resilio/features/therapist/earnings/data/repositories/earnings_repository_impl.dart'
+    as _i423;
+import 'package:Resilio/features/therapist/earnings/domain/repositories/earnings_repository.dart'
+    as _i544;
+import 'package:Resilio/features/therapist/patients/data/datasources/remote/patients_remote_datasource.dart'
+    as _i1031;
+import 'package:Resilio/features/therapist/patients/data/repositories/patients_repository_impl.dart'
+    as _i122;
+import 'package:Resilio/features/therapist/patients/domain/repositories/patients_repository.dart'
+    as _i637;
+import 'package:Resilio/features/therapist/profile/data/datasources/remote/profile_remote_datasource.dart'
+    as _i316;
+import 'package:Resilio/features/therapist/profile/data/repositories/profile_repository_impl.dart'
+    as _i176;
+import 'package:Resilio/features/therapist/profile/domain/repositories/profile_repository.dart'
+    as _i696;
 import 'package:shared_preferences/shared_preferences.dart' as _i460;
 
 extension GetItInjectableX on _i174.GetIt {
@@ -263,13 +301,22 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i22.AdminRepository>(
       () => _i624.AdminRepositoryImpl(gh<_i361.Dio>()),
     );
+    gh.lazySingleton<_i518.TherapistDashboardRemoteDataSource>(
+      () => _i518.TherapistDashboardRemoteDataSourceImpl(gh<_i361.Dio>()),
+    );
     gh.lazySingleton<_i376.AuthRemoteDataSource>(
       () => _i376.AuthRemoteDataSourceImpl(gh<_i361.Dio>()),
+    );
+    gh.lazySingleton<_i1031.PatientsRemoteDataSource>(
+      () => _i1031.PatientsRemoteDataSourceImpl(gh<_i361.Dio>()),
     );
     gh.lazySingleton<_i786.SettingsLocalDataSource>(
       () => _i786.SettingsLocalDataSourceImpl(
         prefs: gh<_i460.SharedPreferences>(),
       ),
+    );
+    gh.lazySingleton<_i316.ProfileRemoteDataSource>(
+      () => _i316.ProfileRemoteDataSourceImpl(gh<_i361.Dio>()),
     );
     gh.lazySingleton<_i748.CategoryRemoteDataSource>(
       () => _i748.CategoryRemoteDataSourceImpl(gh<_i361.Dio>()),
@@ -303,6 +350,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i196.TherapistCubit>(
       () => _i196.TherapistCubit(gh<_i120.TherapistRepository>()),
     );
+    gh.factory<_i197.TherapistContentCubit>(
+      () => _i197.TherapistContentCubit(gh<_i120.TherapistRepository>()),
+    );
     gh.lazySingleton<_i871.TipRepository>(
       () => _i543.TipRepositoryImpl(gh<_i482.TipRemoteDataSource>()),
     );
@@ -328,15 +378,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i806.FacebookAuth>(),
       ),
     );
-    gh.lazySingleton<_i189.PreferenceLocalDataSource>(
-      () => _i189.PreferenceLocalDataSourceImpl(gh<_i865.DatabaseHelper>()),
-    );
-    gh.lazySingleton<_i185.GamesRepository>(
-      () => _i427.GamesRepositoryImpl(
-        gh<_i118.GamesRemoteDataSource>(),
-        gh<_i759.NetworkInfo>(),
-      ),
-    );
     gh.lazySingleton<_i733.SettingsBloc>(
       () => _i733.SettingsBloc(repository: gh<_i648.SettingsRepository>()),
     );
@@ -347,6 +388,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i429.CategoryRepository>(
       () => _i626.CategoryRepositoryImpl(gh<_i748.CategoryRemoteDataSource>()),
     );
+    gh.lazySingleton<_i696.TherapistProfileRepository>(
+      () => _i176.ProfileRepositoryImpl(gh<_i316.ProfileRemoteDataSource>()),
+    );
     gh.lazySingleton<_i1053.GetCategoriesUseCase>(
       () => _i1053.GetCategoriesUseCase(gh<_i429.CategoryRepository>()),
     );
@@ -355,6 +399,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i514.GamesHubCubit>(
       () => _i514.GamesHubCubit(gh<_i185.GamesRepository>()),
+    );
+    gh.lazySingleton<_i740.AppointmentsRemoteDataSource>(
+      () => _i740.AppointmentsRemoteDataSourceImpl(gh<_i361.Dio>()),
     );
     gh.lazySingleton<_i774.DashboardRemoteDataSource>(
       () => _i774.DashboardRemoteDataSourceImpl(gh<_i361.Dio>()),
@@ -371,8 +418,17 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i927.QuoteRemoteDataSource>(
       () => _i927.QuoteRemoteDataSourceImpl(gh<_i361.Dio>()),
     );
+    gh.lazySingleton<_i48.ContentRemoteDataSource>(
+      () => _i48.ContentRemoteDataSourceImpl(gh<_i361.Dio>()),
+    );
+    gh.lazySingleton<_i637.PatientsRepository>(
+      () => _i122.PatientsRepositoryImpl(gh<_i1031.PatientsRemoteDataSource>()),
+    );
     gh.lazySingleton<_i610.QuoteRepository>(
       () => _i1025.QuoteRepositoryImpl(gh<_i927.QuoteRemoteDataSource>()),
+    );
+    gh.lazySingleton<_i324.EarningsRemoteDataSource>(
+      () => _i324.EarningsRemoteDataSourceImpl(gh<_i361.Dio>()),
     );
     gh.lazySingleton<_i739.ImageRemoteDataSource>(
       () => _i739.ImageRemoteDataSourceImpl(gh<_i361.Dio>()),
@@ -397,11 +453,24 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i1033.SyncUserUseCase>(
       () => _i1033.SyncUserUseCase(gh<_i852.BackendAuthDataSource>()),
     );
+    gh.lazySingleton<_i451.DashboardRepository>(
+      () => _i997.DashboardRepositoryImpl(
+        gh<_i518.TherapistDashboardRemoteDataSource>(),
+      ),
+    );
+    gh.lazySingleton<_i748.AppointmentsRepository>(
+      () => _i453.AppointmentsRepositoryImpl(
+        gh<_i740.AppointmentsRemoteDataSource>(),
+      ),
+    );
     gh.lazySingleton<_i772.GetAllExploreItems>(
       () => _i772.GetAllExploreItems(gh<_i694.ExploreRepository>()),
     );
     gh.lazySingleton<_i772.ManageRecentSearches>(
       () => _i772.ManageRecentSearches(gh<_i694.ExploreRepository>()),
+    );
+    gh.lazySingleton<_i189.PreferenceLocalDataSource>(
+      () => _i189.PreferenceLocalDataSourceImpl(gh<_i865.DatabaseHelper>()),
     );
     gh.lazySingleton<_i337.PreferenceRepository>(
       () => _i449.PreferenceRepositoryImpl(
@@ -459,6 +528,12 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i542.CategoryBloc>(
       () => _i542.CategoryBloc(gh<_i1053.GetCategoriesUseCase>()),
+    );
+    gh.lazySingleton<_i544.EarningsRepository>(
+      () => _i423.EarningsRepositoryImpl(gh<_i324.EarningsRemoteDataSource>()),
+    );
+    gh.lazySingleton<_i1064.ContentRepository>(
+      () => _i309.ContentRepositoryImpl(gh<_i48.ContentRemoteDataSource>()),
     );
     gh.lazySingleton<_i841.SubscriptionRepository>(
       () => _i407.SubscriptionRepositoryImpl(

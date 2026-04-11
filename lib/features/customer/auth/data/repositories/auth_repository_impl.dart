@@ -284,7 +284,9 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       final user = _firebaseAuthDataSource.currentUser;
       if (user != null) {
-        return Right(await _getUserEntity(user));
+        // Fetch real role from backend; fall back to Firebase-only entity on error
+        final syncedUser = await _syncUserToBackend(user);
+        return Right(syncedUser ?? await _getUserEntity(user));
       }
       return const Right(null);
     } catch (e) {

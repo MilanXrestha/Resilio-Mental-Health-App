@@ -2,61 +2,333 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../../../core/theme/app_text_styles.dart';
+import 'package:intl/intl.dart';
+import '../../../../../../core/theme/app_colors.dart';
 import '../../bloc/therapist_cubit.dart';
 import '../../bloc/therapist_state.dart';
 
-class TherapistAppointmentsTab extends StatelessWidget {
+class TherapistAppointmentsTab extends StatefulWidget {
   const TherapistAppointmentsTab({super.key});
+
+  @override
+  State<TherapistAppointmentsTab> createState() => _TherapistAppointmentsTabState();
+}
+
+class _TherapistAppointmentsTabState extends State<TherapistAppointmentsTab> {
+  String _activeFilter = 'all';
+
+  static const _filters = ['all', 'today', 'upcoming', 'pending', 'completed'];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<TherapistCubit>().loadAppointments(filter: _activeFilter);
+    });
+  }
+
+  void _setFilter(String f) {
+    setState(() => _activeFilter = f);
+    context.read<TherapistCubit>().loadAppointments(filter: f);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Sessions')),
-      body: BlocBuilder<TherapistCubit, TherapistState>(
-        builder: (context, state) {
-          return state.maybeWhen(
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (msg) => Center(child: Text('Error: $msg')),
-            loaded: (profile, today, upcoming) {
-              final allSessions = [...today, ...upcoming];
-              if (allSessions.isEmpty) {
-                return const Center(child: Text('No sessions right now.'));
-              }
-              return ListView.builder(
-                padding: EdgeInsets.all(24.w),
-                itemCount: allSessions.length,
-                itemBuilder: (context, index) {
-                  final session = allSessions[index];
-                  final patientName = session['userName'] ?? 'Patient';
-                  final time = session['startTime'] ?? 'TBD';
-                  final status = session['status'] ?? 'Scheduled';
-
-                  return Card(
-                    margin: EdgeInsets.only(bottom: 16.h),
-                    child: ListTile(
-                      leading: const CircleAvatar(child: Icon(Icons.person)),
-                      title: Text(patientName),
-                      subtitle: Text('$time\nStatus: $status'),
-                      isThreeLine: true,
-                      trailing: ElevatedButton(
-                        onPressed: () {
-                          final userId = profile['id'] ?? '';
-                          final appointmentId = session['id'] ?? '';
-                          context.push('/video-call/$appointmentId/$userId');
-                        },
-                        child: const Text('Join'),
+      backgroundColor: context.backgroundColor,
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── Header ────────────────────────────────────────────────────────
+            Padding(
+              padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 0),
+              child: Text(
+                'Sessions',
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 26.sp,
+                  fontWeight: FontWeight.w700,
+                  color: context.textPrimaryColor,
+                ),
+              ),
+            ),
+            SizedBox(height: 16.h),
+            // ── Filter Chips ──────────────────────────────────────────────────
+            SizedBox(
+              height: 36.h,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                separatorBuilder: (_, __) => SizedBox(width: 8.w),
+                itemCount: _filters.length,
+                itemBuilder: (context, i) {
+                  final f = _filters[i];
+                  final selected = _activeFilter == f;
+                  return GestureDetector(
+                    onTap: () => _setFilter(f),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+                      decoration: BoxDecoration(
+                        color: selected ? context.primaryColor : context.surfaceColor,
+                        borderRadius: BorderRadius.circular(20.r),
+                        border: Border.all(
+                          color: selected ? context.primaryColor : context.borderColor,
+                        ),
+                      ),
+                      child: Text(
+                        _capitalize(f),
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w600,
+                          color: selected ? Colors.white : context.textSecondaryColor,
+                        ),
                       ),
                     ),
                   );
                 },
-              );
-            },
-            orElse: () => const SizedBox.shrink(),
-          );
-        },
+              ),
+            ),
+            SizedBox(height: 16.h),
+            // ── List ──────────────────────────────────────────────────────────
+            Expanded(
+              child: BlocBuilder<TherapistCubit, TherapistState>(
+                builder: (context, state) {
+                  if (state is TherapistLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (state is TherapistError) {
+                    return Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.calendar_today_outlined, size: 48.sp, color: context.textSecondaryColor),
+                          SizedBox(height: 12.h),
+                          Text('Could not load sessions', style: TextStyle(fontFamily: 'Poppins', fontSize: 14.sp, color: context.textSecondaryColor)),
+                          SizedBox(height: 8.h),
+                          TextButton(onPressed: () => _setFilter(_activeFilter), child: const Text('Retry')),
+                        ],
+                      ),
+                    );
+                  }
+                  if (state is! TherapistAppointmentsLoaded) return const SizedBox.shrink();
+                  if (state.appointments.isEmpty) {
+                    return _emptyState(context);
+                  }
+                  return RefreshIndicator(
+                    color: context.primaryColor,
+                    onRefresh: () async => _setFilter(_activeFilter),
+                    child: ListView.separated(
+                      padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 100.h),
+                      physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+                      itemCount: state.appointments.length,
+                      separatorBuilder: (_, __) => SizedBox(height: 12.h),
+                      itemBuilder: (context, index) {
+                        return _SessionCard(
+                          appointment: state.appointments[index],
+                          onAccept: () => context.read<TherapistCubit>().updateAppointmentStatus(
+                            state.appointments[index]['id'] as String,
+                            'confirmed',
+                            currentFilter: _activeFilter,
+                          ),
+                          onDecline: () => context.read<TherapistCubit>().updateAppointmentStatus(
+                            state.appointments[index]['id'] as String,
+                            'cancelled',
+                            currentFilter: _activeFilter,
+                          ),
+                          onJoin: () {
+                            final appt = state.appointments[index];
+                            final id = appt['id'] as String? ?? '';
+                            final room = appt['meetingRoomId'] as String? ?? id;
+                            context.read<TherapistCubit>().notifyCallStart(id);
+                            context.push('/video-call/$id/$room');
+                          },
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _capitalize(String s) => s[0].toUpperCase() + s.substring(1);
+
+  Widget _emptyState(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.event_busy_rounded, size: 64.sp, color: context.textSecondaryColor.withOpacity(0.4)),
+          SizedBox(height: 16.h),
+          Text(
+            'No sessions found',
+            style: TextStyle(fontFamily: 'Poppins', fontSize: 16.sp, fontWeight: FontWeight.w600, color: context.textPrimaryColor),
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            'Sessions for "$_activeFilter" will appear here',
+            style: TextStyle(fontFamily: 'Poppins', fontSize: 13.sp, color: context.textSecondaryColor),
+          ),
+        ],
       ),
     );
   }
 }
 
+// ── Session Card ───────────────────────────────────────────────────────────────
+class _SessionCard extends StatelessWidget {
+  final Map<String, dynamic> appointment;
+  final VoidCallback onAccept;
+  final VoidCallback onDecline;
+  final VoidCallback onJoin;
+
+  const _SessionCard({
+    required this.appointment,
+    required this.onAccept,
+    required this.onDecline,
+    required this.onJoin,
+  });
+
+  Color _statusColor(String status) {
+    switch (status) {
+      case 'confirmed': return const Color(0xFF10B981);
+      case 'completed': return const Color(0xFF6366F1);
+      case 'pending': return const Color(0xFFF59E0B);
+      case 'cancelled': return const Color(0xFFE11D48);
+      default: return const Color(0xFF9E9E9E);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final patient = appointment['patient'] as Map<String, dynamic>? ?? {};
+    final name = patient['displayName'] as String? ?? 'Patient';
+    final status = appointment['status'] as String? ?? 'pending';
+    final timeStr = appointment['scheduledTime'] as String?;
+    DateTime? time;
+    if (timeStr != null) time = DateTime.tryParse(timeStr);
+    final timeFormatted = time != null ? DateFormat('EEE, MMM d · h:mm a').format(time.toLocal()) : 'TBD';
+    final statusColor = _statusColor(status);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: context.surfaceColor,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: context.borderColor, width: 0.5),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 2))],
+      ),
+      child: Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.all(16.w),
+            child: Row(
+              children: [
+                // Avatar
+                CircleAvatar(
+                  radius: 22.r,
+                  backgroundColor: context.primaryColor.withOpacity(0.1),
+                  child: Text(
+                    name.isNotEmpty ? name[0].toUpperCase() : 'P',
+                    style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w700, color: context.primaryColor, fontSize: 16.sp),
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(name, style: TextStyle(fontFamily: 'Poppins', fontSize: 15.sp, fontWeight: FontWeight.w600, color: context.textPrimaryColor)),
+                      SizedBox(height: 2.h),
+                      Text(timeFormatted, style: TextStyle(fontFamily: 'Poppins', fontSize: 12.sp, color: context.textSecondaryColor)),
+                    ],
+                  ),
+                ),
+                // Status badge
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                  decoration: BoxDecoration(
+                    color: statusColor.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(20.r),
+                  ),
+                  child: Text(
+                    status.toUpperCase(),
+                    style: TextStyle(fontFamily: 'Poppins', fontSize: 9.sp, fontWeight: FontWeight.w700, color: statusColor, letterSpacing: 0.5),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Action buttons
+          if (status == 'pending') ...[
+            Divider(height: 0, color: context.dividerColor),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: onDecline,
+                      icon: Icon(Icons.close_rounded, size: 16.sp),
+                      label: const Text('Decline'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: context.errorColor,
+                        side: BorderSide(color: context.errorColor.withOpacity(0.4)),
+                        padding: EdgeInsets.symmetric(vertical: 8.h),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+                        textStyle: TextStyle(fontFamily: 'Poppins', fontSize: 13.sp, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: onAccept,
+                      icon: Icon(Icons.check_rounded, size: 16.sp),
+                      label: const Text('Accept'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: context.primaryColor,
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(vertical: 8.h),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+                        textStyle: TextStyle(fontFamily: 'Poppins', fontSize: 13.sp, fontWeight: FontWeight.w600),
+                        elevation: 0,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ] else if (status == 'confirmed') ...[
+            Divider(height: 0, color: context.dividerColor),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: onJoin,
+                  icon: Icon(Icons.video_call_rounded, size: 18.sp),
+                  label: const Text('Join Session'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: context.primaryColor,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: 10.h),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+                    textStyle: TextStyle(fontFamily: 'Poppins', fontSize: 14.sp, fontWeight: FontWeight.w600),
+                    elevation: 0,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}

@@ -31,4 +31,9 @@ class RouteNames {
   static const String matching = 'matching';
   static const String booking = 'booking';
   static const String videoCall = 'videoCall';
+  static const String therapistList = 'therapistList';
+  static const String therapistDetail = 'therapistDetail';
+  static const String notifications = 'notifications';
+  static const String myAppointments = 'myAppointments';
+  static const String appointmentChat = 'appointmentChat';
 }

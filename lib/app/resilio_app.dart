@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../core/di/injection.dart';
 import '../core/routing/app_router.dart';
+import '../core/routing/route_names.dart';
 import '../core/theme/app_theme.dart';
 import '../core/theme/cubit/theme_cubit.dart';
 import '../core/services/push_notification_service.dart';
@@ -29,7 +30,6 @@ class ResilioApp extends StatefulWidget {
 }
 
 class _ResilioAppState extends State<ResilioApp> {
-
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
@@ -39,9 +39,16 @@ class _ResilioAppState extends State<ResilioApp> {
           BlocProvider(create: (_) => getIt<ThemeCubit>()),
           BlocProvider(create: (_) => getIt<AuthBloc>()),
           BlocProvider(create: (_) => getIt<FavoriteBloc>()),
-          BlocProvider(create: (context) => getIt<SubscriptionBloc>()..add(LoadSubscription())),
-          BlocProvider(create: (context) => getIt<GamesHubCubit>()..loadUserStats()),
-          BlocProvider(create: (context) => getIt<ProfileBloc>()..add(LoadProfile())),
+          BlocProvider(
+            create: (context) =>
+                getIt<SubscriptionBloc>()..add(LoadSubscription()),
+          ),
+          BlocProvider(
+            create: (context) => getIt<GamesHubCubit>()..loadUserStats(),
+          ),
+          BlocProvider(
+            create: (context) => getIt<ProfileBloc>()..add(LoadProfile()),
+          ),
         ],
         child: _FavoriteAuthSync(
           child: BlocBuilder<ThemeCubit, ThemeState>(
@@ -60,10 +67,7 @@ class _ResilioAppState extends State<ResilioApp> {
                   GlobalWidgetsLocalizations.delegate,
                   GlobalCupertinoLocalizations.delegate,
                 ],
-                supportedLocales: const [
-                  Locale('en'),
-                  Locale('ne'),
-                ],
+                supportedLocales: const [Locale('en'), Locale('ne')],
               );
             },
           ),
@@ -97,24 +101,31 @@ class _FavoriteAuthSyncState extends State<_FavoriteAuthSync> {
 
     // Wire up push notification handlers
     final pushService = PushNotificationService.instance;
-    
-    pushService.onTokenRefresh = (token) {
-      // Assuming you have an API client or auth bloc that updates this on the backend
-      // getIt<Dio>().put('/users/me/fcm-token', data: {'fcm_token': token});
-      // We can let the standard sync process handle it or implement a dedicated sync here.
-    };
+
+    pushService.onTokenRefresh = (token) {};
 
     pushService.onNotificationTap = (actionType, payload) {
-      if (actionType == 'OPEN_APPOINTMENT' && payload != null) {
-        final appointmentId = payload['appointmentId'];
-        final therapistId = payload['therapistId'];
-        // Route appropriately -> usually the user should go to booking details or video call
-        if (appointmentId != null) {
-          // If we had a booking details page we'd go there. For now, try therapist dashboard or just root.
-          AppRouter.router.push('/therapist-dashboard');
+      final type = actionType?.toUpperCase();
+      if (type == 'INCOMING_CALL' && payload != null) {
+        // Patient taps the incoming call notification → join video session
+        final appointmentId = payload['appointmentId'] as String?;
+        final roomId = payload['roomId'] as String?;
+        final userId = (payload['userId'] as String?) ?? '';
+        if (appointmentId != null && appointmentId.isNotEmpty) {
+          final room = (roomId != null && roomId.isNotEmpty) ? roomId : appointmentId;
+          AppRouter.router.push('/video-call/$appointmentId/${userId.isNotEmpty ? userId : room}');
         }
-      } else if (actionType == 'PAYMENT_CONFIRMED') {
+      } else if (type == 'OPEN_APPOINTMENT' ||
+          type == 'APPOINTMENT_CONFIRMED' ||
+          type == 'APPOINTMENT_CANCELLED' ||
+          type == 'APPOINTMENT_REMINDER') {
+        // All appointment-related taps → customer's My Appointments screen
+        AppRouter.router.push('/my-appointments');
+      } else if (type == 'PAYMENT_CONFIRMED' || type == 'PAYMENT') {
         AppRouter.router.push('/subscription/transactions');
+      } else {
+        // Generic fallback → in-app notifications list
+        AppRouter.router.push('/notifications');
       }
     };
   }
@@ -124,7 +135,7 @@ class _FavoriteAuthSyncState extends State<_FavoriteAuthSync> {
     return BlocListener<AuthBloc, AuthState>(
       listenWhen: (prev, curr) {
         if (curr is AuthAuthenticated && prev is! AuthAuthenticated) return true;
-        if (curr is AuthInitial && prev is AuthAuthenticated) return true;
+        if (curr is AuthInitial && prev is! AuthInitial) return true;
         return false;
       },
       listener: (context, state) {
@@ -132,6 +143,8 @@ class _FavoriteAuthSyncState extends State<_FavoriteAuthSync> {
           context.read<FavoriteBloc>().add(LoadFavorites(state.user.id));
         } else if (state is AuthInitial) {
           context.read<FavoriteBloc>().add(const FavoriteReset());
+          // Redirect the user to login screen after logout
+          AppRouter.router.goNamed(RouteNames.login);
         }
       },
       child: widget.child,

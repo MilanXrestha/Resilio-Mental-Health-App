@@ -1,5 +1,6 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -34,6 +35,7 @@ import '../../../images/presentation/bloc/image_event.dart';
 import '../../domain/entities/user_profile_entity.dart';
 import '../../domain/entities/quote_entity.dart';
 import '../bloc/dashboard_bloc.dart';
+import '../../../notifications/presentation/screens/reminder_settings_sheet.dart';
 import '../bloc/quote_bloc.dart';
 import '../widgets/featured_quotes_widget.dart';
 import '../widgets/section_header_widget.dart';
@@ -371,9 +373,7 @@ class _NotificationButton extends StatelessWidget {
         shape: const CircleBorder(),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: () {
-            // TODO: navigate to notifications
-          },
+          onTap: () => context.pushNamed(RouteNames.notifications),
           child: Padding(
             padding: EdgeInsets.all(10.w),
             child: Stack(
@@ -462,7 +462,12 @@ class _RemindersCardSectionState extends State<_RemindersCardSection> with Singl
             color: Colors.transparent,
             child: InkWell(
               onTap: () {
-                // Navigate to reminder screen
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (_) => const ReminderSettingsSheet(),
+                );
               },
               borderRadius: BorderRadius.circular(20.r),
               child: Container(
@@ -1467,11 +1472,46 @@ class CustomFabLocation extends FloatingActionButtonLocation {
 // 10 – THERAPY / MATCHING SECTION
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _TherapySection extends StatelessWidget {
+class _TherapySection extends StatefulWidget {
   const _TherapySection();
 
   @override
+  State<_TherapySection> createState() => _TherapySectionState();
+}
+
+class _TherapySectionState extends State<_TherapySection> {
+  final _dio = getIt<Dio>();
+
+  // null = still loading, true = has booking, false = no booking
+  bool? _hasBooking;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkBooking();
+  }
+
+  Future<void> _checkBooking() async {
+    try {
+      final res = await _dio.get('/appointments');
+      final raw = res.data;
+      final rawList = (raw is Map
+          ? (raw['appointments'] ?? raw['data'] ?? raw['items'] ?? [])
+          : raw is List
+              ? raw
+              : []) as List<dynamic>;
+      final hasAny = rawList.isNotEmpty;
+      if (mounted) setState(() => _hasBooking = hasAny);
+    } catch (_) {
+      // On error assume no booking so user can still navigate to matching
+      if (mounted) setState(() => _hasBooking = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final hasBooking = _hasBooking ?? false;
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w),
       child: Container(
@@ -1494,52 +1534,103 @@ class _TherapySection extends StatelessWidget {
             ),
           ],
         ),
-        child: Row(
+        child: Stack(
+          clipBehavior: Clip.none,
           children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Talk to a Professional',
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18.sp,
-                      color: Colors.white,
-                    ),
-                  ),
-                  SizedBox(height: 8.h),
-                  Text(
-                    'Find the right therapist for your mental wellness journey.',
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 13.sp,
-                      color: Colors.white.withOpacity(0.9),
-                    ),
-                  ),
-                  SizedBox(height: 16.h),
-                  ElevatedButton(
-                    onPressed: () {
-                      context.pushNamed(RouteNames.matching);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: context.primaryColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                    ),
-                    child: const Text('Get Matched'),
-                  ),
-                ],
+            // ── Decorative background icon ──────────────────────────
+            Positioned(
+              right: -8.w,
+              bottom: -8.h,
+              child: Icon(
+                hasBooking ? Icons.people_alt_rounded : Icons.healing,
+                size: 90.sp,
+                color: Colors.white.withOpacity(0.15),
               ),
             ),
-            SizedBox(width: 16.w),
-            Icon(
-              Icons.healing,
-              size: 80.sp,
-              color: Colors.white.withOpacity(0.2),
+            // ── Content ─────────────────────────────────────────────
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  hasBooking
+                      ? 'Your Therapy Sessions'
+                      : 'Talk to a Professional',
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18.sp,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                Text(
+                  hasBooking
+                      ? 'View your upcoming and past sessions with your therapist.'
+                      : 'Find the right therapist for your mental wellness journey.',
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 13.sp,
+                    color: Colors.white.withOpacity(0.9),
+                  ),
+                ),
+                SizedBox(height: 16.h),
+                if (_hasBooking == null)
+                  const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                        color: Colors.white, strokeWidth: 2),
+                  )
+                else
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () =>
+                            context.pushNamed(RouteNames.myAppointments),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: context.primaryColor,
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 16.w, vertical: 10.h),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                          elevation: 0,
+                          textStyle: TextStyle(
+                            fontFamily: 'Poppins',
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13.sp,
+                          ),
+                        ),
+                        child: Text(hasBooking ? 'My Sessions' : 'Get Matched'),
+                      ),
+                      if (hasBooking) ...[
+                        SizedBox(width: 10.w),
+                        OutlinedButton(
+                          onPressed: () =>
+                              context.pushNamed(RouteNames.matching),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 16.w, vertical: 10.h),
+                            side: const BorderSide(
+                                color: Colors.white60, width: 1.2),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.r),
+                            ),
+                            textStyle: TextStyle(
+                              fontFamily: 'Poppins',
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13.sp,
+                            ),
+                          ),
+                          child: const Text('Find New'),
+                        ),
+                      ],
+                    ],
+                  ),
+              ],
             ),
           ],
         ),

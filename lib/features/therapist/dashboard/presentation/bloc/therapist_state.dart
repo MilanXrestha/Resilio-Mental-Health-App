@@ -1,17 +1,86 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+/// Plain Dart state classes — no Freezed needed.
+abstract class TherapistState {
+  const TherapistState();
+}
 
-part 'therapist_state.freezed.dart';
+class TherapistInitial extends TherapistState {
+  const TherapistInitial();
+}
 
-@freezed
-class TherapistState with _$TherapistState {
-  const factory TherapistState.initial() = _Initial;
-  const factory TherapistState.loading() = _Loading;
-  
-  const factory TherapistState.loaded({
-    required Map<String, dynamic> profile,
-    @Default([]) List<dynamic> todayAppointments,
-    @Default([]) List<dynamic> upcomingAppointments,
-  }) = _Loaded;
+class TherapistLoading extends TherapistState {
+  const TherapistLoading();
+}
 
-  const factory TherapistState.error(String message) = _Error;
+class TherapistError extends TherapistState {
+  final String message;
+  const TherapistError(this.message);
+}
+
+class TherapistDashboardLoaded extends TherapistState {
+  final int todaySessions;
+  final int pendingRequests;
+  final int totalPatients;
+  final double weeklyEarnings;
+  final double totalEarnings;
+  final List<Map<String, dynamic>> sessionChart;
+  final Map<String, dynamic>? nextAppointment;
+
+  const TherapistDashboardLoaded({
+    required this.todaySessions,
+    required this.pendingRequests,
+    required this.totalPatients,
+    required this.weeklyEarnings,
+    required this.totalEarnings,
+    required this.sessionChart,
+    this.nextAppointment,
+  });
+}
+
+class TherapistAppointmentsLoaded extends TherapistState {
+  final List<Map<String, dynamic>> appointments;
+  final String activeFilter;
+
+  const TherapistAppointmentsLoaded({
+    required this.appointments,
+    this.activeFilter = 'all',
+  });
+}
+
+class TherapistPatientsLoaded extends TherapistState {
+  final List<Map<String, dynamic>> patients;
+  final List<Map<String, dynamic>> filtered;
+  final String query;
+
+  const TherapistPatientsLoaded({
+    required this.patients,
+    required this.filtered,
+    this.query = '',
+  });
+}
+
+class TherapistEarningsLoaded extends TherapistState {
+  final double totalEarnings;
+  final double weekEarnings;
+  final double monthEarnings;
+  final List<Map<String, dynamic>> weeklyChart;
+  final List<Map<String, dynamic>> transactions;
+
+  const TherapistEarningsLoaded({
+    required this.totalEarnings,
+    required this.weekEarnings,
+    required this.monthEarnings,
+    required this.weeklyChart,
+    required this.transactions,
+  });
+}
+
+class TherapistProfileLoaded extends TherapistState {
+  final Map<String, dynamic> profile;
+
+  const TherapistProfileLoaded({required this.profile});
+}
+
+class TherapistActionSuccess extends TherapistState {
+  final String message;
+  const TherapistActionSuccess(this.message);
 }

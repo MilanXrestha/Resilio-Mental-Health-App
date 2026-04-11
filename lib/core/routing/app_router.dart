@@ -39,7 +39,12 @@ import '../../features/therapist/dashboard/presentation/screens/therapist_dashbo
 import '../../features/admin/dashboard/presentation/screens/admin_dashboard_screen.dart';
 import '../../features/customer/matching/presentation/screens/matching_questionnaire_screen.dart';
 import '../../features/customer/booking/presentation/screens/session_booking_screen.dart';
+import '../../features/customer/therapist/presentation/screens/therapist_list_screen.dart';
+import '../../features/customer/therapist/presentation/screens/therapist_detail_screen.dart';
 import '../../features/shared/video_call/presentation/screens/video_call_screen.dart';
+import '../../features/customer/notifications/presentation/screens/notifications_screen.dart';
+import '../../features/customer/appointments/presentation/screens/my_appointments_screen.dart';
+import '../../features/customer/appointments/presentation/screens/appointment_chat_screen.dart';
 import '../di/injection.dart';
 import 'navigation_service.dart';
 
@@ -298,6 +303,22 @@ class AppRouter {
         builder: (context, state) => const MatchingQuestionnaireScreen(),
       ),
       GoRoute(
+        path: '/therapists',
+        name: RouteNames.therapistList,
+        builder: (context, state) {
+          final matchParams = state.extra as Map<String, dynamic>?;
+          return TherapistListScreen(matchParams: matchParams);
+        },
+      ),
+      GoRoute(
+        path: '/therapist/:therapistId',
+        name: RouteNames.therapistDetail,
+        builder: (context, state) {
+          final id = state.pathParameters['therapistId'] ?? '';
+          return TherapistDetailScreenWrapper(therapistId: id);
+        },
+      ),
+      GoRoute(
         path: '/booking/:therapistId',
         name: RouteNames.booking,
         builder: (context, state) {
@@ -314,6 +335,28 @@ class AppRouter {
           return VideoCallScreen(
             appointmentId: appointmentId,
             currentUserId: userId,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/notifications',
+        name: RouteNames.notifications,
+        builder: (context, state) => const NotificationsScreen(),
+      ),
+      GoRoute(
+        path: '/my-appointments',
+        name: RouteNames.myAppointments,
+        builder: (context, state) => const MyAppointmentsScreen(),
+      ),
+      GoRoute(
+        path: '/appointments/:appointmentId/chat',
+        name: RouteNames.appointmentChat,
+        builder: (context, state) {
+          final id = state.pathParameters['appointmentId'] ?? '';
+          final appt = state.extra as Map<String, dynamic>?;
+          return AppointmentChatScreen(
+            appointmentId: id,
+            appointment: appt,
           );
         },
       ),

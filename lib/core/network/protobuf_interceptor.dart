@@ -11,13 +11,25 @@ class ProtobufInterceptor extends Interceptor {
       options.headers['X-Protobuf-Message-Type'] = _getMessageType(message);
       options.headers['Accept'] = 'application/x-protobuf';
       options.contentType = 'application/x-protobuf';
+      options.responseType = ResponseType.bytes;
 
       // Convert to binary
       options.data = message.writeToBuffer();
     } else {
-      // Even if not sending proto, we might want to receive proto
-      if (!options.headers.containsKey('Accept')) {
-        options.headers['Accept'] = 'application/x-protobuf, application/json';
+      // Non-protobuf requests: only change behaviour when the caller hasn't
+      // already opted into protobuf explicitly.
+      final accept = options.headers['Accept']?.toString() ?? '';
+      final wantsProto = accept.contains('application/x-protobuf');
+
+      if (!wantsProto) {
+        // Request JSON only so endpoints without a protobuf schema don't fail.
+        if (!options.headers.containsKey('Accept')) {
+          options.headers['Accept'] = 'application/json';
+        }
+        // Let Dio parse the body automatically instead of returning raw bytes.
+        if (options.responseType == ResponseType.bytes) {
+          options.responseType = ResponseType.json;
+        }
       }
     }
 
