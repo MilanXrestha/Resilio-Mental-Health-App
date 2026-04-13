@@ -22,6 +22,7 @@ import '../features/customer/subscription/presentation/bloc/subscription_bloc.da
 import '../features/customer/subscription/presentation/bloc/subscription_event.dart';
 import '../features/customer/games/game_hub/presentation/bloc/games_hub_cubit.dart';
 import '../features/customer/profile/presentation/bloc/profile_bloc.dart';
+import '../core/services/auth_token_service.dart';
 
 /// The root widget of the Resilio application.
 /// Configures theming, localization, routing using ThemeCubit.
@@ -91,6 +92,13 @@ class _FavoriteAuthSync extends StatefulWidget {
 }
 
 class _FavoriteAuthSyncState extends State<_FavoriteAuthSync> {
+  void _loadUserData(BuildContext context, String userId) {
+    context.read<FavoriteBloc>().add(LoadFavorites(userId));
+    context.read<SubscriptionBloc>().add(LoadSubscription());
+    context.read<ProfileBloc>().add(LoadProfile());
+    context.read<GamesHubCubit>().loadUserStats();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -98,7 +106,15 @@ class _FavoriteAuthSyncState extends State<_FavoriteAuthSync> {
       if (!mounted) return;
       final auth = context.read<AuthBloc>().state;
       if (auth is AuthAuthenticated) {
-        context.read<FavoriteBloc>().add(LoadFavorites(auth.user.id));
+        _loadUserData(context, auth.user.id);
+      } else {
+        // SplashScreen navigates to home using FirebaseAuth directly without
+        // updating AuthBloc. Fall back to AuthTokenService to load user data
+        // so the favorites/subscription/profile tabs are not empty on first open.
+        final tokenService = getIt<AuthTokenService>();
+        if (tokenService.isAuthenticated && tokenService.userId != null) {
+          _loadUserData(context, tokenService.userId!);
+        }
       }
     });
 
@@ -179,7 +195,9 @@ class _FavoriteAuthSyncState extends State<_FavoriteAuthSync> {
       },
       listener: (context, state) {
         if (state is AuthAuthenticated) {
-          context.read<FavoriteBloc>().add(LoadFavorites(state.user.id));
+          // Reload ALL user-specific data when a (possibly new) user logs in.
+          // This fixes stale subscription/profile/avatar after logout + re-login.
+          _loadUserData(context, state.user.id);
         } else if (state is AuthInitial) {
           context.read<FavoriteBloc>().add(const FavoriteReset());
           // Redirect the user to login screen after logout

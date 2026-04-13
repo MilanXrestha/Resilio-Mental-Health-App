@@ -33,6 +33,18 @@ class AudioRepositoryImpl implements AudioRepository {
   }
 
   @override
+  Future<Either<Failure, List<AudioEntity>>> getAllAudio({int limit = 100}) async {
+    try {
+      final tracks = await _remoteDataSource.getAllAudio(limit: limit);
+      return Right(tracks.map(_mapToEntity).toList());
+    } on ServerFailure catch (e) {
+      return Left(e);
+    } catch (e) {
+      return Left(ServerFailure('Unexpected error: $e'));
+    }
+  }
+
+  @override
   Future<Either<Failure, AudioListResult>> getAudioByCategory({
     required String categoryId,
     int limit = 20,

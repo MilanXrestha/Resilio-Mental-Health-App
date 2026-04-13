@@ -1,16 +1,42 @@
-// screens/breathing_game_screen.dart
 import 'dart:async';
-import 'dart:developer';
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:lottie/lottie.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
 import 'package:Resilio/core/theme/app_colors.dart';
 import 'package:Resilio/features/customer/games/game_hub/data/services/game_service.dart';
+
+// ─── Models ───────────────────────────────────────────────────────────────────
+
+enum BreathPhase { inhale, holdIn, exhale, holdOut, paused, completed }
+
+class BreathingPattern {
+  final String name;
+  final String description;
+  final String icon;
+  final int inhale;
+  final int holdIn;
+  final int exhale;
+  final int holdOut;
+  final Color color;
+
+  const BreathingPattern({
+    required this.name,
+    required this.description,
+    required this.icon,
+    required this.inhale,
+    required this.holdIn,
+    required this.exhale,
+    required this.holdOut,
+    required this.color,
+  });
+
+  int get cycleDuration => inhale + holdIn + exhale + holdOut;
+}
+
+// ─── Screen ───────────────────────────────────────────────────────────────────
 
 class BreathingGameScreen extends StatefulWidget {
   final String userId;
@@ -28,1476 +54,790 @@ class BreathingGameScreen extends StatefulWidget {
   BreathingGameScreenState createState() => BreathingGameScreenState();
 }
 
-enum BreathPhase { inhale, exhale, paused, completed }
-
 class BreathingGameScreenState extends State<BreathingGameScreen>
     with TickerProviderStateMixin {
-  // Animation controllers
+
+  static const _patterns = [
+    BreathingPattern(
+      name: 'Box Breathing',
+      description: 'Used by Navy SEALs for stress control.',
+      icon: '□',
+      inhale: 4, holdIn: 4, exhale: 4, holdOut: 4,
+      color: Color(0xFF3B82F6),
+    ),
+    BreathingPattern(
+      name: '4-7-8 Technique',
+      description: 'Promotes deep sleep and calms anxiety.',
+      icon: '🌙',
+      inhale: 4, holdIn: 7, exhale: 8, holdOut: 0,
+      color: Color(0xFF8B5CF6),
+    ),
+    BreathingPattern(
+      name: 'Calm Breathing',
+      description: 'Simple & gentle rhythm for relaxation.',
+      icon: '🌊',
+      inhale: 4, holdIn: 2, exhale: 6, holdOut: 0,
+      color: Color(0xFF0D9488),
+    ),
+    BreathingPattern(
+      name: 'Energize',
+      description: 'Equal rhythm to boost focus & energy.',
+      icon: '⚡',
+      inhale: 5, holdIn: 0, exhale: 5, holdOut: 0,
+      color: Color(0xFFF59E0B),
+    ),
+  ];
+
+  // Controllers
   late AnimationController _breathAnimController;
-  late AnimationController _backgroundAnimController;
-  late AnimationController _rippleAnimController;
+  late AnimationController _bgAnimController;
   late Animation<double> _breathAnimation;
 
+  Timer? _countdownTimer;
+  Timer? _sessionTimer;
+  Timer? _phaseTimer;
+
+  // State flags
+  bool _showInstructions = true;
+  bool _showPatternSelection = false;
+  bool _showCountdown = false;
+  bool _gameActive = false;
+  bool _showCompletion = false;
+  bool _isPaused = false;
+
   // Game state
-  late Timer _sessionTimer;
   BreathPhase _currentPhase = BreathPhase.paused;
   int _completedRounds = 0;
-  int _totalRounds = 0;
+  int _totalRounds = 5;
   int _score = 0;
-  bool _gameActive = false;
-  bool _showInstructions = true;
-  bool _showLevelSelection = false;
-  bool _showCountdown = false;
-  bool _showCompletion = false;
   int _countdownValue = 3;
+  int _phaseSecondsLeft = 0;
   DateTime? _sessionStartTime;
-  bool _waitingForVoice = false; // Add this to track TTS completion
 
-  // Duration settings
-  Duration _inhaleDuration = const Duration(seconds: 4);
-  Duration _exhaleDuration = const Duration(seconds: 6);
-  int _remainingSeconds = 0;
+  BreathingPattern _selectedPattern = _patterns[0];
 
+  // Audio / TTS
   final GameService _gameService = GameService();
-
-  // Audio players
-  final AudioPlayer _backgroundMusicPlayer = AudioPlayer();
-  final AudioPlayer _soundEffectPlayer = AudioPlayer();
+  final AudioPlayer _bgPlayer = AudioPlayer();
+  final AudioPlayer _sfxPlayer = AudioPlayer();
+  final FlutterTts _tts = FlutterTts();
   bool _isMusicMuted = false;
-  bool _isSoundEffectsMuted = false;
-  bool _isVibrationEnabled = true;
-  bool _isAudioInitialized = false;
+  bool _isSfxMuted = false;
+  bool _isAudioReady = false;
 
-  // Text to speech
-  final FlutterTts _flutterTts = FlutterTts();
-  bool _isTtsSpeaking = false;
+  // ── Lifecycle ──────────────────────────────────────────────────────────────
 
   @override
   void initState() {
     super.initState();
+    _totalRounds = (widget.gameConfig['totalRounds'] as int?) ?? 5;
 
-    // Initialize TTS
-    _initTts();
-
-    // Parse game configuration (but use our fixed durations)
-    _totalRounds = widget.gameConfig['totalRounds'] ?? 10;
-    _remainingSeconds =
-        (_inhaleDuration.inSeconds + _exhaleDuration.inSeconds) * _totalRounds;
-
-    // Setup breathing animation
     _breathAnimController = AnimationController(
       vsync: this,
-      duration: _inhaleDuration,
+      duration: Duration(seconds: _selectedPattern.inhale),
     );
-
-    _breathAnimation = Tween<double>(begin: 0.6, end: 1.0).animate(
+    _breathAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _breathAnimController, curve: Curves.easeInOut),
     );
 
-    _backgroundAnimController = AnimationController(
+    _bgAnimController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 10),
+      duration: const Duration(seconds: 8),
     )..repeat(reverse: true);
 
-    _rippleAnimController = AnimationController(
-      vsync: this,
-      duration: _inhaleDuration,
-    );
-
-    // Setup initial timer
-    _sessionTimer = Timer(Duration.zero, () {});
-
-    // Initialize audio
-    _initializeAudio();
-  }
-
-  Future<void> _initTts() async {
-    await _flutterTts.setLanguage("en-US");
-    await _flutterTts.setSpeechRate(0.5);
-    await _flutterTts.setVolume(1.0);
-    await _flutterTts.setPitch(1.0);
-
-    // Add listener for TTS completion
-    _flutterTts.setCompletionHandler(() {
-      setState(() {
-        _isTtsSpeaking = false;
-        if (_waitingForVoice) {
-          _waitingForVoice = false;
-          _proceedAfterVoice();
-        }
-      });
-    });
-  }
-
-  Future<void> _speak(String text) async {
-    if (_isSoundEffectsMuted) return;
-    setState(() {
-      _isTtsSpeaking = true;
-    });
-    await _flutterTts.speak(text);
-  }
-
-  void _proceedAfterVoice() {
-    if (_showCountdown && _countdownValue <= 0) {
-      // If countdown has reached 0 and TTS finished saying "GO"
-      setState(() {
-        _showCountdown = false;
-        _gameActive = true;
-        _score = 0;
-        _completedRounds = 0;
-        _remainingSeconds =
-            (_inhaleDuration.inSeconds + _exhaleDuration.inSeconds) *
-            _totalRounds;
-        _sessionStartTime = DateTime.now();
-      });
-
-      // Start the session
-      _startBreathingCycle();
-
-      // Start the session timer
-      _sessionTimer = Timer.periodic(const Duration(seconds: 1), (t) {
-        setState(() {
-          if (_remainingSeconds > 0) {
-            _remainingSeconds--;
-          } else {
-            _completeSession();
-          }
-        });
-      });
-    }
-  }
-
-  Future<void> _initializeAudio() async {
-    try {
-      // Set release mode for background music to loop
-      await _backgroundMusicPlayer.setReleaseMode(ReleaseMode.loop);
-      await _backgroundMusicPlayer.setVolume(0.3);
-
-      // Load and play rain sound
-      await _backgroundMusicPlayer.play(AssetSource('audio/rain_sound.mp3'));
-
-      _isAudioInitialized = true;
-    } catch (e) {
-      log('Error initializing audio: $e', name: 'BreathingGame');
-    }
-  }
-
-  Future<void> _playSound(String soundFile, {double volume = 1.0}) async {
-    if (_isSoundEffectsMuted || !_isAudioInitialized) return;
-
-    try {
-      await _soundEffectPlayer.setVolume(volume);
-      await _soundEffectPlayer.play(AssetSource(soundFile));
-
-      // Vibrate if enabled
-      if (_isVibrationEnabled) {
-        HapticFeedback.mediumImpact();
-      }
-    } catch (e) {
-      log('Error playing sound: $e', name: 'BreathingGame');
-    }
-  }
-
-  void _vibrate() {
-    if (_isVibrationEnabled) {
-      HapticFeedback.mediumImpact();
-    }
-  }
-
-  void _toggleBackgroundMusic() {
-    setState(() {
-      _isMusicMuted = !_isMusicMuted;
-    });
-
-    if (_isMusicMuted) {
-      _backgroundMusicPlayer.pause();
-    } else {
-      _backgroundMusicPlayer.resume();
-    }
-  }
-
-  void _toggleSoundEffects() {
-    setState(() {
-      _isSoundEffectsMuted = !_isSoundEffectsMuted;
-    });
-  }
-
-  void _toggleVibration() {
-    setState(() {
-      _isVibrationEnabled = !_isVibrationEnabled;
-    });
-
-    // Give feedback that vibration setting changed
-    if (_isVibrationEnabled) {
-      HapticFeedback.lightImpact();
-    }
+    _initTts();
+    _initAudio();
   }
 
   @override
   void dispose() {
     _breathAnimController.dispose();
-    _backgroundAnimController.dispose();
-    _rippleAnimController.dispose();
-    _sessionTimer.cancel();
-    _backgroundMusicPlayer.dispose();
-    _soundEffectPlayer.dispose();
-    _flutterTts.stop();
+    _bgAnimController.dispose();
+    _countdownTimer?.cancel();
+    _sessionTimer?.cancel();
+    _phaseTimer?.cancel();
+    _bgPlayer.dispose();
+    _sfxPlayer.dispose();
+    _tts.stop();
     super.dispose();
   }
 
-  void _showLevelScreen() {
-    setState(() {
-      _showInstructions = false;
-      _showLevelSelection = true;
-    });
+  Future<void> _initTts() async {
+    await _tts.setLanguage('en-US');
+    await _tts.setSpeechRate(0.45);
+    await _tts.setVolume(1.0);
   }
 
-  void _startLevel(int rounds) {
-    setState(() {
-      _showLevelSelection = false;
-      _totalRounds = rounds;
-      _remainingSeconds =
-          (_inhaleDuration.inSeconds + _exhaleDuration.inSeconds) *
-          _totalRounds;
-      _currentPhase = BreathPhase.paused; // Reset phase to paused
-    });
-    _startGame();
+  Future<void> _initAudio() async {
+    try {
+      await _bgPlayer.setReleaseMode(ReleaseMode.loop);
+      await _bgPlayer.setVolume(0.3);
+      await _bgPlayer.play(AssetSource('audio/rain_sound.mp3'));
+      _isAudioReady = true;
+    } catch (_) {}
   }
 
-  void _startGame() {
-    setState(() {
-      _showCountdown = true;
-      _countdownValue = 3;
-    });
-
-    // Start countdown with voice synchronization
-    _runCountdown();
+  void _speak(String text) {
+    if (!_isSfxMuted) _tts.speak(text);
   }
 
-  void _runCountdown() {
-    if (_countdownValue > 0) {
-      // Speak the current number and wait for completion
-      _speak(_countdownValue.toString());
-      _vibrate();
+  Future<void> _playSfx(String file) async {
+    if (_isSfxMuted || !_isAudioReady) return;
+    try {
+      await _sfxPlayer.play(AssetSource(file));
+    } catch (_) {}
+  }
 
-      // Set up timer to check when TTS finishes
-      Timer(const Duration(milliseconds: 800), () {
-        if (!_isTtsSpeaking) {
-          // If TTS finished quickly, proceed with countdown
-          setState(() {
-            _countdownValue--;
-          });
-          _runCountdown();
-        } else {
-          // If TTS is still speaking, wait for it to finish
-          setState(() {
-            _waitingForVoice = true;
-          });
-          // The _proceedAfterVoice method will be called when TTS finishes
-        }
-      });
+  void _vibrate({bool heavy = false}) {
+    if (heavy) {
+      HapticFeedback.heavyImpact();
     } else {
-      // When countdown reaches 0, say "GO!" and wait before starting
-      _speak("GO!");
-      _vibrate();
-      // We'll wait for TTS to finish before starting the game
-      setState(() {
-        _waitingForVoice = true;
+      HapticFeedback.mediumImpact();
+    }
+  }
+
+  // ── Flow ───────────────────────────────────────────────────────────────────
+
+  void _goToPatternSelection() =>
+      setState(() { _showInstructions = false; _showPatternSelection = true; });
+
+  void _startWithPattern(BreathingPattern pattern, int rounds) {
+    setState(() {
+      _selectedPattern = pattern;
+      _totalRounds = rounds;
+      _showPatternSelection = false;
+    });
+    _breathAnimController.duration = Duration(seconds: pattern.inhale);
+    _startCountdown();
+  }
+
+  /// ✅ FIX: Simple Timer.periodic countdown — zero TTS dependency.
+  /// The old code gated progression on TTS completion via _waitingForVoice,
+  /// which never fired for counts 3→2→1 because _proceedAfterVoice only
+  /// handled _countdownValue <= 0. This replaces that entirely.
+  void _startCountdown() {
+    setState(() { _showCountdown = true; _countdownValue = 3; });
+    _speak('3');
+    _vibrate();
+
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) { timer.cancel(); return; }
+      final next = _countdownValue - 1;
+      setState(() => _countdownValue = next);
+
+      if (next > 0) {
+        _speak(next.toString());
+        _vibrate();
+      } else {
+        timer.cancel();
+        _speak('Go');
+        _vibrate(heavy: true);
+        Future.delayed(const Duration(milliseconds: 700), () {
+          if (!mounted) return;
+          setState(() {
+            _showCountdown = false;
+            _gameActive = true;
+            _score = 0;
+            _completedRounds = 0;
+            _isPaused = false;
+            _sessionStartTime = DateTime.now();
+          });
+          _startBreathingCycle();
+          _startSessionTimer();
+        });
+      }
+    });
+  }
+
+  void _startSessionTimer() {
+    _sessionTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted || _isPaused || _currentPhase == BreathPhase.completed) {
+        if (_currentPhase == BreathPhase.completed) t.cancel();
+        return;
+      }
+    });
+  }
+
+  void _startBreathingCycle() => _transitionTo(BreathPhase.inhale);
+
+  void _transitionTo(BreathPhase phase) {
+    if (!mounted || _currentPhase == BreathPhase.completed) return;
+    _phaseTimer?.cancel();
+
+    final secs = _phaseDuration(phase);
+    setState(() { _currentPhase = phase; _phaseSecondsLeft = secs; });
+
+    // Countdown within the phase
+    _phaseTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted || _isPaused) return;
+      if (_phaseSecondsLeft > 1) {
+        setState(() => _phaseSecondsLeft--);
+      } else {
+        t.cancel();
+      }
+    });
+
+    // Animate + speak
+    switch (phase) {
+      case BreathPhase.inhale:
+        _speak('Inhale');
+        _playSfx('audio/bell_ting.mp3');
+        _breathAnimController.duration = Duration(seconds: _selectedPattern.inhale);
+        _breathAnimController.forward(from: 0.0);
+        break;
+      case BreathPhase.holdIn:
+        _speak('Hold');
+        _breathAnimController.stop();
+        break;
+      case BreathPhase.exhale:
+        _speak('Exhale');
+        _playSfx('audio/bell_ting_low.mp3');
+        _breathAnimController.duration = Duration(seconds: _selectedPattern.exhale);
+        _breathAnimController.reverse(from: 1.0);
+        break;
+      case BreathPhase.holdOut:
+        _speak('Hold');
+        _breathAnimController.stop();
+        break;
+      default:
+        break;
+    }
+
+    // Schedule next phase
+    if (secs > 0) {
+      Future.delayed(Duration(seconds: secs), () {
+        if (!mounted || _isPaused || _currentPhase == BreathPhase.completed) return;
+        _nextPhase(phase);
       });
     }
   }
 
-  void _startBreathingCycle() {
-    _transitionToPhase(BreathPhase.inhale);
+  int _phaseDuration(BreathPhase p) {
+    switch (p) {
+      case BreathPhase.inhale:  return _selectedPattern.inhale;
+      case BreathPhase.holdIn:  return _selectedPattern.holdIn;
+      case BreathPhase.exhale:  return _selectedPattern.exhale;
+      case BreathPhase.holdOut: return _selectedPattern.holdOut;
+      default: return 0;
+    }
   }
 
-  void _transitionToPhase(BreathPhase phase) {
-    if (_currentPhase == BreathPhase.completed) return;
-
-    setState(() {
-      _currentPhase = phase;
-    });
-
-    switch (phase) {
+  void _nextPhase(BreathPhase current) {
+    switch (current) {
       case BreathPhase.inhale:
-        _playSound('audio/bell_ting.mp3', volume: 0.5);
-        _breathAnimController.duration = _inhaleDuration;
-        _rippleAnimController.duration = _inhaleDuration;
-        _breathAnimController.forward(from: 0.0);
-        _rippleAnimController.forward(from: 0.0);
-
-        // Schedule transition to exhale after inhale duration
-        Future.delayed(_inhaleDuration, () {
-          if (_currentPhase != BreathPhase.paused &&
-              _currentPhase != BreathPhase.completed) {
-            _transitionToPhase(BreathPhase.exhale);
-          }
-        });
+        _selectedPattern.holdIn > 0
+            ? _transitionTo(BreathPhase.holdIn)
+            : _transitionTo(BreathPhase.exhale);
         break;
-
+      case BreathPhase.holdIn:
+        _transitionTo(BreathPhase.exhale);
+        break;
       case BreathPhase.exhale:
-        _playSound('audio/bell_ting_low.mp3', volume: 0.5);
-        _breathAnimController.duration = _exhaleDuration;
-        _rippleAnimController.duration = _exhaleDuration;
-        _breathAnimController.reverse(from: 1.0);
-        _rippleAnimController.reverse(from: 1.0);
+        _selectedPattern.holdOut > 0
+            ? _transitionTo(BreathPhase.holdOut)
+            : _finishRound();
+        break;
+      case BreathPhase.holdOut:
+        _finishRound();
+        break;
+      default:
+        break;
+    }
+  }
 
-        // Schedule transition back to inhale after exhale completes
-        Future.delayed(_exhaleDuration, () {
-          if (_currentPhase != BreathPhase.paused &&
-              _currentPhase != BreathPhase.completed) {
-            // Complete one full breath cycle
-            setState(() {
-              _completedRounds++;
-              _score += 10;
-            });
+  void _finishRound() {
+    if (!mounted) return;
+    _vibrate();
+    setState(() {
+      _completedRounds++;
+      _score += 10 + (_completedRounds * 2);
+    });
+    if (_completedRounds >= _totalRounds) {
+      _completeSession();
+    } else {
+      _transitionTo(BreathPhase.inhale);
+    }
+  }
 
-            // Check if all rounds are completed
-            if (_completedRounds >= _totalRounds) {
-              _completeSession();
-            } else {
-              _transitionToPhase(BreathPhase.inhale);
-            }
-          }
+  void _togglePause() {
+    setState(() => _isPaused = !_isPaused);
+    if (_isPaused) {
+      _breathAnimController.stop();
+      _bgPlayer.pause();
+    } else {
+      _bgPlayer.resume();
+      if (_currentPhase == BreathPhase.inhale) _breathAnimController.forward();
+      if (_currentPhase == BreathPhase.exhale) _breathAnimController.reverse();
+      // Re-schedule remaining phase time
+      final remaining = _phaseSecondsLeft;
+      if (remaining > 0) {
+        Future.delayed(Duration(seconds: remaining), () {
+          if (!mounted || _isPaused || _currentPhase == BreathPhase.completed) return;
+          _nextPhase(_currentPhase);
         });
-        break;
-
-      case BreathPhase.paused:
-      case BreathPhase.completed:
-        // Nothing to do here
-        break;
+      }
     }
   }
 
   void _completeSession() {
-    _sessionTimer.cancel();
+    _phaseTimer?.cancel();
+    _sessionTimer?.cancel();
     _breathAnimController.stop();
+    _bgPlayer.stop();
 
     setState(() {
       _gameActive = false;
       _currentPhase = BreathPhase.completed;
+      _showCompletion = true;
     });
 
-    // Calculate session duration
-    final sessionDuration = _sessionStartTime != null
+    _playSfx('audio/success_chime.mp3');
+    _vibrate(heavy: true);
+
+    final dur = _sessionStartTime != null
         ? DateTime.now().difference(_sessionStartTime!)
-        : Duration(
-            seconds:
-                (_inhaleDuration.inSeconds + _exhaleDuration.inSeconds) *
-                    _totalRounds -
-                _remainingSeconds,
-          );
+        : Duration(seconds: _selectedPattern.cycleDuration * _completedRounds);
 
-    // Save game session to Firestore with breathing-specific data
-    _gameService
-        .saveGameSession(
-          userId: widget.userId,
-          gameId: widget.gameId,
-          score: _score,
-          streak: _completedRounds,
-          duration: sessionDuration,
-          sessionData: {
-            'totalRounds': _totalRounds,
-            'completedRounds': _completedRounds,
-            'difficultyLevel': _getDifficultyLevel(),
-            'inhaleDuration': _inhaleDuration.inSeconds,
-            'exhaleDuration': _exhaleDuration.inSeconds,
-            'totalBreathingTime':
-                _completedRounds *
-                (_inhaleDuration.inSeconds + _exhaleDuration.inSeconds),
-            'accuracy': 100, // Since it's passive, accuracy is always 100%
-          },
-        )
-        .then((_) {
-          // Check for achievements after saving session
-          _checkBreathingAchievements();
-        });
+    _gameService.saveGameSession(
+      userId: widget.userId,
+      gameId: widget.gameId,
+      score: _score,
+      streak: _completedRounds,
+      duration: dur,
+      sessionData: {
+        'pattern': _selectedPattern.name,
+        'totalRounds': _totalRounds,
+        'completedRounds': _completedRounds,
+      },
+    );
+  }
 
-    // Only show completion animation if at least one round was completed
-    if (_completedRounds > 0) {
-      setState(() {
-        _showCompletion = true;
-      });
+  // ── Derived UI state ────────────────────────────────────────────────────────
 
-      // Play success sound - Changed to success_chime.mp3
-      _playSound('audio/success_chime.mp3');
-
-      // Show completion animation for a few seconds, then show results
-      Future.delayed(const Duration(seconds: 4), () {
-        _showResultsDialog();
-      });
-    } else {
-      // If no rounds completed, just show the results dialog
-      _showResultsDialog();
+  Color get _phaseColor {
+    switch (_currentPhase) {
+      case BreathPhase.inhale:  return const Color(0xFF3B82F6);
+      case BreathPhase.holdIn:  return const Color(0xFF8B5CF6);
+      case BreathPhase.exhale:  return const Color(0xFF10B981);
+      case BreathPhase.holdOut: return const Color(0xFFF59E0B);
+      default: return _selectedPattern.color;
     }
   }
 
-  // Helper method to determine difficulty level
-  String _getDifficultyLevel() {
-    if (_totalRounds <= 3) return 'beginner';
-    if (_totalRounds <= 10) return 'intermediate';
-    return 'advanced';
-  }
-
-  // Check for breathing-specific achievements
-  Future<void> _checkBreathingAchievements() async {
-    try {
-      // Get all breathing game achievements
-      final breathingAchievements = await _gameService.getGameAchievements(
-        'breathing_game',
-      );
-
-      // Get user's unlocked achievements
-      final userAchievements = await _gameService.getUserAchievements(
-        widget.userId,
-      );
-      final unlockedIds = userAchievements
-          .map((a) => a['achievementId'] as String)
-          .toSet();
-
-      // Get user's breathing stats
-      final progressSnapshot = await _gameService.getUserGameProgress(
-        widget.userId,
-        widget.gameId,
-      );
-
-      // Check each achievement to see if it should be unlocked
-      for (final achievement in breathingAchievements) {
-        // Skip if already unlocked
-        if (unlockedIds.contains(achievement['id'])) continue;
-
-        final criteria = achievement['criteria'] as Map<String, dynamic>;
-        bool shouldUnlock = false;
-
-        // Check different types of criteria specific to breathing game
-        if (criteria.containsKey('completedRounds') &&
-            progressSnapshot != null &&
-            progressSnapshot.gameSpecificData.containsKey(
-              'totalBreathingRounds',
-            )) {
-          final requiredRounds = criteria['completedRounds'] as int;
-          final totalRounds =
-              progressSnapshot.gameSpecificData['totalBreathingRounds']
-                  as int? ??
-              0;
-
-          if (totalRounds >= requiredRounds) {
-            shouldUnlock = true;
-          }
-        }
-
-        if (criteria.containsKey('singleSessionRounds') &&
-            _completedRounds >= (criteria['singleSessionRounds'] as int)) {
-          shouldUnlock = true;
-        }
-
-        if (criteria.containsKey('difficultyCompleted') &&
-            criteria['difficultyCompleted'] == _getDifficultyLevel()) {
-          shouldUnlock = true;
-        }
-
-        if (criteria.containsKey('totalSessions') &&
-            progressSnapshot != null &&
-            progressSnapshot.totalPlays >= (criteria['totalSessions'] as int)) {
-          shouldUnlock = true;
-        }
-
-        // If criteria met, unlock achievement
-        if (shouldUnlock) {
-          await _gameService.unlockAchievement(
-            userId: widget.userId,
-            achievementId: achievement['id'],
-          );
-
-          // Show achievement unlock notification
-          _showAchievementUnlocked(achievement);
-        }
-      }
-    } catch (e) {
-      log('Error checking breathing achievements: $e', name: 'BreathingGame');
+  String get _phaseLabel {
+    switch (_currentPhase) {
+      case BreathPhase.inhale:  return 'Breathe In';
+      case BreathPhase.holdIn:  return 'Hold';
+      case BreathPhase.exhale:  return 'Breathe Out';
+      case BreathPhase.holdOut: return 'Hold';
+      case BreathPhase.paused:  return 'Ready';
+      case BreathPhase.completed: return 'Done';
     }
   }
 
-  void _showAchievementUnlocked(Map<String, dynamic> achievement) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => Dialog(
-        backgroundColor: Colors.transparent,
-        child: Container(
-          padding: EdgeInsets.all(24.w),
-          decoration: BoxDecoration(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? Color(0xFF1E1E1E)
-                : Colors.white,
-            borderRadius: BorderRadius.circular(20.r),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Lottie.asset(
-                'assets/animations/achievement_unlocked.json',
-                width: 150.w,
-                height: 150.w,
-                fit: BoxFit.contain,
-                repeat: false,
-              ),
-              SizedBox(height: 16.h),
-              Text(
-                'Achievement Unlocked!',
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 20.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.amber,
-                ),
-              ),
-              SizedBox(height: 8.h),
-              Text(
-                achievement['title'] ?? 'New Achievement',
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.white
-                      : Colors.black87,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 8.h),
-              Text(
-                achievement['description'] ?? '',
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 14.sp,
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.white70
-                      : Colors.black54,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 16.h),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-                decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                child: Text(
-                  '+${achievement['pointsAwarded']} points',
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.blue,
-                  ),
-                ),
-              ),
-              SizedBox(height: 24.h),
-              ElevatedButton(
-                onPressed: () => Navigator.of(context).pop(),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 32.w,
-                    vertical: 12.h,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16.r),
-                  ),
-                ),
-                child: Text(
-                  'Awesome!',
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showResultsDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => _buildResultsDialog(),
-    );
-  }
-
-  Widget _buildResultsDialog() {
-    final theme = Theme.of(context);
-    final isDarkMode = theme.brightness == Brightness.dark;
-
-    // Calculate total session time in minutes
-    final totalSessionTime =
-        (_completedRounds *
-            (_inhaleDuration.inSeconds + _exhaleDuration.inSeconds)) /
-        60;
-
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      child: Container(
-        padding: EdgeInsets.all(24.w),
-        width: 300.w, // Set fixed width to avoid overflow
-        decoration: BoxDecoration(
-          color: isDarkMode ? Color(0xFF1E1E1E) : Colors.white,
-          borderRadius: BorderRadius.circular(24.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Session Complete',
-              style: TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 22.sp,
-                fontWeight: FontWeight.w600,
-                color: isDarkMode ? Colors.white : Colors.black87,
-              ),
-            ),
-            SizedBox(height: 16.h),
-            Container(
-              width: 100.w,
-              height: 100.w,
-              decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.favorite_rounded,
-                size: 48.sp,
-                color: Colors.blue,
-              ),
-            ),
-            SizedBox(height: 24.h),
-            Text(
-              'Wellness Score',
-              style: TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 16.sp,
-                color: isDarkMode ? Colors.white70 : Colors.black54,
-              ),
-            ),
-            Text(
-              _score.toString(),
-              style: TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 42.sp,
-                fontWeight: FontWeight.w700,
-                color: Colors.blue,
-              ),
-            ),
-            SizedBox(height: 16.h),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _buildStatColumn(
-                  'Rounds Completed',
-                  '$_completedRounds/$_totalRounds',
-                ),
-                SizedBox(width: 24.w),
-              ],
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              'Total Breathing Time: ${totalSessionTime.toStringAsFixed(1)} minutes',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 14.sp,
-                color: isDarkMode ? Colors.white70 : Colors.black54,
-              ),
-            ),
-            SizedBox(height: 24.h),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).pop();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 12.h),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16.r),
-                ),
-              ),
-              child: Text(
-                'Done',
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            SizedBox(height: 16.h),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                setState(() {
-                  _showLevelSelection = true;
-                  _showCompletion = false;
-                  _currentPhase = BreathPhase.paused;
-                  _gameActive = false;
-                  _completedRounds = 0;
-                  _score = 0;
-                });
-              },
-              child: Text(
-                'Try Another Level',
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.blue,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatColumn(String label, String value) {
-    final theme = Theme.of(context);
-    final isDarkMode = theme.brightness == Brightness.dark;
-
-    return Column(
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontFamily: 'Poppins',
-            fontSize: 14.sp,
-            color: isDarkMode ? Colors.white70 : Colors.black54,
-          ),
-        ),
-        SizedBox(height: 4.h),
-        Text(
-          value,
-          style: TextStyle(
-            fontFamily: 'Poppins',
-            fontSize: 20.sp,
-            fontWeight: FontWeight.w600,
-            color: isDarkMode ? Colors.white : Colors.black87,
-          ),
-        ),
-      ],
-    );
-  }
+  // ── Build ──────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDarkMode = theme.brightness == Brightness.dark;
-
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(CupertinoIcons.back, color: Colors.white),
-          onPressed: () {
-            if (_gameActive) {
-              _completeSession();
-            } else {
-              Navigator.of(context).pop();
-            }
-          },
-        ),
-        actions: [
-          // Vibration toggle button - Updated to match pattern of other toggles
-          IconButton(
-            icon: Icon(
-              _isVibrationEnabled ? Icons.vibration : Icons.vibration_outlined,
-              color: Colors.white,
-            ),
-            onPressed: _toggleVibration,
-            tooltip: 'Toggle Vibration',
-          ),
-          // Sound effects toggle button
-          IconButton(
-            icon: Icon(
-              _isSoundEffectsMuted
-                  ? Icons.notifications_off
-                  : Icons.notifications,
-              color: Colors.white,
-            ),
-            onPressed: _toggleSoundEffects,
-            tooltip: 'Toggle Bell Sounds',
-          ),
-          // Background music toggle button
-          IconButton(
-            icon: Icon(
-              _isMusicMuted ? Icons.music_off : Icons.music_note,
-              color: Colors.white,
-            ),
-            onPressed: _toggleBackgroundMusic,
-            tooltip: 'Toggle Background Music',
-          ),
-          if (_gameActive)
-            TextButton(
-              onPressed: _completeSession,
-              child: Text(
-                'End',
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white.withOpacity(0.8),
-                ),
-              ),
-            ),
-        ],
-      ),
+      backgroundColor: Colors.transparent,
+      appBar: _buildAppBar(),
       body: AnimatedBuilder(
-        animation: _backgroundAnimController,
+        animation: _bgAnimController,
         builder: (context, child) {
+          final c = _gameActive ? _phaseColor : _selectedPattern.color;
           return Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: isDarkMode
-                    ? [
-                        Color.lerp(
-                          Color(0xFF0D1B2A),
-                          Color(0xFF1B263B),
-                          _backgroundAnimController.value,
-                        )!,
-                        Color.lerp(
-                          Color(0xFF415A77),
-                          Color(0xFF778DA9),
-                          _backgroundAnimController.value,
-                        )!,
-                      ]
-                    : [
-                        Color.lerp(
-                          Color(0xFF6B9BD1),
-                          Color(0xFF5A8FC8),
-                          _backgroundAnimController.value,
-                        )!,
-                        Color.lerp(
-                          Color(0xFF87CEEB),
-                          Color(0xFF98D8F4),
-                          _backgroundAnimController.value,
-                        )!,
-                      ],
+                colors: [
+                  Color.lerp(const Color(0xFF080818), c,
+                      0.18 + _bgAnimController.value * 0.06)!,
+                  Color.lerp(const Color(0xFF0D0D1A), c,
+                      0.08 + _bgAnimController.value * 0.03)!,
+                ],
               ),
             ),
             child: child,
           );
         },
-        child: SafeArea(
-          child: Stack(
-            children: [
-              // Animated background elements
-              ..._buildBackgroundElements(),
-
-              // Main content
-              Positioned.fill(
-                child: _showInstructions
-                    ? _buildInstructions()
-                    : _showLevelSelection
-                    ? _buildLevelSelection()
-                    : _showCountdown
-                    ? _buildCountdown()
-                    : _showCompletion
-                    ? _buildCompletionAnimation()
-                    : _buildGameContent(),
-              ),
-
-              // Session timer
-              if (_gameActive)
-                Positioned(
-                  top: 16.h,
-                  left: 16.w,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 16.w,
-                      vertical: 8.h,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(20.r),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.3),
-                        width: 1,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.timer, color: Colors.white, size: 16.sp),
-                        SizedBox(width: 8.w),
-                        Text(
-                          _formatTime(_remainingSeconds),
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-              // Progress counter
-              if (_gameActive)
-                Positioned(
-                  top: 16.h,
-                  right: 16.w,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 16.w,
-                      vertical: 8.h,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(20.r),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.3),
-                        width: 1,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.favorite_border,
-                          color: Colors.white,
-                          size: 16.sp,
-                        ),
-                        SizedBox(width: 8.w),
-                        Text(
-                          '$_completedRounds/$_totalRounds',
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ),
+        child: SafeArea(child: _buildCurrentView()),
       ),
     );
   }
 
-  Widget _buildLevelSelection() {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 24.w),
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white70),
+        onPressed: () => Navigator.pop(context),
+      ),
+      title: Text(
+        'Mindful Breathing',
+        style: TextStyle(
+          fontFamily: 'Poppins',
+          fontSize: 18.sp,
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
+        ),
+      ),
+      actions: [
+        if (_gameActive) ...[
+          IconButton(
+            icon: Icon(
+              _isMusicMuted ? Icons.music_off : Icons.music_note,
+              color: Colors.white60,
+              size: 20.sp,
+            ),
+            onPressed: () {
+              setState(() => _isMusicMuted = !_isMusicMuted);
+              if (_isMusicMuted) _bgPlayer.pause(); else _bgPlayer.resume();
+            },
+          ),
+          IconButton(
+            icon: Icon(
+              _isSfxMuted ? Icons.volume_off : Icons.volume_up,
+              color: Colors.white60,
+              size: 20.sp,
+            ),
+            onPressed: () => setState(() => _isSfxMuted = !_isSfxMuted),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildCurrentView() {
+    if (_showCompletion)       return _buildCompletion();
+    if (_showCountdown)        return _buildCountdown();
+    if (_showPatternSelection) return _buildPatternSelection();
+    if (_gameActive)           return _buildGame();
+    return _buildInstructions();
+  }
+
+  // ── Instructions ───────────────────────────────────────────────────────────
+
+  Widget _buildInstructions() {
+    return Padding(
+      padding: EdgeInsets.all(24.w),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            'Choose Your Level',
-            style: TextStyle(
-              fontFamily: 'Poppins',
-              fontSize: 32.sp,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-              letterSpacing: 1.2,
+          Container(
+            width: 120.w,
+            height: 120.w,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(colors: [
+                _selectedPattern.color.withOpacity(0.9),
+                _selectedPattern.color.withOpacity(0.3),
+              ]),
+              boxShadow: [
+                BoxShadow(
+                  color: _selectedPattern.color.withOpacity(0.5),
+                  blurRadius: 40, spreadRadius: 5,
+                ),
+              ],
             ),
+            child: Center(child: Text('🫁', style: TextStyle(fontSize: 52.sp))),
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 32.h),
+          Text('Mindful Breathing',
+            style: TextStyle(fontFamily: 'Poppins', fontSize: 28.sp,
+              fontWeight: FontWeight.bold, color: Colors.white)),
+          SizedBox(height: 12.h),
           Text(
-            'Select based on your experience',
-            style: TextStyle(
-              fontFamily: 'Poppins',
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w300,
-              color: Colors.white.withOpacity(0.8),
-              letterSpacing: 0.5,
-            ),
+            'Reduce stress, improve focus, and find calm through guided breathing.',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontFamily: 'Poppins', fontSize: 15.sp,
+              color: Colors.white70, height: 1.5),
           ),
+          SizedBox(height: 36.h),
+          _featureRow(Icons.psychology_rounded, 'Reduces cortisol & stress levels'),
+          SizedBox(height: 10.h),
+          _featureRow(Icons.favorite_rounded, 'Lowers heart rate naturally'),
+          SizedBox(height: 10.h),
+          _featureRow(Icons.bolt_rounded, 'Sharpens mental focus'),
           SizedBox(height: 40.h),
-
-          // Beginner level
-          _buildLevelCard(
-            title: 'Beginner',
-            description: '3 breathing rounds',
-            duration: '30 seconds',
-            icon: Icons.star_outline,
-            color: Colors.green,
-            onTap: () => _startLevel(3),
-          ),
-          SizedBox(height: 20.h),
-
-          // Intermediate level
-          _buildLevelCard(
-            title: 'Intermediate',
-            description: '10 breathing rounds',
-            duration: '1:40 minutes',
-            icon: Icons.star_half,
-            color: Colors.blue,
-            onTap: () => _startLevel(10),
-          ),
-          SizedBox(height: 20.h),
-
-          // Advanced level
-          _buildLevelCard(
-            title: 'Advanced',
-            description: '20 breathing rounds',
-            duration: '3:20 minutes',
-            icon: Icons.star,
-            color: Colors.purple,
-            onTap: () => _startLevel(20),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _goToPatternSelection,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _selectedPattern.color,
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(vertical: 16.h),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16.r)),
+                elevation: 10,
+                shadowColor: _selectedPattern.color.withOpacity(0.6),
+              ),
+              child: Text('Choose Pattern & Begin',
+                style: TextStyle(fontFamily: 'Poppins', fontSize: 16.sp,
+                  fontWeight: FontWeight.w600)),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildLevelCard({
-    required String title,
-    required String description,
-    required String duration,
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.all(20.w),
+  Widget _featureRow(IconData icon, String text) {
+    return Row(children: [
+      Container(
+        padding: EdgeInsets.all(8.w),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.15),
-          borderRadius: BorderRadius.circular(20.r),
-          border: Border.all(color: Colors.white.withOpacity(0.2), width: 1.5),
+          color: _selectedPattern.color.withOpacity(0.2),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: _selectedPattern.color, size: 18.sp),
+      ),
+      SizedBox(width: 12.w),
+      Text(text, style: TextStyle(fontFamily: 'Poppins', fontSize: 14.sp,
+        color: Colors.white70)),
+    ]);
+  }
+
+  // ── Pattern Selection ──────────────────────────────────────────────────────
+
+  Widget _buildPatternSelection() {
+    return SingleChildScrollView(
+      padding: EdgeInsets.fromLTRB(24.w, 16.h, 24.w, 32.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Choose Your Pattern',
+            style: TextStyle(fontFamily: 'Poppins', fontSize: 24.sp,
+              fontWeight: FontWeight.bold, color: Colors.white)),
+          SizedBox(height: 4.h),
+          Text('Different patterns for different needs',
+            style: TextStyle(fontFamily: 'Poppins', fontSize: 14.sp,
+              color: Colors.white60)),
+          SizedBox(height: 20.h),
+          ..._patterns.map(_patternCard),
+          SizedBox(height: 24.h),
+          Text('How many rounds?',
+            style: TextStyle(fontFamily: 'Poppins', fontSize: 16.sp,
+              fontWeight: FontWeight.w600, color: Colors.white)),
+          SizedBox(height: 12.h),
+          Row(
+            children: [5, 8, 12, 20].map((r) {
+              final sel = _totalRounds == r;
+              return Expanded(
+                child: GestureDetector(
+                  onTap: () => setState(() => _totalRounds = r),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    margin: EdgeInsets.symmetric(horizontal: 4.w),
+                    padding: EdgeInsets.symmetric(vertical: 12.h),
+                    decoration: BoxDecoration(
+                      color: sel
+                          ? _selectedPattern.color
+                          : Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    child: Text('$r',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontFamily: 'Poppins', fontSize: 16.sp,
+                        fontWeight: FontWeight.w600, color: Colors.white)),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+          SizedBox(height: 32.h),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => _startWithPattern(_selectedPattern, _totalRounds),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _selectedPattern.color,
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(vertical: 16.h),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16.r)),
+                elevation: 10,
+                shadowColor: _selectedPattern.color.withOpacity(0.6),
+              ),
+              child: Text('Start $_totalRounds Rounds  →',
+                style: TextStyle(fontFamily: 'Poppins', fontSize: 16.sp,
+                  fontWeight: FontWeight.w600)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _patternCard(BreathingPattern pattern) {
+    final sel = _selectedPattern.name == pattern.name;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedPattern = pattern),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        margin: EdgeInsets.only(bottom: 12.h),
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: sel
+              ? pattern.color.withOpacity(0.2)
+              : Colors.white.withOpacity(0.07),
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(
+            color: sel ? pattern.color : Colors.transparent, width: 2),
         ),
         child: Row(
           children: [
             Container(
-              width: 60.w,
-              height: 60.w,
+              width: 50.w, height: 50.w,
               decoration: BoxDecoration(
-                color: color.withOpacity(0.2),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: color, size: 30.sp),
+                color: pattern.color.withOpacity(0.2), shape: BoxShape.circle),
+              child: Center(child: Text(pattern.icon,
+                style: TextStyle(fontSize: 22.sp))),
             ),
-            SizedBox(width: 20.w),
+            SizedBox(width: 12.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 20.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    description,
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 14.sp,
-                      color: Colors.white.withOpacity(0.8),
-                    ),
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    duration,
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w500,
-                      color: color.withOpacity(0.9),
-                    ),
-                  ),
+                  Text(pattern.name,
+                    style: TextStyle(fontFamily: 'Poppins', fontSize: 15.sp,
+                      fontWeight: FontWeight.w600, color: Colors.white)),
+                  Text(pattern.description,
+                    style: TextStyle(fontFamily: 'Poppins', fontSize: 12.sp,
+                      color: Colors.white60)),
+                  SizedBox(height: 6.h),
+                  Wrap(spacing: 4.w, children: [
+                    _chip('IN ${pattern.inhale}s', const Color(0xFF3B82F6)),
+                    if (pattern.holdIn > 0)
+                      _chip('HOLD ${pattern.holdIn}s', const Color(0xFF8B5CF6)),
+                    _chip('OUT ${pattern.exhale}s', const Color(0xFF10B981)),
+                    if (pattern.holdOut > 0)
+                      _chip('HOLD ${pattern.holdOut}s', const Color(0xFFF59E0B)),
+                  ]),
                 ],
               ),
             ),
-            Icon(
-              Icons.arrow_forward_ios_rounded,
-              color: Colors.white.withOpacity(0.7),
-              size: 20.sp,
-            ),
+            if (sel)
+              Icon(Icons.check_circle_rounded,
+                color: pattern.color, size: 24.sp),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildCompletionAnimation() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Lottie.asset(
-            'assets/animations/congrats.json',
-            width: 300.w,
-            height: 300.w,
-            fit: BoxFit.contain,
-            repeat: false,
-          ),
-          SizedBox(height: 24.h),
-          Text(
-            "Well Done!",
-            style: TextStyle(
-              fontFamily: 'Poppins',
-              fontSize: 32.sp,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-              shadows: [
-                Shadow(
-                  color: Colors.black26,
-                  blurRadius: 10,
-                  offset: Offset(0, 5),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 12.h),
-          Text(
-            "You completed $_completedRounds breathing cycles",
-            style: TextStyle(
-              fontFamily: 'Poppins',
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w500,
-              color: Colors.white.withOpacity(0.9),
-            ),
-          ),
-        ],
+  Widget _chip(String label, Color color) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 2.h),
+      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(6.r),
       ),
+      child: Text(label, style: TextStyle(
+        fontFamily: 'Poppins', fontSize: 9.sp,
+        fontWeight: FontWeight.w700, color: color)),
     );
   }
+
+  // ── Countdown ─────────────────────────────────────────────────────────────
 
   Widget _buildCountdown() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            _countdownValue == 0 ? "GO!" : (_countdownValue).toString(),
-            style: TextStyle(
-              fontFamily: 'Poppins',
-              fontSize: 80.sp,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-              shadows: [
-                Shadow(
-                  color: Colors.black26,
-                  blurRadius: 10,
-                  offset: Offset(0, 5),
-                ),
-              ],
+          Text('Get Ready',
+            style: TextStyle(fontFamily: 'Poppins', fontSize: 22.sp,
+              color: Colors.white70)),
+          SizedBox(height: 32.h),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 350),
+            transitionBuilder: (child, anim) => ScaleTransition(
+              scale: anim,
+              child: FadeTransition(opacity: anim, child: child),
             ),
-          ),
-          SizedBox(height: 16.h),
-          Text(
-            "Relax and get comfortable",
-            style: TextStyle(
-              fontFamily: 'Poppins',
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w500,
-              color: Colors.white.withOpacity(0.8),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  List<Widget> _buildBackgroundElements() {
-    return [
-      // Floating clouds/bubbles
-      Positioned(
-        top: 100.h,
-        left: -50.w,
-        child: AnimatedBuilder(
-          animation: _backgroundAnimController,
-          builder: (context, child) {
-            return Transform.scale(
-              scale: 0.95 + (_backgroundAnimController.value * 0.1),
-              child: Container(
-                width: 150.w,
-                height: 150.w,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.05),
-                ),
-              ),
-            );
-          },
-        ),
-      ),
-      Positioned(
-        bottom: 150.h,
-        right: -30.w,
-        child: AnimatedBuilder(
-          animation: _backgroundAnimController,
-          builder: (context, child) {
-            return Transform.scale(
-              scale: 1.0 + (_backgroundAnimController.value * 0.1),
-              child: Container(
-                width: 100.w,
-                height: 100.w,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.03),
-                ),
-              ),
-            );
-          },
-        ),
-      ),
-    ];
-  }
-
-  String _formatTime(int seconds) {
-    final minutes = seconds ~/ 60;
-    final remainingSeconds = seconds % 60;
-    return '$minutes:${remainingSeconds.toString().padLeft(2, '0')}';
-  }
-
-  Widget _buildInstructions() {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 24.w),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Beautiful animated icon or lottie
-          Container(
-            width: 200.w,
-            height: 200.w,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                colors: [
-                  Colors.white.withOpacity(0.1),
-                  Colors.white.withOpacity(0.05),
-                  Colors.transparent,
+            child: Text(
+              _countdownValue > 0 ? '$_countdownValue' : 'Go!',
+              key: ValueKey(_countdownValue),
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 100.sp,
+                fontWeight: FontWeight.bold,
+                color: _selectedPattern.color,
+                shadows: [
+                  Shadow(color: _selectedPattern.color.withOpacity(0.6),
+                    blurRadius: 40),
                 ],
               ),
             ),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Lottie.asset(
-                  'assets/animations/meditation.json',
-                  width: 200.w,
-                  height: 200.w,
-                  fit: BoxFit.contain,
-                ),
-              ],
-            ),
-          ),
-
-          Text(
-            'Mindful Breathing',
-            style: TextStyle(
-              fontFamily: 'Poppins',
-              fontSize: 32.sp,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-              letterSpacing: 1.2,
-            ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            'Find your inner peace',
-            style: TextStyle(
-              fontFamily: 'Poppins',
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w300,
-              color: Colors.white.withOpacity(0.8),
-              letterSpacing: 0.5,
-            ),
           ),
           SizedBox(height: 32.h),
-          Container(
-            padding: EdgeInsets.all(20.w),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20.r),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.2),
-                width: 1,
-              ),
-            ),
-            child: Column(
-              children: [
-                _buildInstructionItem(
-                  Icons.air,
-                  'Follow the breath',
-                  'Inhale for 4 seconds, exhale for 6 seconds',
-                ),
-                SizedBox(height: 16.h),
-                _buildInstructionItem(
-                  Icons.access_time_filled,
-                  'Take your time',
-                  'Each breath cycle takes 10 seconds',
-                ),
-                SizedBox(height: 16.h),
-                _buildInstructionItem(
-                  Icons.spa_rounded,
-                  'Choose your level',
-                  'Select beginner, intermediate, or advanced',
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 48.h),
-          ElevatedButton(
-            onPressed: _showLevelScreen,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Color(0xFF5A8FC8),
-              elevation: 0,
-              padding: EdgeInsets.symmetric(horizontal: 56.w, vertical: 18.h),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30.r),
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Choose Level',
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                SizedBox(width: 8.w),
-                Icon(Icons.arrow_forward_rounded),
-              ],
-            ),
-          ),
+          Text(_selectedPattern.name,
+            style: TextStyle(fontFamily: 'Poppins', fontSize: 18.sp,
+              fontWeight: FontWeight.w600, color: Colors.white)),
+          Text('$_totalRounds rounds',
+            style: TextStyle(fontFamily: 'Poppins', fontSize: 14.sp,
+              color: Colors.white60)),
         ],
       ),
     );
   }
 
-  Widget _buildInstructionItem(
-    IconData icon,
-    String title,
-    String description,
-  ) {
-    return Row(
+  // ── Game ──────────────────────────────────────────────────────────────────
+
+  Widget _buildGame() {
+    return Column(
       children: [
-        Container(
-          width: 48.w,
-          height: 48.w,
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.15),
-            borderRadius: BorderRadius.circular(12.r),
-          ),
-          child: Icon(icon, color: Colors.white, size: 24.sp),
-        ),
-        SizedBox(width: 16.w),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        // Header bar
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 8.h),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                title,
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Round ${_completedRounds + 1} / $_totalRounds',
+                    style: TextStyle(fontFamily: 'Poppins', fontSize: 16.sp,
+                      fontWeight: FontWeight.w600, color: Colors.white)),
+                  Text(_selectedPattern.name,
+                    style: TextStyle(fontFamily: 'Poppins', fontSize: 12.sp,
+                      color: Colors.white60)),
+                ],
               ),
-              Text(
-                description,
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 14.sp,
-                  color: Colors.white.withOpacity(0.7),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20.r),
                 ),
+                child: Row(children: [
+                  Icon(Icons.star_rounded, color: Colors.amber, size: 18.sp),
+                  SizedBox(width: 4.w),
+                  Text('$_score',
+                    style: TextStyle(fontFamily: 'Poppins', fontSize: 16.sp,
+                      fontWeight: FontWeight.w700, color: Colors.white)),
+                ]),
               ),
             ],
           ),
         ),
-      ],
-    );
-  }
 
-  Widget _buildGameContent() {
-    return Column(
-      children: [
-        // Score display
+        // Progress bar
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(20.r),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.2),
-                width: 1,
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.stars_rounded, color: Colors.amber, size: 24.sp),
-                SizedBox(width: 12.w),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Score',
-                      style: TextStyle(
-                        fontFamily: 'Poppins',
-                        fontSize: 14.sp,
-                        color: Colors.white.withOpacity(0.7),
-                      ),
-                    ),
-                    Text(
-                      _score.toString(),
-                      style: TextStyle(
-                        fontFamily: 'Poppins',
-                        fontSize: 24.sp,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+          padding: EdgeInsets.symmetric(horizontal: 24.w),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(4.r),
+            child: LinearProgressIndicator(
+              value: _completedRounds / _totalRounds,
+              backgroundColor: Colors.white.withOpacity(0.1),
+              valueColor: AlwaysStoppedAnimation(_selectedPattern.color),
+              minHeight: 4.h,
             ),
           ),
         ),
@@ -1505,83 +845,84 @@ class BreathingGameScreenState extends State<BreathingGameScreen>
         // Breathing circle
         Expanded(child: Center(child: _buildBreathingCircle())),
 
-        // Phase indicator
-        _buildPhaseIndicator(),
+        // Controls
+        _buildControls(),
+        SizedBox(height: 32.h),
       ],
     );
   }
 
   Widget _buildBreathingCircle() {
     return AnimatedBuilder(
-      animation: _breathAnimController,
-      builder: (context, child) {
+      animation: _breathAnimation,
+      builder: (context, _) {
+        final scale = 0.55 + _breathAnimation.value * 0.45;
+        final size = 220.w * scale;
+        final color = _phaseColor;
+
         return Stack(
           alignment: Alignment.center,
           children: [
-            // Outer ripple effects
-            ..._buildRippleEffects(),
-
-            // Outer circle (fixed)
-            Container(
-              width: 280.w,
-              height: 280.w,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.3),
-                  width: 2.w,
-                ),
-              ),
-            ),
-
-            // Main breathing circle
-            Transform.scale(
-              scale: _breathAnimation.value,
-              child: Container(
-                width: 220.w,
-                height: 220.w,
+            // Glow rings
+            for (int i = 3; i >= 1; i--)
+              Container(
+                width: size + i * 28.w,
+                height: size + i * 28.w,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Colors.white.withOpacity(0.3),
-                      Colors.white.withOpacity(0.1),
-                    ],
-                  ),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.5),
-                    width: 3.w,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.white.withOpacity(0.3),
-                      blurRadius: 30,
-                      spreadRadius: 10,
-                    ),
+                  color: color.withOpacity(0.035 * i),
+                ),
+              ),
+            // Main circle
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              width: size,
+              height: size,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    Color.lerp(color, Colors.white, 0.25)!,
+                    color,
+                    color.withOpacity(0.55),
                   ],
+                  stops: const [0.0, 0.55, 1.0],
                 ),
-                // Breathing text in center
-                child: Center(
-                  child: Text(
-                    _currentPhase == BreathPhase.inhale ? "INHALE" : "EXHALE",
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 28.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                      letterSpacing: 1.0,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black26,
-                          blurRadius: 5,
-                          offset: Offset(0, 2),
-                        ),
-                      ],
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withOpacity(0.55),
+                    blurRadius: 40 + _breathAnimation.value * 25,
+                    spreadRadius: 8 + _breathAnimation.value * 14,
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: Text(
+                      _isPaused ? 'Paused' : _phaseLabel,
+                      key: ValueKey(_isPaused ? 'p' : _currentPhase.name),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 20.sp,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                        shadows: const [
+                          Shadow(color: Colors.black26, blurRadius: 8)
+                        ],
+                      ),
                     ),
                   ),
-                ),
+                  if (_phaseSecondsLeft > 0 && !_isPaused)
+                    Text('$_phaseSecondsLeft',
+                      style: TextStyle(
+                        fontFamily: 'Poppins', fontSize: 30.sp,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white.withOpacity(0.9))),
+                ],
               ),
             ),
           ],
@@ -1590,150 +931,192 @@ class BreathingGameScreenState extends State<BreathingGameScreen>
     );
   }
 
-  List<Widget> _buildRippleEffects() {
-    final List<Widget> ripples = [];
+  Widget _buildControls() {
+    final phases = <_PhaseInfo>[
+      _PhaseInfo('In', _selectedPattern.inhale, const Color(0xFF3B82F6), BreathPhase.inhale),
+      if (_selectedPattern.holdIn > 0)
+        _PhaseInfo('Hold', _selectedPattern.holdIn, const Color(0xFF8B5CF6), BreathPhase.holdIn),
+      _PhaseInfo('Out', _selectedPattern.exhale, const Color(0xFF10B981), BreathPhase.exhale),
+      if (_selectedPattern.holdOut > 0)
+        _PhaseInfo('Hold', _selectedPattern.holdOut, const Color(0xFFF59E0B), BreathPhase.holdOut),
+    ];
 
-    if (_currentPhase == BreathPhase.inhale) {
-      // Expanding ripples for inhale
-      ripples.add(
-        AnimatedBuilder(
-          animation: _rippleAnimController,
-          builder: (context, child) {
-            final scale = 0.8 + (_rippleAnimController.value * 0.4);
-            final opacity = 0.3 - (_rippleAnimController.value * 0.3);
-
-            return Transform.scale(
-              scale: scale,
-              child: Container(
-                width: 260.w,
-                height: 260.w,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.blue.withOpacity(opacity),
-                    width: 2.w,
-                  ),
-                ),
-              ),
-            );
-          },
+    return Column(children: [
+      Wrap(
+        spacing: 8.w,
+        children: phases.map((p) {
+          final active = _currentPhase == p.phase && !_isPaused;
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+            decoration: BoxDecoration(
+              color: active ? p.color.withOpacity(0.3) : Colors.white.withOpacity(0.07),
+              borderRadius: BorderRadius.circular(20.r),
+              border: Border.all(
+                color: active ? p.color : Colors.transparent, width: 1.5),
+            ),
+            child: Text('${p.label} ${p.secs}s',
+              style: TextStyle(
+                fontFamily: 'Poppins', fontSize: 12.sp,
+                fontWeight: active ? FontWeight.w700 : FontWeight.normal,
+                color: active ? p.color : Colors.white54)),
+          );
+        }).toList(),
+      ),
+      SizedBox(height: 20.h),
+      GestureDetector(
+        onTap: _togglePause,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          width: 64.w, height: 64.w,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white.withOpacity(0.12),
+            border: Border.all(color: Colors.white30, width: 2),
+          ),
+          child: Icon(
+            _isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
+            color: Colors.white, size: 32.sp),
         ),
-      );
-
-      ripples.add(
-        AnimatedBuilder(
-          animation: _rippleAnimController,
-          builder: (context, child) {
-            final scale = 0.9 + (_rippleAnimController.value * 0.3);
-            final opacity = 0.2 - (_rippleAnimController.value * 0.2);
-
-            return Transform.scale(
-              scale: scale,
-              child: Container(
-                width: 280.w,
-                height: 280.w,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.blue.withOpacity(opacity),
-                    width: 1.5.w,
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
-      );
-    } else if (_currentPhase == BreathPhase.exhale) {
-      // Contracting ripples for exhale
-      ripples.add(
-        AnimatedBuilder(
-          animation: _rippleAnimController,
-          builder: (context, child) {
-            final scale = 1.2 - (_rippleAnimController.value * 0.4);
-            final opacity = 0.3 - ((1 - _rippleAnimController.value) * 0.3);
-
-            return Transform.scale(
-              scale: scale,
-              child: Container(
-                width: 260.w,
-                height: 260.w,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.green.withOpacity(opacity),
-                    width: 2.w,
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
-      );
-    }
-
-    return ripples;
+      ),
+    ]);
   }
 
-  Widget _buildPhaseIndicator() {
-    String phaseText = '';
-    Color phaseColor = Colors.white;
-    IconData phaseIcon = Icons.air;
+  // ── Completion ────────────────────────────────────────────────────────────
 
-    switch (_currentPhase) {
-      case BreathPhase.inhale:
-        phaseText = 'Breathe In (4s)';
-        phaseColor = Colors.lightBlueAccent;
-        phaseIcon = Icons.arrow_upward_rounded;
-        break;
-      case BreathPhase.exhale:
-        phaseText = 'Breathe Out (6s)';
-        phaseColor = Colors.greenAccent;
-        phaseIcon = Icons.arrow_downward_rounded;
-        break;
-      case BreathPhase.paused:
-      case BreathPhase.completed:
-        phaseText = '';
-        phaseColor = Colors.white;
-        phaseIcon = Icons.play_arrow_rounded;
-        break;
-    }
-
-    return Padding(
-      padding: EdgeInsets.only(bottom: 48.h),
-      child: AnimatedOpacity(
-        opacity:
-            _currentPhase == BreathPhase.paused ||
-                _currentPhase == BreathPhase.completed
-            ? 0.0
-            : 1.0,
-        duration: const Duration(milliseconds: 200),
-        child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 16.h),
-          decoration: BoxDecoration(
-            color: phaseColor.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(30.r),
-            border: Border.all(color: phaseColor.withOpacity(0.4), width: 1.5),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(phaseIcon, color: phaseColor, size: 24.sp),
+  Widget _buildCompletion() {
+    final xp = _score + (_completedRounds * 5);
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(24.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 120.w, height: 120.w,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [Colors.amber.shade300, Colors.amber.shade700]),
+                boxShadow: [BoxShadow(
+                  color: Colors.amber.withOpacity(0.5), blurRadius: 30, spreadRadius: 5)],
+              ),
+              child: Center(child: Text('🏆', style: TextStyle(fontSize: 52.sp))),
+            ),
+            SizedBox(height: 24.h),
+            Text('Session Complete!',
+              style: TextStyle(fontFamily: 'Poppins', fontSize: 28.sp,
+                fontWeight: FontWeight.bold, color: Colors.white)),
+            SizedBox(height: 8.h),
+            Text('Excellent mindfulness work today.',
+              style: TextStyle(fontFamily: 'Poppins', fontSize: 14.sp,
+                color: Colors.white60)),
+            SizedBox(height: 32.h),
+            Row(children: [
+              Expanded(child: _statBox('Rounds', '$_completedRounds',
+                Icons.loop_rounded, Colors.blue)),
               SizedBox(width: 12.w),
-              Text(
-                phaseText,
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 20.sp,
-                  fontWeight: FontWeight.w600,
-                  color: phaseColor,
-                  letterSpacing: 0.5,
+              Expanded(child: _statBox('Points', '$_score',
+                Icons.stars_rounded, Colors.amber)),
+              SizedBox(width: 12.w),
+              Expanded(child: _statBox('XP', '+$xp',
+                Icons.bolt_rounded, Colors.purple)),
+            ]),
+            SizedBox(height: 24.h),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+              decoration: BoxDecoration(
+                color: _selectedPattern.color.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(16.r),
+                border: Border.all(color: _selectedPattern.color.withOpacity(0.5)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(_selectedPattern.icon, style: TextStyle(fontSize: 20.sp)),
+                  SizedBox(width: 8.w),
+                  Text(_selectedPattern.name,
+                    style: TextStyle(fontFamily: 'Poppins', fontSize: 14.sp,
+                      fontWeight: FontWeight.w600, color: _selectedPattern.color)),
+                ],
+              ),
+            ),
+            SizedBox(height: 32.h),
+            Row(children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () {
+                    setState(() {
+                      _showCompletion = false;
+                      _showInstructions = true;
+                      _completedRounds = 0;
+                      _score = 0;
+                      _currentPhase = BreathPhase.paused;
+                    });
+                    _initAudio();
+                  },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(color: Colors.white30),
+                    padding: EdgeInsets.symmetric(vertical: 14.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14.r)),
+                  ),
+                  child: Text('Play Again',
+                    style: TextStyle(fontFamily: 'Poppins', fontSize: 15.sp)),
                 ),
               ),
-            ],
-          ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _selectedPattern.color,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: 14.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14.r)),
+                    elevation: 8,
+                    shadowColor: _selectedPattern.color.withOpacity(0.5),
+                  ),
+                  child: Text('Done',
+                    style: TextStyle(fontFamily: 'Poppins', fontSize: 15.sp,
+                      fontWeight: FontWeight.w600)),
+                ),
+              ),
+            ]),
+          ],
         ),
       ),
     );
   }
+
+  Widget _statBox(String label, String value, IconData icon, Color color) {
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Column(children: [
+        Icon(icon, color: color, size: 22.sp),
+        SizedBox(height: 8.h),
+        Text(value,
+          style: TextStyle(fontFamily: 'Poppins', fontSize: 20.sp,
+            fontWeight: FontWeight.bold, color: Colors.white)),
+        Text(label,
+          style: TextStyle(fontFamily: 'Poppins', fontSize: 11.sp,
+            color: Colors.white54)),
+      ]),
+    );
+  }
+}
+
+class _PhaseInfo {
+  final String label;
+  final int secs;
+  final Color color;
+  final BreathPhase phase;
+  const _PhaseInfo(this.label, this.secs, this.color, this.phase);
 }

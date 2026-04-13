@@ -53,6 +53,9 @@ import '../../../profile/presentation/bloc/profile_bloc.dart';
 import '../../../profile/presentation/widgets/premium_profile_card.dart';
 import '../../../subscription/presentation/bloc/subscription_bloc.dart';
 import '../../../subscription/presentation/bloc/subscription_state.dart';
+import '../../../explore/domain/entities/explore_item_entity.dart';
+import '../../../explore/presentation/bloc/explore_bloc.dart';
+import '../../../../../core/services/auth_token_service.dart';
 
 class DashboardScreen extends StatelessWidget {
   final VoidCallback onViewAllCategories;
@@ -74,8 +77,10 @@ class DashboardScreen extends StatelessWidget {
           create: (_) => getIt<CategoryBloc>()..add(LoadCategoriesEvent()),
         ),
         BlocProvider(
-          create: (_) =>
-              getIt<AudioBloc>()..add(const LoadFeaturedAudio(limit: 10)),
+          create: (_) => getIt<AudioBloc>(),
+        ),
+        BlocProvider(
+          create: (_) => getIt<ExploreBloc>(),
         ),
         // Short videos bloc — featured only on dashboard
         BlocProvider(
@@ -114,12 +119,39 @@ class _DashboardView extends StatelessWidget {
 
   const _DashboardView({required this.onViewAllCategories});
 
+  static String _findAudioCategoryId(List<CategoryEntity> categories) {
+    final cat = categories.firstWhere(
+      (c) => c.name.toLowerCase().contains('audio'),
+      orElse: () => CategoryEntity(
+        id: '',
+        name: '',
+        imageUrl: '',
+        description: '',
+        preferenceIds: [],
+        createdAt: DateTime(0),
+        updatedAt: DateTime(0),
+      ),
+    );
+    return cat.id;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<DashboardBloc, DashboardState>(
-      builder: (context, state) {
-        // ── Loading ────────────────────────────────────────────────────
-        if (state is DashboardLoading) {
+    return BlocListener<CategoryBloc, CategoryState>(
+      listener: (context, categoryState) {
+        if (categoryState is CategoryLoaded) {
+          final catId = _findAudioCategoryId(categoryState.categories);
+          if (catId.isNotEmpty) {
+            context.read<ExploreBloc>().add(
+              LoadExploreItemsForCategory(catId),
+            );
+          }
+        }
+      },
+      child: BlocBuilder<DashboardBloc, DashboardState>(
+        builder: (context, state) {
+          // ── Loading ────────────────────────────────────────────────────
+          if (state is DashboardLoading) {
           return Scaffold(
             backgroundColor: context.backgroundColor,
             body: const SafeArea(child: DashboardShimmerLoading()),
@@ -158,9 +190,7 @@ class _DashboardView extends StatelessWidget {
                       const LoadFeaturedQuotes(limit: 6),
                     );
                     context.read<CategoryBloc>().add(LoadCategoriesEvent());
-                    context.read<AudioBloc>().add(
-                      const LoadFeaturedAudio(limit: 10),
-                    );
+                    context.read<CategoryBloc>().add(LoadCategoriesEvent());
                     context.read<ShortVideoBloc>().add(
                       const LoadShortVideos(limit: 10, isFeatured: true),
                     );
@@ -173,6 +203,8 @@ class _DashboardView extends StatelessWidget {
                     context.read<ImageBloc>().add(
                       const LoadFeaturedImages(limit: 10),
                     );
+
+                    context.read<AudioBloc>().add(const LoadFeaturedAudio(limit: 10));
                   },
                   color: context.primaryColor,
                   child: SingleChildScrollView(
@@ -247,6 +279,7 @@ class _DashboardView extends StatelessWidget {
           ),
         );
       },
+    ),
     );
   }
 }
@@ -407,6 +440,7 @@ class _NotificationButtonState extends State<_NotificationButton> {
 
   Future<void> _loadUnreadCount() async {
     try {
+      await getIt<AuthTokenService>().ensureAuthenticated();
       final res = await _dio.get(
         '/notifications',
         queryParameters: {'limit': 50},
@@ -674,15 +708,40 @@ class _FeaturedSection extends StatelessWidget {
 class _FeaturedAudioSection extends StatelessWidget {
   const _FeaturedAudioSection();
 
+  AudioEntity _toAudio(ExploreItemEntity item) => AudioEntity(
+        id: item.id,
+        title: item.title,
+        description: item.description ?? '',
+        artistName: item.subtitle ?? '',
+        audioUrl: item.metadata?['audioUrl'] ?? '',
+        coverImageUrl: item.imageUrl ?? '',
+        thumbnailUrl: item.thumbnailUrl ?? '',
+        durationSeconds: item.durationSeconds ?? 0,
+        categoryId: item.categoryIds.isNotEmpty ? item.categoryIds.first : '',
+        moodTags: item.tags,
+        isFeatured: item.isFeatured,
+        isPremium: item.isPremium,
+        sortOrder: 0,
+        createdAt: item.createdAt,
+        updatedAt: item.createdAt,
+      );
+
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AudioBloc, AudioState>(
+    return BlocBuilder<ExploreBloc, ExploreState>(
       builder: (context, state) {
-        List<AudioEntity> tracks = [];
-        if (state is AudioLoaded) {
-          tracks = state.featuredTracks;
+        if (state is ExploreLoading) {
+          return const SectionShimmerLoading(height: 190, width: 160);
         }
-        if (tracks.isEmpty) return const SizedBox.shrink();
+        if (state is! ExploreLoaded) return const SizedBox.shrink();
+
+        final audioItems = state.allItems
+            .where((item) => item.type == ExploreItemType.audio)
+            .toList();
+
+        if (audioItems.isEmpty) return const SizedBox.shrink();
+
+        final tracks = audioItems.map(_toAudio).toList();
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -691,14 +750,38 @@ class _FeaturedAudioSection extends StatelessWidget {
               title: 'Calming Audio',
               subtitle: 'Meditation & wellness sessions',
               onSeeAll: () {
+                CategoryCardEntity extra = const CategoryCardEntity(
+                  id: '',
+                  name: 'Calming Audio',
+                  imageUrl: '',
+                  description: 'All audio content',
+                );
+                final catState = context.read<CategoryBloc>().state;
+                if (catState is CategoryLoaded) {
+                  final cat = catState.categories.firstWhere(
+                    (c) => c.name.toLowerCase().contains('audio'),
+                    orElse: () => CategoryEntity(
+                      id: '',
+                      name: '',
+                      imageUrl: '',
+                      description: '',
+                      preferenceIds: [],
+                      createdAt: DateTime(0),
+                      updatedAt: DateTime(0),
+                    ),
+                  );
+                  if (cat.id.isNotEmpty) {
+                    extra = CategoryCardEntity(
+                      id: cat.id,
+                      name: cat.name,
+                      imageUrl: cat.imageUrl,
+                      description: cat.description,
+                    );
+                  }
+                }
                 context.pushNamed(
                   RouteNames.categoryDetail,
-                  extra: const CategoryCardEntity(
-                    id: '',
-                    name: 'Calming Audio',
-                    imageUrl: '',
-                    description: 'All audio content',
-                  ),
+                  extra: extra,
                   queryParameters: {'contentType': 'audio'},
                 );
               },
@@ -730,9 +813,6 @@ class _FeaturedAudioSection extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 4 – SHORT VIDEOS SECTION (DEBUG VERSION)
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _ShortVideosSection extends StatelessWidget {
   const _ShortVideosSection();
@@ -1608,6 +1688,7 @@ class _TherapySectionState extends State<_TherapySection> {
 
   Future<void> _checkBooking() async {
     try {
+      await getIt<AuthTokenService>().ensureAuthenticated();
       final res = await _dio.get('/appointments');
       final raw = res.data;
       final rawList =

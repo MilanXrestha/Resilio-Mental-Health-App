@@ -191,21 +191,21 @@ class LongVideoCardWidget extends StatelessWidget {
                                 color: context.textSecondaryColor,
                               ),
                             ),
-                            Text(
-                              ' • ',
-                              style: TextStyle(
-                                color: context.textSecondaryColor,
-                                fontSize: 12.sp,
-                              ),
-                            ),
-                            Text(
-                              '${_formatViewCount(video.playCount)} views',
-                              style: TextStyle(
-                                fontFamily: 'Poppins',
-                                fontSize: 12.sp,
-                                color: context.textSecondaryColor,
-                              ),
-                            ),
+                            // Text(
+                            //   ' • ',
+                            //   style: TextStyle(
+                            //     color: context.textSecondaryColor,
+                            //     fontSize: 12.sp,
+                            //   ),
+                            // ),
+                            // Text(
+                            //   '${_formatViewCount(video.playCount)} views',
+                            //   style: TextStyle(
+                            //     fontFamily: 'Poppins',
+                            //     fontSize: 12.sp,
+                            //     color: context.textSecondaryColor,
+                            //   ),
+                            // ),
                           ],
                         ),
                       ],

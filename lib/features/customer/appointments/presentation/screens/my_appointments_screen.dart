@@ -103,6 +103,7 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen>
     });
     try {
       // 1. Load appointments
+      await getIt<AuthTokenService>().ensureAuthenticated();
       final res = await _dio.get('/appointments');
       final raw = res.data;
       final rawList = (raw is Map

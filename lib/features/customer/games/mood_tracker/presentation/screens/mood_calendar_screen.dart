@@ -91,32 +91,43 @@ class _MoodCalendarScreenState extends State<MoodCalendarScreen> with SingleTick
     }
   }
 
-  // Method to save updated note
+  // Method to save updated note using updateMoodEntry (not create new)
   Future<void> _saveNote(String note, MoodEntryModel entry) async {
     try {
-      // Create a new entry with the updated note
-      await _gameService.saveMoodEntry(
-        userId: widget.userId,
+      final updated = await _gameService.updateMoodEntry(
+        id: entry.id,
         mood: entry.moodLabel,
+        moodScore: entry.moodScore,
         note: note,
       );
 
-      // Reload entries to refresh the data
-      await _loadMoodEntries();
+      if (updated != null) {
+        // Update the local map without reloading everything
+        final key = DateTime(entry.createdAt.year, entry.createdAt.month, entry.createdAt.day);
+        setState(() {
+          _moodEntries[key] = updated;
+        });
+      } else {
+        await _loadMoodEntries();
+      }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Note updated successfully'),
-          backgroundColor: Theme.of(context).primaryColor,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Journal updated'),
+            backgroundColor: Theme.of(context).primaryColor,
+          ),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to update note: $e'),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update: $e'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
     }
   }
 
@@ -827,10 +838,10 @@ class _MoodCalendarScreenState extends State<MoodCalendarScreen> with SingleTick
                     : Colors.black.withOpacity(0.05),
               ),
             ),
-            child: entry.note != null && entry.note!.isNotEmpty
+            child: entry.note.isNotEmpty
                 ? SingleChildScrollView(
               child: Text(
-                entry.note!,
+                entry.note,
                 style: TextStyle(
                   fontFamily: 'Poppins',
                   fontSize: 16.sp,

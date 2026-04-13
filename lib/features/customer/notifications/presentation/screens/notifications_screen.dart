@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../../core/di/injection.dart';
 import '../../../../../core/routing/route_names.dart';
+import '../../../../../core/services/auth_token_service.dart';
 import '../../../../../core/theme/app_colors.dart';
 
 class NotificationsScreen extends StatefulWidget {
@@ -34,6 +35,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       _error = null;
     });
     try {
+      await getIt<AuthTokenService>().ensureAuthenticated();
       final res = await _dio.get('/notifications', queryParameters: {'limit': 50});
       // Handle various backend response shapes
       final raw = res.data;

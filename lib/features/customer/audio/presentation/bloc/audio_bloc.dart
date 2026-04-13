@@ -11,6 +11,7 @@ class AudioBloc extends Bloc<AudioEvent, AudioState> {
 
   AudioBloc(this._repository) : super(const AudioInitial()) {
     on<LoadFeaturedAudio>(_onLoadFeaturedAudio);
+    on<LoadAllAudio>(_onLoadAllAudio);
     on<LoadAudioByCategory>(_onLoadAudioByCategory);
     on<LoadAudioTrack>(_onLoadAudioTrack);
     on<IncrementPlayCount>(_onIncrementPlayCount);
@@ -26,6 +27,20 @@ class AudioBloc extends Bloc<AudioEvent, AudioState> {
       limit: event.limit,
       moodFilters: event.moodFilters,
     );
+
+    result.fold(
+      (failure) => emit(AudioError(failure.message)),
+      (tracks) => emit(AudioLoaded(tracks)),
+    );
+  }
+
+  Future<void> _onLoadAllAudio(
+    LoadAllAudio event,
+    Emitter<AudioState> emit,
+  ) async {
+    emit(const AudioLoading());
+
+    final result = await _repository.getAllAudio(limit: event.limit);
 
     result.fold(
       (failure) => emit(AudioError(failure.message)),

@@ -25,7 +25,17 @@ class FavoriteBloc extends Bloc<FavoriteEvent, FavoriteState> {
       for (var f in favorites) {
         statusMap[f.contentId] = true;
       }
-      emit(FavoritesLoaded(favorites: favorites, favoriteStatusMap: statusMap));
+      
+      // Preserve existing status map if we have one, and merge
+      if (state is FavoritesLoaded) {
+        final currentState = state as FavoritesLoaded;
+        // Merge: existing map has precedence for items not in the new favorites list
+        final mergedMap = Map<String, bool>.from(currentState.favoriteStatusMap);
+        mergedMap.addAll(statusMap);
+        emit(FavoritesLoaded(favorites: favorites, favoriteStatusMap: mergedMap));
+      } else {
+        emit(FavoritesLoaded(favorites: favorites, favoriteStatusMap: statusMap));
+      }
     } catch (e) {
       if (state is! FavoritesLoaded) {
         emit(FavoriteError(e.toString()));
@@ -90,6 +100,14 @@ class FavoriteBloc extends Bloc<FavoriteEvent, FavoriteState> {
         final newMap = Map<String, bool>.from(currentState.favoriteStatusMap);
         newMap[event.contentId] = isFavorited;
         emit(currentState.copyWith(favoriteStatusMap: newMap));
+      } else if (state is! FavoriteLoading) {
+        // If not loaded and not loading, initialize with this status
+        // This ensures the first check creates a proper state
+        final statusMap = <String, bool>{event.contentId: isFavorited};
+        emit(FavoritesLoaded(favorites: [], favoriteStatusMap: statusMap));
+        
+        // Now load all favorites in background
+        add(LoadFavorites(event.userId));
       }
       // Do not emit FavoritesLoaded with an empty list here — that overwrote
       // a real favorites payload and made the Favorites tab look empty until

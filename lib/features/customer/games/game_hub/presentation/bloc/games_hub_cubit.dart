@@ -48,20 +48,27 @@ class GamesHubCubit extends Cubit<GamesHubState> {
   Future<void> loadUserStats() async {
     emit(state.copyWith(isLoading: true, error: null));
 
+    // Load achievements and game sessions in parallel
     final achievementsResult = await _repository.listUserAchievements();
+    final sessionsResult = await _repository.listGameSessions();
 
     achievementsResult.fold(
       (failure) {
         emit(state.copyWith(isLoading: false, error: failure.message));
       },
       (achievements) {
-        // Simple point calculation: number of achievements * 10
-        final pts = achievements.length * 10;
+        final unlockedCount = achievements.length;
+        int sessionCount = 0;
+        sessionsResult.fold((_) {}, (count) {
+          sessionCount = count;
+        });
+        // Points: each achievement = 50 pts, each game session = 10 pts
+        final pts = (unlockedCount * 50) + (sessionCount * 10);
         emit(state.copyWith(
           isLoading: false,
-          achievements: achievements.length,
-          points: pts, // TODO: We might want a dedicated stats API in the future
-          gamesPlayed: achievements.length * 2, // Dummy value
+          achievements: unlockedCount,
+          points: pts,
+          gamesPlayed: sessionCount,
         ));
       },
     );

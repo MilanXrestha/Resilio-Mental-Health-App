@@ -11,13 +11,18 @@ class AuthInterceptor extends Interceptor {
   AuthInterceptor(this._authTokenService);
 
   @override
-  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+  void onRequest(
+      RequestOptions options, RequestInterceptorHandler handler) async {
     // Skip if Authorization header is already set
     if (options.headers.containsKey('Authorization')) {
       return handler.next(options);
     }
 
-    // Add auth token if available
+    // If no token is cached, try to recover one before proceeding
+    if (!_authTokenService.hasToken) {
+      await _authTokenService.ensureAuthenticated();
+    }
+
     final token = _authTokenService.token;
     if (token != null && token.isNotEmpty) {
       options.headers['Authorization'] = 'Bearer $token';

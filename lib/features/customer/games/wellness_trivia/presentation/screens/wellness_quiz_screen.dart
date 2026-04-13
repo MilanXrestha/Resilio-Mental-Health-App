@@ -6,9 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lottie/lottie.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'package:Resilio/core/theme/app_colors.dart';
 import 'package:Resilio/features/customer/games/game_hub/data/services/game_service.dart';
 import 'package:Resilio/features/customer/games/wellness_trivia/data/models/quiz_question_model.dart';
 
@@ -31,7 +29,6 @@ class WellnessQuizScreen extends StatefulWidget {
 class _WellnessQuizScreenState extends State<WellnessQuizScreen>
     with TickerProviderStateMixin {
   final GameService _gameService = GameService();
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Game state
   List<QuizQuestionModel> _questions = [];
@@ -120,8 +117,8 @@ class _WellnessQuizScreenState extends State<WellnessQuizScreen>
       );
 
       _isAudioInitialized = true;
-    } catch (e) {
-      print('Error initializing audio: $e');
+    } catch (_) {
+      // Audio assets may be missing — game continues without sound
     }
   }
 
@@ -131,8 +128,8 @@ class _WellnessQuizScreenState extends State<WellnessQuizScreen>
     try {
       await _soundEffectPlayer.setVolume(volume);
       await _soundEffectPlayer.play(AssetSource(soundFile));
-    } catch (e) {
-      print('Error playing sound: $e');
+    } catch (_) {
+      // Ignore missing sound effects
     }
   }
 
@@ -160,194 +157,31 @@ class _WellnessQuizScreenState extends State<WellnessQuizScreen>
     });
 
     try {
-      // Get quiz questions from Firestore
-      final snapshot = await _firestore.collection('quiz_questions').get();
+      final allQuestions = await _gameService.loadQuizQuestions();
 
-      if (snapshot.docs.isEmpty) {
-        // If no questions exist, let's create some default ones
-        await _createDefaultQuestions();
-
-        // Try to get questions again
-        final newSnapshot = await _firestore.collection('quiz_questions').get();
-        _questions = newSnapshot.docs
-            .map((doc) => QuizQuestionModel.fromFirestore(doc))
-            .toList();
-      } else {
-        _questions = snapshot.docs
-            .map((doc) => QuizQuestionModel.fromFirestore(doc))
-            .toList();
+      if (allQuestions.isEmpty) {
+        setState(() {
+          _isLoading = false;
+        });
+        return;
       }
 
-      // Shuffle questions
-      _questions.shuffle(Random());
-
-      // Limit to the number specified in game config
+      // Shuffle and limit to session size
+      allQuestions.shuffle(Random());
       final questionsPerSession =
           widget.gameConfig['questionsPerSession'] as int? ?? 5;
-      if (_questions.length > questionsPerSession) {
-        _questions = _questions.sublist(0, questionsPerSession);
-      }
+      _questions = allQuestions.length > questionsPerSession
+          ? allQuestions.sublist(0, questionsPerSession)
+          : allQuestions;
 
       setState(() {
         _isLoading = false;
       });
     } catch (e) {
-      print('Error loading questions: $e');
       setState(() {
         _isLoading = false;
-        _questions = []; // Empty list will show error state
       });
     }
-  }
-
-  Future<void> _createDefaultQuestions() async {
-    final batch = _firestore.batch();
-
-    final defaultQuestions = [
-      {
-        'question': 'What is mindfulness?',
-        'options': [
-          'Being busy with many tasks',
-          'Focusing on the past',
-          'Paying attention to the present moment',
-          'Planning for the future',
-        ],
-        'correctOptionIndex': 2,
-        'explanation':
-        'Mindfulness is the practice of purposely focusing your attention on the present moment—and accepting it without judgment.',
-        'category': 'mindfulness',
-        'difficulty': 1,
-      },
-      {
-        'question': 'Which of these is NOT a benefit of regular exercise?',
-        'options': [
-          'Reduced stress levels',
-          'Improved mood',
-          'Decreased metabolic rate',
-          'Better sleep quality',
-        ],
-        'correctOptionIndex': 2,
-        'explanation':
-        'Regular exercise actually increases your metabolic rate, helping you burn more calories throughout the day.',
-        'category': 'physical',
-        'difficulty': 1,
-      },
-      {
-        'question': 'How much water should the average adult drink daily?',
-        'options': [
-          '1-2 liters',
-          '2-3 liters',
-          '3-4 liters',
-          'It varies based on individual needs',
-        ],
-        'correctOptionIndex': 3,
-        'explanation':
-        'While 2-3 liters is often recommended, water needs vary based on activity level, climate, health conditions, and other factors.',
-        'category': 'nutrition',
-        'difficulty': 2,
-      },
-      {
-        'question': 'What is the recommended amount of sleep for adults?',
-        'options': ['4-5 hours', '6-7 hours', '7-9 hours', '10-12 hours'],
-        'correctOptionIndex': 2,
-        'explanation':
-        'Most adults need 7-9 hours of sleep per night for optimal health and well-being.',
-        'category': 'sleep',
-        'difficulty': 1,
-      },
-      {
-        'question': 'Which of these is a symptom of burnout?',
-        'options': [
-          'Increased energy',
-          'Emotional exhaustion',
-          'Improved concentration',
-          'Higher productivity',
-        ],
-        'correctOptionIndex': 1,
-        'explanation':
-        'Burnout is characterized by emotional exhaustion, cynicism, and reduced professional efficacy.',
-        'category': 'mental',
-        'difficulty': 2,
-      },
-      {
-        'question': 'What is the "5-4-3-2-1" technique used for?',
-        'options': [
-          'Weight training',
-          'Time management',
-          'Grounding during anxiety',
-          'Dietary planning',
-        ],
-        'correctOptionIndex': 2,
-        'explanation':
-        'The 5-4-3-2-1 technique helps ground people during anxiety by identifying 5 things you see, 4 things you feel, 3 things you hear, 2 things you smell, and 1 thing you taste.',
-        'category': 'mental',
-        'difficulty': 2,
-      },
-      {
-        'question':
-        'Which vitamin is primarily produced when skin is exposed to sunlight?',
-        'options': ['Vitamin A', 'Vitamin C', 'Vitamin D', 'Vitamin E'],
-        'correctOptionIndex': 2,
-        'explanation':
-        'Vitamin D is produced when UVB rays from the sun hit cholesterol in the skin cells, triggering a process that creates vitamin D.',
-        'category': 'nutrition',
-        'difficulty': 1,
-      },
-      {
-        'question':
-        'What is the most effective way to reduce stress long-term?',
-        'options': [
-          'Eliminating all stressors',
-          'Regular relaxation practices',
-          'Taking time off work',
-          'Avoiding difficult situations',
-        ],
-        'correctOptionIndex': 1,
-        'explanation':
-        'While removing stressors helps temporarily, developing regular relaxation practices like meditation, deep breathing, or yoga provides sustainable stress management skills.',
-        'category': 'stress',
-        'difficulty': 2,
-      },
-      {
-        'question': 'Which food is highest in antioxidants?',
-        'options': [
-          'White bread',
-          'Blueberries',
-          'Chicken breast',
-          'White rice',
-        ],
-        'correctOptionIndex': 1,
-        'explanation':
-        'Blueberries are particularly high in antioxidants called anthocyanins, which give them their blue color and provide many health benefits.',
-        'category': 'nutrition',
-        'difficulty': 1,
-      },
-      {
-        'question': 'What is the "flow state"?',
-        'options': [
-          'A meditative breathing technique',
-          'A state of complete immersion and focus',
-          'The movement of energy in the body',
-          'A type of yoga practice',
-        ],
-        'correctOptionIndex': 1,
-        'explanation':
-        'Flow state is a psychological concept describing complete immersion and focus in an activity, characterized by energized focus, full involvement, and enjoyment.',
-        'category': 'mental',
-        'difficulty': 3,
-      },
-    ];
-
-    int index = 0;
-    for (var question in defaultQuestions) {
-      final docRef = _firestore
-          .collection('quiz_questions')
-          .doc('default_q${index + 1}');
-      batch.set(docRef, question);
-      index++;
-    }
-
-    await batch.commit();
   }
 
   void _startQuiz() {
@@ -466,7 +300,7 @@ class _WellnessQuizScreenState extends State<WellnessQuizScreen>
         ? quizEndTime.difference(_quizStartTime!)
         : Duration.zero;
 
-    // Save session to Firestore
+    // Save session to backend
     _gameService.saveGameSession(
       userId: widget.userId,
       gameId: widget.gameId,

@@ -49,8 +49,25 @@ class FavoriteButton extends StatelessWidget {
     return BlocBuilder<FavoriteBloc, FavoriteState>(
       builder: (context, state) {
         var isFavorited = false;
+        
+        // Check if we have the status loaded
         if (state is FavoritesLoaded) {
           isFavorited = state.favoriteStatusMap[contentId] ?? false;
+        }
+        
+        // If state is initial, try to check the status automatically
+        if (state is FavoriteInitial) {
+          final auth = context.read<AuthBloc>().state;
+          if (auth is AuthAuthenticated) {
+            // Dispatch a check event to load this item's status
+            context.read<FavoriteBloc>().add(
+                  CheckFavoriteStatus(
+                    userId: auth.user.id,
+                    contentId: contentId,
+                    contentType: contentType,
+                  ),
+                );
+          }
         }
 
         final iconSize = size ?? 22.sp;

@@ -1,22 +1,98 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lottie/lottie.dart';
-import 'package:carousel_slider/carousel_slider.dart';
-import 'package:shimmer/shimmer.dart';
 
 import 'package:Resilio/core/theme/app_colors.dart';
-import 'package:Resilio/core/di/injection.dart';
 import 'package:Resilio/features/customer/games/achievements/presentation/screens/achievements_screen.dart';
 import 'package:Resilio/features/customer/games/affirmation_builder/presentation/screens/affirmation_builder_screen.dart';
 import 'package:Resilio/features/customer/games/breathing_game/presentation/screens/breathing_game_screen.dart';
-import 'package:Resilio/features/customer/games/mood_tracker/presentation/screens/mood_calendar_screen.dart';
 import 'package:Resilio/features/customer/games/mood_tracker/presentation/widgets/mood_tracker_widget.dart';
+import 'package:Resilio/features/customer/games/story_game/presentation/screens/story_game_screen.dart';
 import 'package:Resilio/features/customer/games/wellness_trivia/presentation/screens/wellness_quiz_screen.dart';
-import 'package:Resilio/features/customer/games/game_hub/data/models/game_model.dart';
 import 'package:Resilio/features/customer/games/game_hub/presentation/bloc/games_hub_cubit.dart';
+
+// ─── Game definitions ─────────────────────────────────────────────────────────
+
+class _GameDef {
+  final String id;
+  final String title;
+  final String subtitle;
+  final String emoji;
+  final String? animation;
+  final String type;
+  final List<Color> gradientColors;
+  final Map<String, dynamic> config;
+  final String xpLabel;
+  final String tag;
+
+  const _GameDef({
+    required this.id,
+    required this.title,
+    required this.subtitle,
+    required this.emoji,
+    this.animation,
+    required this.type,
+    required this.gradientColors,
+    required this.config,
+    required this.xpLabel,
+    required this.tag,
+  });
+}
+
+const _games = [
+  _GameDef(
+    id: 'story_game',
+    title: 'The Healing Journey',
+    subtitle: 'Walk Alex through trauma to triumph',
+    emoji: '🌅',
+    animation: 'assets/animations/welcome.json',
+    type: 'story',
+    gradientColors: [Color(0xFF1B2F4E), Color(0xFF0D3025)],
+    config: {},
+    xpLabel: '150 XP',
+    tag: 'NEW',
+  ),
+  _GameDef(
+    id: 'breathing_game',
+    title: 'Mindful Breathing',
+    subtitle: '4 patterns · voice guide · calm your mind',
+    emoji: '🫁',
+    animation: 'assets/animations/meditation.json',
+    type: 'breathing',
+    gradientColors: [Color(0xFF1E3A5F), Color(0xFF1D4ED8)],
+    config: {'inhaleDuration': 4, 'holdDuration': 2, 'exhaleDuration': 4},
+    xpLabel: '50 XP / session',
+    tag: 'CALM',
+  ),
+  _GameDef(
+    id: 'affirmation_builder',
+    title: 'Affirmation Builder',
+    subtitle: 'Drag & drop words · rewire your thinking',
+    emoji: '✨',
+    animation: 'assets/animations/abc_blocks.json',
+    type: 'word_puzzle',
+    gradientColors: [Color(0xFF3B0764), Color(0xFF6D28D9)],
+    config: {'wordsPerPuzzle': 5, 'maxAttempts': 3},
+    xpLabel: '30 XP / round',
+    tag: 'FOCUS',
+  ),
+  _GameDef(
+    id: 'wellness_quiz',
+    title: 'Wellness Trivia',
+    subtitle: '5 questions · learn · earn · level up',
+    emoji: '🧠',
+    animation: 'assets/animations/quiz.json',
+    type: 'quiz',
+    gradientColors: [Color(0xFF78350F), Color(0xFFD97706)],
+    config: {'questionsPerSession': 5, 'timePerQuestion': 15},
+    xpLabel: '20 XP / correct',
+    tag: 'LEARN',
+  ),
+];
+
+// ─── Screen ───────────────────────────────────────────────────────────────────
 
 class GamesHubScreen extends StatefulWidget {
   final String userId;
@@ -27,565 +103,881 @@ class GamesHubScreen extends StatefulWidget {
   GamesHubScreenState createState() => GamesHubScreenState();
 }
 
-class GamesHubScreenState extends State<GamesHubScreen> {
-  // ... rest of the state ...
-  final List<GameModel> _games = [
-    GameModel(
-      id: 'breathing_game',
-      title: 'Mindful Breathing',
-      description: 'Sync your breath with the animation to earn points and find calm',
-      animationPath: 'assets/animations/meditation.json',
-      type: 'breathing',
-      config: {
-        'inhaleDuration': 4,
-        'holdDuration': 2,
-        'exhaleDuration': 4,
-        'defaultSessionLength': 60,
-      },
-      sortOrder: 1,
-    ),
-    GameModel(
-      id: 'affirmation_builder',
-      title: 'Affirmation Builder',
-      description: 'Drag and drop words to form positive affirmations',
-      animationPath: 'assets/animations/abc_blocks.json',
-      type: 'word_puzzle',
-      config: {
-        'wordsPerPuzzle': 5,
-        'maxAttempts': 3,
-        'defaultSessionLength': 120,
-      },
-      sortOrder: 2,
-    ),
-    GameModel(
-      id: 'wellness_quiz',
-      title: 'Wellness Trivia',
-      description: 'Test your knowledge and learn new wellness facts',
-      animationPath: 'assets/animations/quiz.json',
-      type: 'quiz',
-      config: {
-        'questionsPerSession': 5,
-        'timePerQuestion': 15,
-      },
-      sortOrder: 3,
-    ),
-  ];
-
-  int _currentGameIndex = 0;
-  final CarouselSliderController _carouselController = CarouselSliderController();
+class GamesHubScreenState extends State<GamesHubScreen>
+    with TickerProviderStateMixin {
+  int _pageIndex = 0;
+  late PageController _pageCtrl;
+  late AnimationController _headerAnim;
+  late AnimationController _cardsAnim;
 
   @override
   void initState() {
     super.initState();
-    context.read<GamesHubCubit>().loadUserStats();
-  }
+    _pageCtrl = PageController(viewportFraction: 0.88);
+    _headerAnim = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 600));
+    _cardsAnim = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 500));
 
-  void _launchGame(GameModel game) {
-    Widget? screen;
-    switch (game.type) {
-      case 'breathing':
-        screen = BreathingGameScreen(
-          userId: widget.userId,
-          gameId: game.id,
-          gameConfig: game.config,
-        );
-        break;
-      case 'word_puzzle':
-        screen = AffirmationBuilderScreen(
-          userId: widget.userId,
-          gameId: game.id,
-          gameConfig: game.config,
-        );
-        break;
-      case 'quiz':
-        screen = WellnessQuizScreen(
-          userId: widget.userId,
-          gameId: game.id,
-          gameConfig: game.config,
-        );
-        break;
-      default:
-        return;
-    }
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => screen!),
-    ).then((_) {
-      if (mounted) {
-        context.read<GamesHubCubit>().loadUserStats();
-      }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<GamesHubCubit>().loadUserStats();
+      _headerAnim.forward();
+      Future.delayed(const Duration(milliseconds: 200),
+          () { if (mounted) _cardsAnim.forward(); });
     });
   }
 
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDarkMode = theme.brightness == Brightness.dark;
+  void dispose() {
+    _pageCtrl.dispose();
+    _headerAnim.dispose();
+    _cardsAnim.dispose();
+    super.dispose();
+  }
 
+  void _launchGame(_GameDef game) {
+    HapticFeedback.mediumImpact();
+    Widget screen;
+    switch (game.type) {
+      case 'story':
+        screen = StoryGameScreen(
+            userId: widget.userId, gameId: game.id, gameConfig: game.config);
+        break;
+      case 'breathing':
+        screen = BreathingGameScreen(
+            userId: widget.userId, gameId: game.id, gameConfig: game.config);
+        break;
+      case 'word_puzzle':
+        screen = AffirmationBuilderScreen(
+            userId: widget.userId, gameId: game.id, gameConfig: game.config);
+        break;
+      case 'quiz':
+        screen = WellnessQuizScreen(
+            userId: widget.userId, gameId: game.id, gameConfig: game.config);
+        break;
+      default:
+        return;
+    }
+    Navigator.push(context, MaterialPageRoute(builder: (_) => screen))
+        .then((_) { if (mounted) context.read<GamesHubCubit>().loadUserStats(); });
+  }
+
+  // ── Build ──────────────────────────────────────────────────────────────────
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        title: Text(
-          'Wellness Hub',
-          style: TextStyle(
-            fontFamily: 'Poppins',
-            fontSize: 20.sp,
-            fontWeight: FontWeight.w600,
-            color: isDarkMode ? Theme.of(context).colorScheme.onSurface : Theme.of(context).colorScheme.onSurface,
-          ),
-        ),
-        elevation: 0,
-        backgroundColor: isDarkMode
-            ? Theme.of(context).colorScheme.background.withOpacity(0.85)
-            : Theme.of(context).colorScheme.background.withOpacity(0.85),
-        flexibleSpace: ClipRect(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Container(color: Colors.transparent),
-          ),
-        ),
-        leading: IconButton(
-          icon: Icon(
-            CupertinoIcons.back,
-            color: isDarkMode ? Theme.of(context).colorScheme.onSurface : Theme.of(context).colorScheme.onSurface,
-          ),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: isDarkMode
-                ? [Theme.of(context).colorScheme.background, Theme.of(context).colorScheme.surface]
-                : [Theme.of(context).colorScheme.background, Theme.of(context).colorScheme.surface],
-          ),
-        ),
-        child: SafeArea(
-          child: RefreshIndicator(
-            onRefresh: () async {
-              await context.read<GamesHubCubit>().loadUserStats();
-            },
-            color: Theme.of(context).primaryColor,
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
+      backgroundColor: context.backgroundColor,
+      body: RefreshIndicator(
+        onRefresh: () async => context.read<GamesHubCubit>().loadUserStats(),
+        color: context.primaryColor,
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(
+              parent: BouncingScrollPhysics()),
+          slivers: [
+            _buildAppBar(),
+            SliverToBoxAdapter(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(height: 16.h),
-                  _buildStatsRow(isDarkMode),
+                  SizedBox(height: 4.h),
+                  _buildPlayerCard(),
+                  SizedBox(height: 20.h),
+                  _buildQuickActions(),
                   SizedBox(height: 24.h),
-
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.w),
-                    child: Text(
-                      'Current Mood',
-                      style: TextStyle(
-                        fontFamily: 'Poppins',
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.bold,
-                        color: isDarkMode ? Theme.of(context).colorScheme.onSurface : Theme.of(context).colorScheme.onSurface,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 8.h),
+                  _buildSectionHeader('Games', '${_pageIndex + 1}/${_games.length}'),
+                  SizedBox(height: 12.h),
+                  _buildGamePager(),
+                  SizedBox(height: 10.h),
+                  _buildPageDots(),
+                  SizedBox(height: 28.h),
+                  _buildDailyChallenge(),
+                  SizedBox(height: 24.h),
+                  _buildSectionHeader('Today\'s Mood', null),
+                  SizedBox(height: 10.h),
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16.w),
                     child: MoodTrackerWidget(userId: widget.userId),
                   ),
-                  SizedBox(height: 24.h),
-
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.w),
-                    child: Text(
-                      'Choose a Game',
-                      style: TextStyle(
-                        fontFamily: 'Poppins',
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.bold,
-                        color: isDarkMode ? Theme.of(context).colorScheme.onSurface : Theme.of(context).colorScheme.onSurface,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 16.h),
-
-                  _buildGamesCarousel(isDarkMode),
-
-                  SizedBox(height: 32.h),
+                  SizedBox(height: 100.h),
                 ],
               ),
             ),
-          ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildStatsRow(bool isDarkMode) {
-    return BlocBuilder<GamesHubCubit, GamesHubState>(
-      builder: (context, state) {
-        if (state.isLoading) {
-          return _buildStatsShimmer(isDarkMode);
-        }
-
-        return Container(
-          margin: EdgeInsets.symmetric(horizontal: 16.w),
-          child: Row(
-            children: [
-              Expanded(
-                flex: 3,
-                child: _buildStatCard(
-                  title: 'Wellness Points',
-                  value: state.points.toString(),
-                  icon: Icons.stars_rounded,
-                  color: Colors.amber,
-                  isDarkMode: isDarkMode,
-                ),
-              ),
-              SizedBox(width: 12.w),
-              Expanded(
-                flex: 4,
-                child: GestureDetector(
-                  onTap: () {
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(builder: (context) => AchievementScreen(userId: widget.userId)),
-                    // ).then((_) => context.read<GamesHubCubit>().loadUserStats());
-                  },
-                  child: _buildStatCard(
-                    title: 'Achievements',
-                    value: state.achievements.toString(),
-                    icon: Icons.emoji_events_rounded,
-                    color: Colors.deepPurpleAccent,
-                    isDarkMode: isDarkMode,
-                    isClickable: true,
-                  ),
-                ),
-              ),
-              SizedBox(width: 12.w),
-              Expanded(
-                flex: 3,
-                child: _buildStatCard(
-                  title: 'Games Played',
-                  value: state.gamesPlayed.toString(),
-                  icon: Icons.sports_esports_rounded,
-                  color: Colors.greenAccent,
-                  isDarkMode: isDarkMode,
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildStatCard({
-    required String title,
-    required String value,
-    required IconData icon,
-    required Color color,
-    required bool isDarkMode,
-    bool isClickable = false,
-  }) {
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 8.w),
-      decoration: BoxDecoration(
-        color: isDarkMode ? Theme.of(context).colorScheme.surface : Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-        border: isClickable ? Border.all(color: color.withOpacity(0.3), width: 2.w) : null,
+  SliverAppBar _buildAppBar() {
+    return SliverAppBar(
+      backgroundColor: context.backgroundColor,
+      surfaceTintColor: Colors.transparent,
+      floating: true,
+      snap: true,
+      elevation: 0,
+      leading: IconButton(
+        icon: Icon(Icons.arrow_back_ios_new_rounded,
+            color: context.textPrimaryColor, size: 20.sp),
+        onPressed: () => Navigator.of(context).pop(),
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: EdgeInsets.all(8.w),
+      title: Text(
+        'Wellness Hub',
+        style: TextStyle(
+          fontFamily: 'Poppins',
+          fontSize: 20.sp,
+          fontWeight: FontWeight.w800,
+          color: context.textPrimaryColor,
+        ),
+      ),
+      actions: [
+        GestureDetector(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (_) => AchievementScreen(userId: widget.userId)),
+          ).then((_) { if (mounted) context.read<GamesHubCubit>().loadUserStats(); }),
+          child: Container(
+            margin: EdgeInsets.only(right: 16.w),
+            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              shape: BoxShape.circle,
+              color: const Color(0xFFFBBF24).withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(20.r),
+              border: Border.all(
+                  color: const Color(0xFFFBBF24).withValues(alpha: 0.3)),
             ),
-            child: Icon(icon, size: 22.sp, color: color),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            value,
-            style: TextStyle(
-              fontFamily: 'Poppins',
-              fontSize: 20.sp,
-              fontWeight: FontWeight.w700,
-              color: isDarkMode ? Theme.of(context).colorScheme.onSurface : Theme.of(context).colorScheme.onSurface,
-            ),
-          ),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontFamily: 'Poppins',
-              fontSize: 12.sp,
-              color: isDarkMode ? Theme.of(context).colorScheme.onSurfaceVariant : Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-          ),
-          if (isClickable) ...[
-            SizedBox(height: 4.h),
-            Row(
+            child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  'View All',
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 10.sp,
-                    color: color,
-                    fontWeight: FontWeight.w500,
+                Text('🏆', style: TextStyle(fontSize: 13.sp)),
+                SizedBox(width: 4.w),
+                BlocBuilder<GamesHubCubit, GamesHubState>(
+                  builder: (_, s) => Text(
+                    s.isLoading ? '—' : '${s.achievements}',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFFFBBF24),
+                    ),
                   ),
                 ),
-                Icon(Icons.arrow_forward_ios, size: 8.sp, color: color),
               ],
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatsShimmer(bool isDarkMode) {
-    return Shimmer.fromColors(
-      baseColor: isDarkMode ? Colors.grey[800]! : Colors.grey[300]!,
-      highlightColor: isDarkMode ? Colors.grey[700]! : Colors.grey[100]!,
-      child: Row(
-        children: List.generate(
-          3,
-          (index) => Expanded(
-            flex: index == 1 ? 4 : 3,
-            child: Container(
-              margin: EdgeInsets.symmetric(horizontal: 4.w),
-              height: 120.h,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16.r),
-              ),
             ),
           ),
         ),
-      ),
+      ],
     );
   }
 
-  Widget _buildGamesCarousel(bool isDarkMode) {
-    return SizedBox(
-      height: 450.h,
-      child: Column(
-        children: [
-          SizedBox(
-            height: 370.h,
-            child: CarouselSlider.builder(
-              itemCount: _games.length,
-              carouselController: _carouselController,
-              options: CarouselOptions(
-                height: 370.h,
-                viewportFraction: 0.7,
-                enlargeCenterPage: true,
-                enableInfiniteScroll: _games.length > 1,
-                enlargeStrategy: CenterPageEnlargeStrategy.height,
-                scrollPhysics: const BouncingScrollPhysics(),
-                autoPlay: false,
-                onPageChanged: (index, reason) {
-                  setState(() {
-                    _currentGameIndex = index;
-                  });
-                },
-              ),
-              itemBuilder: (context, index, realIndex) {
-                final game = _games[index];
-                final isActive = index == _currentGameIndex;
+  // ── Player Card (XP + Level) ───────────────────────────────────────────────
 
-                return RepaintBoundary(
-                  child: AnimatedScale(
-                    scale: isActive ? 1.0 : 0.85,
-                    duration: const Duration(milliseconds: 300),
-                    child: _buildGameCard(game, isDarkMode, isActive),
-                  ),
-                );
-              },
-            ),
-          ),
-          SizedBox(height: 8.h),
-          if (_games.length > 1)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: _games.asMap().entries.map((entry) {
-                return Container(
-                  width: 8.w,
-                  height: 8.w,
-                  margin: EdgeInsets.symmetric(horizontal: 3.w),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: _currentGameIndex == entry.key
-                        ? Theme.of(context).primaryColor
-                        : (isDarkMode ? Colors.grey.shade800 : Colors.grey.shade300),
-                  ),
-                );
-              }).toList(),
-            ),
-        ],
-      ),
-    );
-  }
+  Widget _buildPlayerCard() {
+    return BlocBuilder<GamesHubCubit, GamesHubState>(
+      builder: (_, state) {
+        final pts = state.points;
+        final level = _levelFor(pts);
+        final progress = ((pts - level.min) / (level.max - level.min).clamp(1, 99999)).clamp(0.0, 1.0);
 
-  Widget _buildGameCard(GameModel game, bool isDarkMode, bool isActive) {
-    Color gameColor;
-    switch (game.type) {
-      case 'breathing':
-        gameColor = Colors.blue;
-        break;
-      case 'tap':
-        gameColor = Colors.green;
-        break;
-      case 'quiz':
-        gameColor = Colors.orange;
-        break;
-      default:
-        gameColor = Colors.purple;
-    }
-
-    return GestureDetector(
-      onTap: () => _launchGame(game),
-      child: Hero(
-        tag: 'game_${game.id}',
-        child: Material(
-          type: MaterialType.transparency,
-          child: Container(
-            decoration: BoxDecoration(
-              color: isDarkMode ? Theme.of(context).colorScheme.surface : Colors.white,
-              borderRadius: BorderRadius.circular(24.r),
-              boxShadow: [
-                BoxShadow(
-                  color: gameColor.withOpacity(0.1),
-                  blurRadius: 5,
-                  offset: const Offset(0, 2),
-                  spreadRadius: 1,
+        return FadeTransition(
+          opacity: _headerAnim,
+          child: SlideTransition(
+            position: Tween<Offset>(begin: const Offset(0, -0.15), end: Offset.zero)
+                .animate(CurvedAnimation(parent: _headerAnim, curve: Curves.easeOut)),
+            child: Container(
+              margin: EdgeInsets.symmetric(horizontal: 16.w),
+              padding: EdgeInsets.all(18.w),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    level.color,
+                    level.color.withValues(alpha: 0.7),
+                  ],
                 ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(24.r),
-              child: Stack(
+                borderRadius: BorderRadius.circular(24.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: level.color.withValues(alpha: 0.4),
+                    blurRadius: 24,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Column(
                 children: [
-                  Positioned.fill(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            gameColor.withOpacity(0.05),
-                            gameColor.withOpacity(0.15),
+                  Row(
+                    children: [
+                      // Avatar circle
+                      Container(
+                        width: 56.w,
+                        height: 56.w,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.4), width: 2),
+                        ),
+                        child: Center(
+                          child: Text(level.emoji,
+                              style: TextStyle(fontSize: 28.sp)),
+                        ),
+                      ),
+                      SizedBox(width: 14.w),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              level.name,
+                              style: TextStyle(
+                                fontFamily: 'Poppins',
+                                fontSize: 18.sp,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                              ),
+                            ),
+                            Text(
+                              level.nextLabel(pts),
+                              style: TextStyle(
+                                fontFamily: 'Poppins',
+                                fontSize: 11.sp,
+                                color: Colors.white.withValues(alpha: 0.8),
+                              ),
+                            ),
                           ],
                         ),
                       ),
-                    ),
+                      // Stats chips
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          _MiniStat('⭐', '$pts XP'),
+                          SizedBox(height: 4.h),
+                          _MiniStat('🎮', '${state.gamesPlayed} sessions'),
+                        ],
+                      ),
+                    ],
                   ),
+                  SizedBox(height: 14.h),
+                  // XP Progress bar
                   Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        flex: 5,
-                        child: Container(
-                          alignment: Alignment.center,
-                          child: SizedBox(
-                            width: 200.w,
-                            height: 200.w,
-                            child: Lottie.asset(
-                              game.animationPath,
-                              frameRate: const FrameRate(30),
-                              fit: BoxFit.contain,
-                              animate: isActive,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Level Progress',
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              fontSize: 10.sp,
+                              color: Colors.white.withValues(alpha: 0.7),
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
-                        ),
+                          Text(
+                            '${pts - level.min} / ${level.max - level.min} XP',
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              fontSize: 10.sp,
+                              color: Colors.white.withValues(alpha: 0.7),
+                            ),
+                          ),
+                        ],
                       ),
-                      Expanded(
-                        flex: 4,
-                        child: Container(
-                          padding: EdgeInsets.all(10.w),
-                          decoration: BoxDecoration(
-                            color: isDarkMode
-                                ? Colors.black.withOpacity(0.3)
-                                : Colors.white.withOpacity(0.9),
+                      SizedBox(height: 6.h),
+                      Stack(
+                        children: [
+                          Container(
+                            height: 8.h,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(4.r),
+                            ),
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                game.title,
-                                style: TextStyle(
-                                  fontFamily: 'Poppins',
-                                  fontSize: 20.sp,
-                                  fontWeight: FontWeight.w600,
-                                  color: isDarkMode ? Theme.of(context).colorScheme.onSurface : Theme.of(context).colorScheme.onSurface,
-                                ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              SizedBox(height: 8.h),
-                              Text(
-                                game.description,
-                                style: TextStyle(
-                                  fontFamily: 'Poppins',
-                                  fontSize: 14.sp,
-                                  color: isDarkMode ? Theme.of(context).colorScheme.onSurfaceVariant : Theme.of(context).colorScheme.onSurfaceVariant,
-                                ),
-                                maxLines: 3,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const Spacer(),
-                              SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton(
-                                  onPressed: () => _launchGame(game),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: gameColor,
-                                    foregroundColor: Colors.white,
-                                    elevation: 0,
-                                    padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                          FractionallySizedBox(
+                            widthFactor: progress,
+                            child: Container(
+                              height: 8.h,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(4.r),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.white.withValues(alpha: 0.6),
+                                    blurRadius: 6,
                                   ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(Icons.play_arrow, size: 22.sp),
-                                      SizedBox(width: 8.w),
-                                      Text(
-                                        "Play Now",
-                                        style: TextStyle(
-                                          fontFamily: 'Poppins',
-                                          fontSize: 16.sp,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ],
                   ),
                 ],
               ),
             ),
+          ),
+        );
+      },
+    );
+  }
+
+  // ── Quick Actions ──────────────────────────────────────────────────────────
+
+  Widget _buildQuickActions() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      child: Row(
+        children: [
+          _QuickAction(
+            emoji: '🫁',
+            label: 'Breathe',
+            color: const Color(0xFF3B82F6),
+            onTap: () => _launchGame(_games[1]),
+          ),
+          SizedBox(width: 10.w),
+          _QuickAction(
+            emoji: '🌅',
+            label: 'Story',
+            color: const Color(0xFF0D9488),
+            onTap: () => _launchGame(_games[0]),
+          ),
+          SizedBox(width: 10.w),
+          _QuickAction(
+            emoji: '🧠',
+            label: 'Trivia',
+            color: const Color(0xFFF59E0B),
+            onTap: () => _launchGame(_games[3]),
+          ),
+          SizedBox(width: 10.w),
+          _QuickAction(
+            emoji: '🏆',
+            label: 'Badges',
+            color: const Color(0xFFA78BFA),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => AchievementScreen(userId: widget.userId)),
+            ).then((_) { if (mounted) context.read<GamesHubCubit>().loadUserStats(); }),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Section Header ─────────────────────────────────────────────────────────
+
+  Widget _buildSectionHeader(String title, String? trailing) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      child: Row(
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w800,
+              color: context.textPrimaryColor,
+            ),
+          ),
+          const Spacer(),
+          if (trailing != null)
+            Text(
+              trailing,
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 13.sp,
+                color: context.textSecondaryColor,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // ── Game Pager ─────────────────────────────────────────────────────────────
+
+  Widget _buildGamePager() {
+    return SizedBox(
+      height: 340.h,
+      child: PageView.builder(
+        controller: _pageCtrl,
+        itemCount: _games.length,
+        onPageChanged: (i) {
+          HapticFeedback.selectionClick();
+          setState(() => _pageIndex = i);
+        },
+        itemBuilder: (_, i) {
+          return AnimatedBuilder(
+            animation: _pageCtrl,
+            builder: (_, child) {
+              double page = i.toDouble();
+              if (_pageCtrl.hasClients && _pageCtrl.page != null) {
+                page = _pageCtrl.page!;
+              }
+              final diff = (i - page).abs().clamp(0.0, 1.0);
+              final scale = 1.0 - diff * 0.05;
+              final opacity = 1.0 - diff * 0.4;
+              return Transform.scale(
+                  scale: scale,
+                  child: Opacity(opacity: opacity, child: child));
+            },
+            child: _buildGameCard(_games[i], i == _pageIndex),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildGameCard(_GameDef game, bool isActive) {
+    return GestureDetector(
+      onTap: () {
+        if (isActive) {
+          _launchGame(game);
+        } else {
+          _pageCtrl.animateToPage(
+            _games.indexOf(game),
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        }
+      },
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 6.w),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: game.gradientColors,
+          ),
+          borderRadius: BorderRadius.circular(28.r),
+          boxShadow: isActive
+              ? [
+                  BoxShadow(
+                    color: game.gradientColors.last.withValues(alpha: 0.5),
+                    blurRadius: 28,
+                    offset: const Offset(0, 12),
+                  ),
+                ]
+              : [],
+        ),
+        child: Stack(
+          children: [
+            // Decorative blobs
+            Positioned(
+              top: -30,
+              right: -30,
+              child: Container(
+                width: 160.w,
+                height: 160.w,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: 0.06),
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: -40,
+              left: -20,
+              child: Container(
+                width: 120.w,
+                height: 120.w,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: 0.05),
+                ),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.all(22.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Top row: animation + tag + XP
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Lottie animation
+                      Container(
+                        width: 70.w,
+                        height: 70.w,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.12),
+                          shape: BoxShape.circle,
+                        ),
+                        child: game.animation != null
+                            ? ClipOval(
+                                child: Lottie.asset(
+                                  game.animation!,
+                                  fit: BoxFit.contain,
+                                  animate: isActive,
+                                  frameRate: const FrameRate(24),
+                                ),
+                              )
+                            : Center(
+                                child: Text(game.emoji,
+                                    style: TextStyle(fontSize: 32.sp))),
+                      ),
+                      const Spacer(),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          // Tag badge
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 8.w, vertical: 3.h),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.18),
+                              borderRadius: BorderRadius.circular(8.r),
+                            ),
+                            child: Text(
+                              game.tag,
+                              style: TextStyle(
+                                fontFamily: 'Poppins',
+                                fontSize: 9.sp,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                                letterSpacing: 0.8,
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 6.h),
+                          // XP label
+                          Row(
+                            children: [
+                              Icon(Icons.auto_awesome_rounded,
+                                  size: 10.sp,
+                                  color: const Color(0xFFFBBF24)),
+                              SizedBox(width: 3.w),
+                              Text(
+                                game.xpLabel,
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
+                                  fontSize: 10.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFFFBBF24),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const Spacer(),
+                  // Title
+                  Text(
+                    game.emoji,
+                    style: TextStyle(fontSize: 24.sp),
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    game.title,
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 20.sp,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                      height: 1.1,
+                    ),
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    game.subtitle,
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 12.sp,
+                      color: Colors.white.withValues(alpha: 0.75),
+                    ),
+                  ),
+                  if (isActive) ...[
+                    SizedBox(height: 16.h),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () => _launchGame(game),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: game.gradientColors.last,
+                          elevation: 0,
+                          padding: EdgeInsets.symmetric(vertical: 12.h),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14.r)),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.play_circle_filled_rounded,
+                                size: 18.sp),
+                            SizedBox(width: 6.w),
+                            Text(
+                              'Play Now',
+                              style: TextStyle(
+                                fontFamily: 'Poppins',
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPageDots() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(_games.length, (i) {
+        final active = i == _pageIndex;
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          margin: EdgeInsets.symmetric(horizontal: 3.w),
+          width: active ? 22.w : 6.w,
+          height: 6.h,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(3.r),
+            color: active
+                ? _games[_pageIndex].gradientColors.first
+                : context.textSecondaryColor.withValues(alpha: 0.25),
+          ),
+        );
+      }),
+    );
+  }
+
+  // ── Daily Challenge ────────────────────────────────────────────────────────
+
+  Widget _buildDailyChallenge() {
+    final today = DateTime.now();
+    final challenges = [
+      ('🫁', 'Complete one breathing session', 'breathing'),
+      ('📖', 'Play one chapter of The Healing Journey', 'story'),
+      ('🧠', 'Score 4/5 in Wellness Trivia', 'quiz'),
+      ('✨', 'Build an affirmation', 'word_puzzle'),
+    ];
+    final challenge = challenges[today.weekday % challenges.length];
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      child: Container(
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: context.surfaceColor,
+          borderRadius: BorderRadius.circular(20.r),
+          border: Border.all(
+              color: context.primaryColor.withValues(alpha: 0.2)),
+          boxShadow: [
+            BoxShadow(
+              color: context.primaryColor.withValues(alpha: 0.06),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(12.w),
+              decoration: BoxDecoration(
+                color: context.primaryColor.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: Text(challenge.$1, style: TextStyle(fontSize: 24.sp)),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                    decoration: BoxDecoration(
+                      color: context.primaryColor.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(6.r),
+                    ),
+                    child: Text(
+                      'DAILY QUEST',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 9.sp,
+                        fontWeight: FontWeight.w800,
+                        color: context.primaryColor,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    challenge.$2,
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w600,
+                      color: context.textPrimaryColor,
+                    ),
+                  ),
+                  Text(
+                    '+50 bonus XP',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 11.sp,
+                      color: const Color(0xFFFBBF24),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            GestureDetector(
+              onTap: () {
+                final game = _games.firstWhere(
+                    (g) => g.type == challenge.$3,
+                    orElse: () => _games[0]);
+                _launchGame(game);
+              },
+              child: Container(
+                padding:
+                    EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+                decoration: BoxDecoration(
+                  color: context.primaryColor,
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Text(
+                  'Go',
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Level system ───────────────────────────────────────────────────────────
+
+  _Level _levelFor(int pts) {
+    if (pts < 100) return _Level('Newcomer', '🌱', const Color(0xFF64748B), 0, 100);
+    if (pts < 300) return _Level('Explorer', '🌿', const Color(0xFF059669), 100, 300);
+    if (pts < 600) return _Level('Practitioner', '⭐', const Color(0xFF2563EB), 300, 600);
+    if (pts < 1000) return _Level('Achiever', '🏆', const Color(0xFF7C3AED), 600, 1000);
+    return _Level('Master', '👑', const Color(0xFFD97706), 1000, 9999);
+  }
+}
+
+// ─── Helper widgets ───────────────────────────────────────────────────────────
+
+class _Level {
+  final String name;
+  final String emoji;
+  final Color color;
+  final int min;
+  final int max;
+
+  const _Level(this.name, this.emoji, this.color, this.min, this.max);
+
+  String nextLabel(int pts) {
+    if (max == 9999) return 'Maximum rank achieved 🎉';
+    return '${max - pts} XP to next rank';
+  }
+}
+
+class _MiniStat extends StatelessWidget {
+  final String emoji;
+  final String label;
+
+  const _MiniStat(this.emoji, this.label);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(8.r),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(emoji, style: TextStyle(fontSize: 11.sp)),
+          SizedBox(width: 4.w),
+          Text(
+            label,
+            style: TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 11.sp,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _QuickAction extends StatelessWidget {
+  final String emoji;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _QuickAction({
+    required this.emoji,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          onTap();
+        },
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 12.h),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(14.r),
+            border:
+                Border.all(color: color.withValues(alpha: 0.25), width: 1),
+          ),
+          child: Column(
+            children: [
+              Text(emoji, style: TextStyle(fontSize: 20.sp)),
+              SizedBox(height: 4.h),
+              Text(
+                label,
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 10.sp,
+                  fontWeight: FontWeight.w600,
+                  color: color,
+                ),
+              ),
+            ],
           ),
         ),
       ),

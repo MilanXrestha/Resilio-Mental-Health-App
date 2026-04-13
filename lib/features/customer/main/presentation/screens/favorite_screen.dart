@@ -11,6 +11,7 @@ import '../../../../../core/theme/app_colors.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 
+import '../../../dashboard/domain/entities/quote_entity.dart';
 import '../../../favorites/domain/entities/favorite_entity.dart';
 import '../../../favorites/presentation/bloc/favorite_bloc.dart';
 import '../../../favorites/presentation/bloc/favorite_event.dart';
@@ -21,7 +22,6 @@ import '../../../explore/domain/entities/explore_item_entity.dart';
 
 import '../../../audio/domain/entities/audio_entity.dart';
 import '../../../video/domain/entities/video_entity.dart';
-import '../../../dashboard/domain/entities/quote_entity.dart';
 import '../../../tips/domain/entities/tip_entity.dart';
 import '../../../images/domain/entities/image_entity.dart';
 

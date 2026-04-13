@@ -41,27 +41,54 @@ class ExploreRepositoryImpl implements ExploreRepository {
   @override
   Future<Either<Failure, List<ExploreItemEntity>>> getAllExploreItems() async {
     try {
-      final List<ExploreItemEntity> allItems = [];
+      final categories = await _categoryDataSource.getCategories();
+      final allItemsMap = <String, ExploreItemEntity>{};
 
-      // Fetch all content types in parallel
-      final results = await Future.wait([
-        _fetchAudioItems(),
-        _fetchVideoItems(),
-        _fetchQuoteItems(),
-        _fetchTipItems(),
-        _fetchImageItems(),
-        _fetchCategoryItems(),
-      ]);
+      // Fetch all content from the reliable JSON /categories/{id}/content endpoint
+      // per category. Individual content endpoints (audio, tips, etc.) return
+      // stripped data and are not used here.
+      await Future.wait(
+        categories.map((category) async {
+          try {
+            final result = await getExploreItemsByCategory(category.id);
+            result.fold(
+              (_) {},
+              (items) {
+                for (final item in items) {
+                  if (item.type == ExploreItemType.category) return;
+                  // Guarantee the item is linked to this category even if the
+                  // server omits the categoryId field on individual items.
+                  final enriched = item.categoryIds.isEmpty
+                      ? item.copyWith(categoryIds: [category.id])
+                      : item;
+                  allItemsMap.putIfAbsent(enriched.id, () => enriched);
+                }
+              },
+            );
+          } catch (_) {}
+        }),
+      );
 
-      for (final items in results) {
-        allItems.addAll(items);
+      // Add category items so the explore screen can render section headers.
+      for (final category in categories) {
+        allItemsMap.putIfAbsent(
+          category.id,
+          () => ExploreItemEntity(
+            id: category.id,
+            title: category.name,
+            description: category.description,
+            imageUrl: category.imageUrl,
+            type: ExploreItemType.category,
+            tags: const [],
+            categoryIds: [category.id],
+            createdAt: category.createdAt,
+          ),
+        );
       }
 
-      // Sort by creation date (newest first) and featured status
+      final allItems = allItemsMap.values.toList();
       allItems.sort((a, b) {
-        if (a.isFeatured != b.isFeatured) {
-          return a.isFeatured ? -1 : 1;
-        }
+        if (a.isFeatured != b.isFeatured) return a.isFeatured ? -1 : 1;
         return b.createdAt.compareTo(a.createdAt);
       });
 
@@ -263,8 +290,49 @@ class ExploreRepositoryImpl implements ExploreRepository {
   }
 
   Future<List<ExploreItemEntity>> _fetchAudioItems() async {
-    final tracks = await _audioDataSource.getAllAudio(limit: 100);
-    return tracks.map((track) => _mapAudioToExploreItem(track)).toList();
+    try {
+      // Fetch audio per-category so that categoryId and audioUrl are always
+      // populated (the general getAllAudio proto endpoint omits these fields).
+      final categories = await _categoryDataSource.getCategories();
+      final audioMap = <String, ExploreItemEntity>{};
+
+      await Future.wait(
+        categories.map((category) async {
+          try {
+            final result = await _audioDataSource.getAudioByCategory(
+              categoryId: category.id,
+              limit: 50,
+            );
+            for (final track in result.tracks) {
+              audioMap.putIfAbsent(
+                track.id,
+                () => ExploreItemEntity(
+                  id: track.id,
+                  title: track.title,
+                  subtitle: track.artistName,
+                  description: track.description,
+                  imageUrl: track.coverImageUrl,
+                  thumbnailUrl: track.thumbnailUrl,
+                  type: ExploreItemType.audio,
+                  tags: List<String>.from(track.moodTags),
+                  categoryIds: category.id.isNotEmpty ? [category.id] : [],
+                  isFeatured: track.isFeatured,
+                  isPremium: track.isPremium,
+                  durationSeconds: track.durationSeconds,
+                  createdAt:
+                      DateTime.tryParse(track.createdAt) ?? DateTime.now(),
+                  metadata: {'audioUrl': track.audioUrl},
+                ),
+              );
+            }
+          } catch (_) {}
+        }),
+      );
+
+      return audioMap.values.toList();
+    } catch (e) {
+      return [];
+    }
   }
 
   Future<List<ExploreItemEntity>> _fetchVideoItems() async {
@@ -351,7 +419,7 @@ class ExploreRepositoryImpl implements ExploreRepository {
         imageUrl: tip.authorIconUrl,
         type: ExploreItemType.tip,
         tags: [tip.tipTypeString],
-        categoryIds: tip.categoryId != null ? [tip.categoryId!] : [],
+        categoryIds: tip.categoryId.isNotEmpty ? [tip.categoryId] : [],
         isFeatured: tip.isFeatured,
         isPremium: tip.isPremium,
         createdAt: tip.createdAt,

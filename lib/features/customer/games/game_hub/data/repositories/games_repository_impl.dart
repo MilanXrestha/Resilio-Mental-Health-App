@@ -7,9 +7,11 @@ import 'package:Resilio/core/network/network_info.dart';
 import 'package:Resilio/features/customer/games/game_hub/data/datasources/games_remote_data_source.dart';
 import 'package:Resilio/features/customer/games/achievements/domain/entities/achievement_entity.dart';
 import 'package:Resilio/features/customer/games/affirmation_builder/domain/entities/affirmation_entity.dart';
+import 'package:Resilio/features/customer/games/affirmation_builder/data/models/affirmation_model.dart';
 import 'package:Resilio/features/customer/games/game_hub/domain/entities/game_session_entity.dart';
 import 'package:Resilio/features/customer/games/mood_tracker/domain/entities/mood_entry_entity.dart';
 import 'package:Resilio/features/customer/games/game_hub/domain/repositories/games_repository.dart';
+import 'package:Resilio/features/customer/games/wellness_trivia/data/models/quiz_question_model.dart';
 
 @LazySingleton(as: GamesRepository)
 class GamesRepositoryImpl implements GamesRepository {
@@ -71,6 +73,32 @@ class GamesRepositoryImpl implements GamesRepository {
   }
 
   @override
+  Future<Either<Failure, MoodEntryEntity>> updateMoodEntry({
+    required String id,
+    required int moodScore,
+    required String moodLabel,
+    required String note,
+  }) async {
+    if (await _networkInfo.isConnected) {
+      try {
+        final entry = await _remoteDataSource.updateMoodEntry(
+          id: id,
+          moodScore: moodScore,
+          moodLabel: moodLabel,
+          note: note,
+        );
+        return Right(entry);
+      } on ServerException catch (e) {
+        return Left(ServerFailure(e.message));
+      } catch (e) {
+        return Left(ServerFailure(e.toString()));
+      }
+    } else {
+      return const Left(NetworkFailure('No internet connection'));
+    }
+  }
+
+  @override
   Future<Either<Failure, List<MoodEntryEntity>>> listMoodEntries({
     String? fromDate,
     String? toDate,
@@ -105,6 +133,54 @@ class GamesRepositoryImpl implements GamesRepository {
       }
     } else {
       return const Left(NetworkFailure('No internet connection'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<QuizQuestionModel>>> listQuizQuestions() async {
+    if (await _networkInfo.isConnected) {
+      try {
+        final questions = await _remoteDataSource.listQuizQuestions();
+        return Right(questions);
+      } on ServerException catch (e) {
+        return Left(ServerFailure(e.message));
+      } catch (e) {
+        return Left(ServerFailure(e.toString()));
+      }
+    } else {
+      return const Left(NetworkFailure('No internet connection'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<AffirmationModel>>> listAffirmationPuzzles() async {
+    if (await _networkInfo.isConnected) {
+      try {
+        final puzzles = await _remoteDataSource.listAffirmationPuzzles();
+        return Right(puzzles);
+      } on ServerException catch (e) {
+        return Left(ServerFailure(e.message));
+      } catch (e) {
+        return Left(ServerFailure(e.toString()));
+      }
+    } else {
+      return const Left(NetworkFailure('No internet connection'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, int>> listGameSessions() async {
+    if (await _networkInfo.isConnected) {
+      try {
+        final count = await _remoteDataSource.listGameSessionsCount();
+        return Right(count);
+      } on ServerException catch (e) {
+        return Left(ServerFailure(e.message));
+      } catch (e) {
+        return Left(ServerFailure(e.toString()));
+      }
+    } else {
+      return const Right(0); // Offline: return 0 instead of error
     }
   }
 

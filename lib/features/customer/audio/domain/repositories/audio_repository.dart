@@ -8,6 +8,8 @@ abstract class AudioRepository {
     List<String>? moodFilters,
   });
 
+  Future<Either<Failure, List<AudioEntity>>> getAllAudio({int limit = 100});
+
   Future<Either<Failure, AudioListResult>> getAudioByCategory({
     required String categoryId,
     int limit = 20,

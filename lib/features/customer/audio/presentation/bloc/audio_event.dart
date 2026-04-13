@@ -17,6 +17,15 @@ class LoadFeaturedAudio extends AudioEvent {
   List<Object?> get props => [limit, moodFilters];
 }
 
+class LoadAllAudio extends AudioEvent {
+  final int limit;
+
+  const LoadAllAudio({this.limit = 20});
+
+  @override
+  List<Object?> get props => [limit];
+}
+
 class LoadAudioByCategory extends AudioEvent {
   final String categoryId;
   final int limit;

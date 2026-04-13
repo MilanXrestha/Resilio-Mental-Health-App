@@ -5,7 +5,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lottie/lottie.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:Resilio/features/customer/games/game_hub/data/services/game_service.dart';
 import 'package:Resilio/features/customer/games/affirmation_builder/data/models/affirmation_model.dart';
@@ -30,8 +29,6 @@ class AffirmationBuilderScreen extends StatefulWidget {
 class _AffirmationBuilderScreenState extends State<AffirmationBuilderScreen>
     with TickerProviderStateMixin {
   final GameService _gameService = GameService();
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
   // Game state
   List<AffirmationModel> _affirmations = [];
   int _currentAffirmationIndex = 0;
@@ -103,9 +100,8 @@ class _AffirmationBuilderScreenState extends State<AffirmationBuilderScreen>
       setState(() {
         _isAudioInitialized = true;
       });
-      print('Audio initialized successfully');
-    } catch (e) {
-      print('Error initializing audio: $e');
+    } catch (_) {
+      // Audio assets may be missing — game continues without sound
       setState(() {
         _isAudioInitialized = false;
       });
@@ -148,145 +144,24 @@ class _AffirmationBuilderScreenState extends State<AffirmationBuilderScreen>
     });
 
     try {
-      // Get affirmations from Firestore
-      final snapshot = await _firestore.collection('affirmations').get();
+      final puzzles = await _gameService.loadAffirmationPuzzles();
 
-      if (snapshot.docs.isEmpty) {
-        // If no affirmations exist, let's create some default ones
-        await _createDefaultAffirmations();
-
-        // Try to get affirmations again
-        final newSnapshot = await _firestore.collection('affirmations').get();
-        _affirmations = newSnapshot.docs
-            .map((doc) => AffirmationModel.fromFirestore(doc))
-            .toList();
-      } else {
-        _affirmations = snapshot.docs
-            .map((doc) => AffirmationModel.fromFirestore(doc))
-            .toList();
+      if (puzzles.isEmpty) {
+        setState(() {
+          _isLoading = false;
+        });
+        return;
       }
 
-      // Shuffle affirmations
-      _affirmations.shuffle(Random());
-
+      _affirmations = List.from(puzzles)..shuffle(Random());
       setState(() {
         _isLoading = false;
       });
     } catch (e) {
-      print('Error loading affirmations: $e');
       setState(() {
         _isLoading = false;
-        _affirmations = []; // Empty list will show error state
       });
     }
-  }
-
-  Future<void> _createDefaultAffirmations() async {
-    final batch = _firestore.batch();
-
-    final defaultAffirmations = [
-      {
-        'text': 'I am strong and capable.',
-        'words': ['I', 'am', 'strong', 'and', 'capable'],
-        'category': 'strength',
-        'difficulty': 1,
-      },
-      {
-        'text': 'I deserve love and happiness.',
-        'words': ['I', 'deserve', 'love', 'and', 'happiness'],
-        'category': 'self-love',
-        'difficulty': 1,
-      },
-      {
-        'text': 'My mind is calm and peaceful.',
-        'words': ['My', 'mind', 'is', 'calm', 'and', 'peaceful'],
-        'category': 'mindfulness',
-        'difficulty': 1,
-      },
-      {
-        'text': 'I choose positivity today.',
-        'words': ['I', 'choose', 'positivity', 'today'],
-        'category': 'positivity',
-        'difficulty': 1,
-      },
-      {
-        'text': 'I am grateful for this moment.',
-        'words': ['I', 'am', 'grateful', 'for', 'this', 'moment'],
-        'category': 'gratitude',
-        'difficulty': 2,
-      },
-      {
-        'text': 'My potential is limitless.',
-        'words': ['My', 'potential', 'is', 'limitless'],
-        'category': 'growth',
-        'difficulty': 1,
-      },
-      {
-        'text': 'I embrace all my emotions.',
-        'words': ['I', 'embrace', 'all', 'my', 'emotions'],
-        'category': 'emotional-health',
-        'difficulty': 2,
-      },
-      {
-        'text': 'Every day I am getting better.',
-        'words': ['Every', 'day', 'I', 'am', 'getting', 'better'],
-        'category': 'growth',
-        'difficulty': 2,
-      },
-      {
-        'text': 'I radiate confidence and grace.',
-        'words': ['I', 'radiate', 'confidence', 'and', 'grace'],
-        'category': 'confidence',
-        'difficulty': 2,
-      },
-      {
-        'text': 'I trust my inner wisdom.',
-        'words': ['I', 'trust', 'my', 'inner', 'wisdom'],
-        'category': 'self-trust',
-        'difficulty': 1,
-      },
-      {
-        'text': 'I am worthy of good things.',
-        'words': ['I', 'am', 'worthy', 'of', 'good', 'things'],
-        'category': 'self-worth',
-        'difficulty': 2,
-      },
-      {
-        'text': 'My body is healthy and strong.',
-        'words': ['My', 'body', 'is', 'healthy', 'and', 'strong'],
-        'category': 'physical-health',
-        'difficulty': 2,
-      },
-      {
-        'text': 'I create my own happiness.',
-        'words': ['I', 'create', 'my', 'own', 'happiness'],
-        'category': 'happiness',
-        'difficulty': 1,
-      },
-      {
-        'text': 'I am enough just as I am.',
-        'words': ['I', 'am', 'enough', 'just', 'as', 'I', 'am'],
-        'category': 'self-acceptance',
-        'difficulty': 2,
-      },
-      {
-        'text': 'I choose to focus on the good.',
-        'words': ['I', 'choose', 'to', 'focus', 'on', 'the', 'good'],
-        'category': 'positivity',
-        'difficulty': 3,
-      },
-    ];
-
-    int index = 0;
-    for (var affirmation in defaultAffirmations) {
-      final docRef = _firestore
-          .collection('affirmations')
-          .doc('default_a${index + 1}');
-      batch.set(docRef, affirmation);
-      index++;
-    }
-
-    await batch.commit();
   }
 
   void _startGame() {
@@ -487,7 +362,7 @@ class _AffirmationBuilderScreenState extends State<AffirmationBuilderScreen>
         ? gameEndTime.difference(_gameStartTime!)
         : Duration.zero;
 
-    // Save session to Firestore
+    // Save session to backend
     _gameService.saveGameSession(
       userId: widget.userId,
       gameId: widget.gameId,
@@ -525,8 +400,8 @@ class _AffirmationBuilderScreenState extends State<AffirmationBuilderScreen>
         _backgroundMusicPlayer.dispose(),
         _soundEffectPlayer.dispose(),
       ]);
-    } catch (e) {
-      print('Error disposing audio players: $e');
+    } catch (_) {
+      // ignore
     }
 
     super.dispose();
@@ -617,8 +492,8 @@ class _AffirmationBuilderScreenState extends State<AffirmationBuilderScreen>
                 await _soundEffectPlayer.pause();
                 await _backgroundMusicPlayer.stop();
                 await _soundEffectPlayer.stop();
-              } catch (e) {
-                print('Error stopping audio on exit: $e');
+              } catch (_) {
+                // ignore
               }
               Navigator.of(context).pop(); // Close dialog
               Navigator.of(context).pop(); // Exit game screen

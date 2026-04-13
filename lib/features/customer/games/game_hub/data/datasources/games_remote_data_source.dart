@@ -8,6 +8,7 @@ import 'package:Resilio/features/customer/games/achievements/data/models/achieve
 import 'package:Resilio/features/customer/games/affirmation_builder/data/models/affirmation_model.dart';
 import 'package:Resilio/features/customer/games/mood_tracker/data/models/mood_entry_model.dart';
 import 'package:Resilio/features/customer/games/game_hub/data/models/game_session_model.dart';
+import 'package:Resilio/features/customer/games/wellness_trivia/data/models/quiz_question_model.dart';
 
 abstract class GamesRemoteDataSource {
   Future<GameSessionModel> saveGameSession({
@@ -24,12 +25,25 @@ abstract class GamesRemoteDataSource {
     required String entryDate,
   });
 
+  Future<MoodEntryModel> updateMoodEntry({
+    required String id,
+    required int moodScore,
+    required String moodLabel,
+    required String note,
+  });
+
   Future<List<MoodEntryModel>> listMoodEntries({
     String? fromDate,
     String? toDate,
   });
 
   Future<List<AchievementModel>> listUserAchievements();
+
+  Future<int> listGameSessionsCount();
+
+  Future<List<QuizQuestionModel>> listQuizQuestions();
+
+  Future<List<AffirmationModel>> listAffirmationPuzzles();
 
   Future<List<AchievementModel>> listAllAchievements();
 
@@ -59,7 +73,7 @@ class GamesRemoteDataSourceImpl implements GamesRemoteDataSource {
   }) async {
     try {
       final response = await _dio.post(
-        '/api/v1/games/session',
+        '/games/session',
         data: {
           'game_type': gameType,
           'duration_seconds': durationSeconds,
@@ -90,7 +104,7 @@ class GamesRemoteDataSourceImpl implements GamesRemoteDataSource {
   }) async {
     try {
       final response = await _dio.post(
-        '/api/v1/games/mood',
+        '/games/mood',
         data: {
           'mood_score': moodScore,
           'mood_label': moodLabel,
@@ -113,6 +127,36 @@ class GamesRemoteDataSourceImpl implements GamesRemoteDataSource {
   }
 
   @override
+  Future<MoodEntryModel> updateMoodEntry({
+    required String id,
+    required int moodScore,
+    required String moodLabel,
+    required String note,
+  }) async {
+    try {
+      final response = await _dio.patch(
+        '/games/mood/$id',
+        data: {
+          'mood_score': moodScore,
+          'mood_label': moodLabel,
+          'note': note,
+        },
+        options: Options(
+          responseType: ResponseType.bytes,
+          headers: {'Accept': 'application/x-protobuf'},
+        ),
+      );
+
+      final pbResponse = pb.MoodEntry.fromBuffer(response.data);
+      return MoodEntryModel.fromProto(pbResponse);
+    } on DioException catch (e) {
+      throw ServerException(e.message ?? 'Failed to update mood entry');
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  @override
   Future<List<MoodEntryModel>> listMoodEntries({
     String? fromDate,
     String? toDate,
@@ -123,7 +167,7 @@ class GamesRemoteDataSourceImpl implements GamesRemoteDataSource {
       if (toDate != null) queryParams['to_date'] = toDate;
 
       final response = await _dio.get(
-        '/api/v1/games/mood',
+        '/games/mood',
         queryParameters: queryParams,
         options: Options(
           responseType: ResponseType.bytes,
@@ -144,7 +188,7 @@ class GamesRemoteDataSourceImpl implements GamesRemoteDataSource {
   Future<List<AchievementModel>> listUserAchievements() async {
     try {
       final response = await _dio.get(
-        '/api/v1/games/achievements',
+        '/games/achievements',
         options: Options(
           responseType: ResponseType.bytes,
           headers: {'Accept': 'application/x-protobuf'},
@@ -164,7 +208,7 @@ class GamesRemoteDataSourceImpl implements GamesRemoteDataSource {
   Future<List<AchievementModel>> listAllAchievements() async {
     try {
       final response = await _dio.get(
-        '/api/v1/games/achievements/all',
+        '/games/achievements/all',
         options: Options(
           responseType: ResponseType.bytes,
           headers: {'Accept': 'application/x-protobuf'},
@@ -188,7 +232,7 @@ class GamesRemoteDataSourceImpl implements GamesRemoteDataSource {
   }) async {
     try {
       final response = await _dio.post(
-        '/api/v1/games/affirmations',
+        '/games/affirmations',
         data: {
           'text': text,
           'background_color': backgroundColor,
@@ -210,10 +254,64 @@ class GamesRemoteDataSourceImpl implements GamesRemoteDataSource {
   }
 
   @override
+  Future<int> listGameSessionsCount() async {
+    try {
+      final response = await _dio.get(
+        '/games/sessions',
+        options: Options(headers: {'Accept': 'application/json'}),
+      );
+      final data = response.data as Map<String, dynamic>;
+      return (data['total'] as int?) ?? 0;
+    } on DioException catch (e) {
+      throw ServerException(e.message ?? 'Failed to list game sessions');
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  @override
+  Future<List<QuizQuestionModel>> listQuizQuestions() async {
+    try {
+      final response = await _dio.get(
+        '/games/quiz-questions',
+        options: Options(headers: {'Accept': 'application/json'}),
+      );
+      final data = response.data as Map<String, dynamic>;
+      final list = data['questions'] as List? ?? [];
+      return list
+          .map((q) => QuizQuestionModel.fromJson(q as Map<String, dynamic>))
+          .toList();
+    } on DioException catch (e) {
+      throw ServerException(e.message ?? 'Failed to load quiz questions');
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  @override
+  Future<List<AffirmationModel>> listAffirmationPuzzles() async {
+    try {
+      final response = await _dio.get(
+        '/games/affirmation-puzzles',
+        options: Options(headers: {'Accept': 'application/json'}),
+      );
+      final data = response.data as Map<String, dynamic>;
+      final list = data['puzzles'] as List? ?? [];
+      return list
+          .map((p) => AffirmationModel.fromJson(p as Map<String, dynamic>))
+          .toList();
+    } on DioException catch (e) {
+      throw ServerException(e.message ?? 'Failed to load affirmation puzzles');
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  @override
   Future<List<AffirmationModel>> listAffirmations() async {
     try {
       final response = await _dio.get(
-        '/api/v1/games/affirmations',
+        '/games/affirmations',
         options: Options(
           responseType: ResponseType.bytes,
           headers: {'Accept': 'application/x-protobuf'},
@@ -233,7 +331,7 @@ class GamesRemoteDataSourceImpl implements GamesRemoteDataSource {
   Future<void> deleteAffirmation(String id) async {
     try {
       await _dio.delete(
-        '/api/v1/games/affirmations/$id',
+        '/games/affirmations/$id',
         options: Options(
           responseType: ResponseType.bytes,
           headers: {'Accept': 'application/x-protobuf'},

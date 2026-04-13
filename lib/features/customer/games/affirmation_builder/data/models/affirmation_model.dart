@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:Resilio/core/proto_generated/games.pb.dart' as pb;
 import 'package:Resilio/features/customer/games/affirmation_builder/domain/entities/affirmation_entity.dart';
 
+
 class AffirmationModel extends AffirmationEntity {
   const AffirmationModel({
     required super.id,
@@ -27,6 +28,20 @@ class AffirmationModel extends AffirmationEntity {
       words: proto.words,
       difficulty: proto.difficulty,
       category: proto.category,
+    );
+  }
+
+  factory AffirmationModel.fromJson(Map<String, dynamic> json) {
+    return AffirmationModel(
+      id: json['id'] as String? ?? '',
+      userId: '',
+      text: json['text'] as String? ?? '',
+      backgroundColor: json['background_color'] as String? ?? '0xFF6A5ACD',
+      iconName: json['icon_name'] as String? ?? 'favorite',
+      createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ?? DateTime.now(),
+      words: List<String>.from(json['words'] as List? ?? []),
+      difficulty: json['difficulty'] as int? ?? 1,
+      category: json['category'] as String? ?? 'general',
     );
   }
 

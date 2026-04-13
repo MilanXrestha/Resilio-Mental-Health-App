@@ -160,6 +160,7 @@ flutter:
     - assets/icons/png/
     - assets/icons/svg/
     - assets/animations/
+    - assets/audio/
     - assets/fonts/
 
   # Custom Fonts
