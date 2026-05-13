@@ -1,3 +1,4 @@
+import '../../widgets/shimmer_therapist_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -13,7 +14,8 @@ class TherapistAppointmentsTab extends StatefulWidget {
   const TherapistAppointmentsTab({super.key});
 
   @override
-  State<TherapistAppointmentsTab> createState() => _TherapistAppointmentsTabState();
+  State<TherapistAppointmentsTab> createState() =>
+      _TherapistAppointmentsTabState();
 }
 
 class _TherapistAppointmentsTabState extends State<TherapistAppointmentsTab> {
@@ -83,12 +85,19 @@ class _TherapistAppointmentsTabState extends State<TherapistAppointmentsTab> {
                     onTap: () => _setFilter(f),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
-                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16.w,
+                        vertical: 6.h,
+                      ),
                       decoration: BoxDecoration(
-                        color: selected ? context.primaryColor : context.surfaceColor,
+                        color: selected
+                            ? context.primaryColor
+                            : context.surfaceColor,
                         borderRadius: BorderRadius.circular(20.r),
                         border: Border.all(
-                          color: selected ? context.primaryColor : context.borderColor,
+                          color: selected
+                              ? context.primaryColor
+                              : context.borderColor,
                         ),
                       ),
                       child: Text(
@@ -97,7 +106,9 @@ class _TherapistAppointmentsTabState extends State<TherapistAppointmentsTab> {
                           fontFamily: 'Poppins',
                           fontSize: 12.sp,
                           fontWeight: FontWeight.w600,
-                          color: selected ? Colors.white : context.textSecondaryColor,
+                          color: selected
+                              ? Colors.white
+                              : context.textSecondaryColor,
                         ),
                       ),
                     ),
@@ -110,25 +121,41 @@ class _TherapistAppointmentsTabState extends State<TherapistAppointmentsTab> {
             Expanded(
               child: BlocBuilder<TherapistCubit, TherapistState>(
                 builder: (context, state) {
-                  if (state is TherapistLoading) {
-                    return const Center(child: CircularProgressIndicator());
+                  if (state.isLoading && !state.hasAppointments) {
+                    return const TherapistListShimmer();
                   }
-                  if (state is TherapistError) {
+                  if (state.errorMessage != null && !state.hasAppointments) {
                     return Center(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.calendar_today_outlined, size: 48.sp, color: context.textSecondaryColor),
+                          Icon(
+                            Icons.error_outline_rounded,
+                            size: 48.sp,
+                            color: context.errorColor,
+                          ),
                           SizedBox(height: 12.h),
-                          Text('Could not load sessions', style: TextStyle(fontFamily: 'Poppins', fontSize: 14.sp, color: context.textSecondaryColor)),
+                          Text(
+                            'Could not load sessions',
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              fontSize: 14.sp,
+                              color: context.textSecondaryColor,
+                            ),
+                          ),
                           SizedBox(height: 8.h),
-                          TextButton(onPressed: () => _setFilter(_activeFilter), child: const Text('Retry')),
+                          TextButton(
+                            onPressed: () => _setFilter(_activeFilter),
+                            child: const Text('Retry'),
+                          ),
                         ],
                       ),
                     );
                   }
-                  if (state is! TherapistAppointmentsLoaded) return const SizedBox.shrink();
-                  if (state.appointments.isEmpty) {
+                  if (!state.hasAppointments) {
+                    return const SizedBox.shrink();
+                  }
+                  if (state.appointments!.isEmpty) {
                     return _emptyState(context);
                   }
                   return RefreshIndicator(
@@ -136,31 +163,54 @@ class _TherapistAppointmentsTabState extends State<TherapistAppointmentsTab> {
                     onRefresh: () async => _setFilter(_activeFilter),
                     child: ListView.separated(
                       padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 100.h),
-                      physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
-                      itemCount: state.appointments.length,
+                      physics: const AlwaysScrollableScrollPhysics(
+                        parent: BouncingScrollPhysics(),
+                      ),
+                      itemCount: state.appointments!.length,
                       separatorBuilder: (_, __) => SizedBox(height: 12.h),
                       itemBuilder: (context, index) {
-                        final appt = state.appointments[index];
+                        final appt = state.appointments![index];
                         final id = appt['id'] as String? ?? '';
                         final room = appt['meetingRoomId'] as String? ?? id;
-                        final patientName = (appt['patient'] as Map<String, dynamic>?)?['displayName'] as String? ?? 'Patient';
+                        final patientName =
+                            (appt['patient']
+                                    as Map<String, dynamic>?)?['displayName']
+                                as String? ??
+                            'Patient';
                         final joinable = _canJoinNow(appt);
                         return _SessionCard(
                           appointment: appt,
                           canJoin: joinable,
-                          onAccept: () => context.read<TherapistCubit>().updateAppointmentStatus(
-                            id, 'confirmed', currentFilter: _activeFilter,
-                          ),
-                          onDecline: () => context.read<TherapistCubit>().updateAppointmentStatus(
-                            id, 'cancelled', currentFilter: _activeFilter,
-                          ),
-                          onJoin: joinable ? () {
-                            final auth = context.read<AuthBloc>().state;
-                            final currentUserId = auth is AuthAuthenticated ? auth.user.id : room;
-                            context.read<TherapistCubit>().notifyCallStart(id);
-                            context.push('/video-call/$id/$currentUserId',
-                                extra: {'callerName': patientName});
-                          } : null,
+                          onAccept: () => context
+                              .read<TherapistCubit>()
+                              .updateAppointmentStatus(
+                                id,
+                                'confirmed',
+                                currentFilter: _activeFilter,
+                              ),
+                          onDecline: () => context
+                              .read<TherapistCubit>()
+                              .updateAppointmentStatus(
+                                id,
+                                'cancelled',
+                                currentFilter: _activeFilter,
+                              ),
+                          onJoin: joinable
+                              ? () {
+                                  final auth = context.read<AuthBloc>().state;
+                                  final currentUserId =
+                                      auth is AuthAuthenticated
+                                      ? auth.user.id
+                                      : room;
+                                  context
+                                      .read<TherapistCubit>()
+                                      .notifyCallStart(id);
+                                  context.push(
+                                    '/video-call/$id/$currentUserId',
+                                    extra: {'callerName': patientName},
+                                  );
+                                }
+                              : null,
                           onChat: () => context.push(
                             '/appointments/$id/chat',
                             extra: appt,
@@ -185,16 +235,29 @@ class _TherapistAppointmentsTabState extends State<TherapistAppointmentsTab> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.event_busy_rounded, size: 64.sp, color: context.textSecondaryColor.withOpacity(0.4)),
+          Icon(
+            Icons.event_busy_rounded,
+            size: 64.sp,
+            color: context.textSecondaryColor.withOpacity(0.4),
+          ),
           SizedBox(height: 16.h),
           Text(
             'No sessions found',
-            style: TextStyle(fontFamily: 'Poppins', fontSize: 16.sp, fontWeight: FontWeight.w600, color: context.textPrimaryColor),
+            style: TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w600,
+              color: context.textPrimaryColor,
+            ),
           ),
           SizedBox(height: 6.h),
           Text(
             'Sessions for "$_activeFilter" will appear here',
-            style: TextStyle(fontFamily: 'Poppins', fontSize: 13.sp, color: context.textSecondaryColor),
+            style: TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 13.sp,
+              color: context.textSecondaryColor,
+            ),
           ),
         ],
       ),
@@ -222,11 +285,16 @@ class _SessionCard extends StatelessWidget {
 
   Color _statusColor(String status) {
     switch (status) {
-      case 'confirmed': return const Color(0xFF10B981);
-      case 'completed': return const Color(0xFF6366F1);
-      case 'pending': return const Color(0xFFF59E0B);
-      case 'cancelled': return const Color(0xFFE11D48);
-      default: return const Color(0xFF9E9E9E);
+      case 'confirmed':
+        return const Color(0xFF10B981);
+      case 'completed':
+        return const Color(0xFF6366F1);
+      case 'pending':
+        return const Color(0xFFF59E0B);
+      case 'cancelled':
+        return const Color(0xFFE11D48);
+      default:
+        return const Color(0xFF9E9E9E);
     }
   }
 
@@ -238,7 +306,9 @@ class _SessionCard extends StatelessWidget {
     final timeStr = appointment['scheduledTime'] as String?;
     DateTime? time;
     if (timeStr != null) time = DateTime.tryParse(timeStr);
-    final timeFormatted = time != null ? DateFormat('EEE, MMM d · h:mm a').format(time.toLocal()) : 'TBD';
+    final timeFormatted = time != null
+        ? DateFormat('EEE, MMM d · h:mm a').format(time.toLocal())
+        : 'TBD';
     final statusColor = _statusColor(status);
 
     return Container(
@@ -246,7 +316,13 @@ class _SessionCard extends StatelessWidget {
         color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: context.borderColor, width: 0.5),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 2))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         children: [
@@ -260,7 +336,12 @@ class _SessionCard extends StatelessWidget {
                   backgroundColor: context.primaryColor.withOpacity(0.1),
                   child: Text(
                     name.isNotEmpty ? name[0].toUpperCase() : 'P',
-                    style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w700, color: context.primaryColor, fontSize: 16.sp),
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontWeight: FontWeight.w700,
+                      color: context.primaryColor,
+                      fontSize: 16.sp,
+                    ),
                   ),
                 ),
                 SizedBox(width: 12.w),
@@ -268,22 +349,46 @@ class _SessionCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(name, style: TextStyle(fontFamily: 'Poppins', fontSize: 15.sp, fontWeight: FontWeight.w600, color: context.textPrimaryColor)),
+                      Text(
+                        name,
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w600,
+                          color: context.textPrimaryColor,
+                        ),
+                      ),
                       SizedBox(height: 2.h),
-                      Text(timeFormatted, style: TextStyle(fontFamily: 'Poppins', fontSize: 12.sp, color: context.textSecondaryColor)),
+                      Text(
+                        timeFormatted,
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          fontSize: 12.sp,
+                          color: context.textSecondaryColor,
+                        ),
+                      ),
                     ],
                   ),
                 ),
                 // Status badge
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 10.w,
+                    vertical: 4.h,
+                  ),
                   decoration: BoxDecoration(
                     color: statusColor.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(20.r),
                   ),
                   child: Text(
                     status.toUpperCase(),
-                    style: TextStyle(fontFamily: 'Poppins', fontSize: 9.sp, fontWeight: FontWeight.w700, color: statusColor, letterSpacing: 0.5),
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 9.sp,
+                      fontWeight: FontWeight.w700,
+                      color: statusColor,
+                      letterSpacing: 0.5,
+                    ),
                   ),
                 ),
               ],
@@ -305,10 +410,18 @@ class _SessionCard extends StatelessWidget {
                           label: const Text('Decline'),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: context.errorColor,
-                            side: BorderSide(color: context.errorColor.withOpacity(0.4)),
+                            side: BorderSide(
+                              color: context.errorColor.withOpacity(0.4),
+                            ),
                             padding: EdgeInsets.symmetric(vertical: 8.h),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
-                            textStyle: TextStyle(fontFamily: 'Poppins', fontSize: 13.sp, fontWeight: FontWeight.w600),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10.r),
+                            ),
+                            textStyle: TextStyle(
+                              fontFamily: 'Poppins',
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ),
@@ -322,8 +435,14 @@ class _SessionCard extends StatelessWidget {
                             backgroundColor: context.primaryColor,
                             foregroundColor: Colors.white,
                             padding: EdgeInsets.symmetric(vertical: 8.h),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
-                            textStyle: TextStyle(fontFamily: 'Poppins', fontSize: 13.sp, fontWeight: FontWeight.w600),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10.r),
+                            ),
+                            textStyle: TextStyle(
+                              fontFamily: 'Poppins',
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
                             elevation: 0,
                           ),
                         ),
@@ -335,14 +454,25 @@ class _SessionCard extends StatelessWidget {
                     width: double.infinity,
                     child: OutlinedButton.icon(
                       onPressed: onChat,
-                      icon: Icon(Icons.chat_bubble_outline_rounded, size: 16.sp),
+                      icon: Icon(
+                        Icons.chat_bubble_outline_rounded,
+                        size: 16.sp,
+                      ),
                       label: const Text('Message Patient'),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: context.primaryColor,
-                        side: BorderSide(color: context.primaryColor.withOpacity(0.35)),
+                        side: BorderSide(
+                          color: context.primaryColor.withOpacity(0.35),
+                        ),
                         padding: EdgeInsets.symmetric(vertical: 8.h),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
-                        textStyle: TextStyle(fontFamily: 'Poppins', fontSize: 13.sp, fontWeight: FontWeight.w600),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.r),
+                        ),
+                        textStyle: TextStyle(
+                          fontFamily: 'Poppins',
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ),
@@ -360,13 +490,25 @@ class _SessionCard extends StatelessWidget {
                     child: ElevatedButton.icon(
                       onPressed: onJoin,
                       icon: Icon(Icons.video_call_rounded, size: 18.sp),
-                      label: Text(canJoin ? 'Join Session' : 'Not Session Time'),
+                      label: Text(
+                        canJoin ? 'Join Session' : 'Not Session Time',
+                      ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: canJoin ? context.primaryColor : context.textSecondaryColor.withOpacity(0.3),
-                        foregroundColor: canJoin ? Colors.white : context.textSecondaryColor,
+                        backgroundColor: canJoin
+                            ? context.primaryColor
+                            : context.textSecondaryColor.withOpacity(0.3),
+                        foregroundColor: canJoin
+                            ? Colors.white
+                            : context.textSecondaryColor,
                         padding: EdgeInsets.symmetric(vertical: 10.h),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
-                        textStyle: TextStyle(fontFamily: 'Poppins', fontSize: 14.sp, fontWeight: FontWeight.w600),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.r),
+                        ),
+                        textStyle: TextStyle(
+                          fontFamily: 'Poppins',
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
                         elevation: 0,
                       ),
                     ),
@@ -388,14 +530,25 @@ class _SessionCard extends StatelessWidget {
                     width: double.infinity,
                     child: OutlinedButton.icon(
                       onPressed: onChat,
-                      icon: Icon(Icons.chat_bubble_outline_rounded, size: 16.sp),
+                      icon: Icon(
+                        Icons.chat_bubble_outline_rounded,
+                        size: 16.sp,
+                      ),
                       label: const Text('Message Patient'),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: context.primaryColor,
-                        side: BorderSide(color: context.primaryColor.withOpacity(0.35)),
+                        side: BorderSide(
+                          color: context.primaryColor.withOpacity(0.35),
+                        ),
                         padding: EdgeInsets.symmetric(vertical: 8.h),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
-                        textStyle: TextStyle(fontFamily: 'Poppins', fontSize: 13.sp, fontWeight: FontWeight.w600),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.r),
+                        ),
+                        textStyle: TextStyle(
+                          fontFamily: 'Poppins',
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ),

@@ -30,8 +30,16 @@ import 'package:Resilio/features/admin/dashboard/data/repositories/admin_reposit
     as _i624;
 import 'package:Resilio/features/admin/dashboard/domain/repositories/admin_repository.dart'
     as _i22;
+import 'package:Resilio/features/admin/dashboard/presentation/bloc/admin_content_cubit.dart'
+    as _i1073;
 import 'package:Resilio/features/admin/dashboard/presentation/bloc/admin_cubit.dart'
     as _i846;
+import 'package:Resilio/features/admin/dashboard/presentation/bloc/admin_notification_cubit.dart'
+    as _i968;
+import 'package:Resilio/features/admin/dashboard/presentation/bloc/admin_preference_cubit.dart'
+    as _i5;
+import 'package:Resilio/features/admin/dashboard/presentation/bloc/admin_revenue_cubit.dart'
+    as _i926;
 import 'package:Resilio/features/customer/audio/data/datasources/audio_remote_datasource.dart'
     as _i343;
 import 'package:Resilio/features/customer/audio/data/repositories/audio_repository_impl.dart'
@@ -417,8 +425,20 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i774.DashboardRemoteDataSource>(
       () => _i774.DashboardRemoteDataSourceImpl(gh<_i361.Dio>()),
     );
+    gh.factory<_i1073.AdminContentCubit>(
+      () => _i1073.AdminContentCubit(gh<_i22.AdminRepository>()),
+    );
     gh.factory<_i846.AdminCubit>(
       () => _i846.AdminCubit(gh<_i22.AdminRepository>()),
+    );
+    gh.factory<_i968.AdminNotificationCubit>(
+      () => _i968.AdminNotificationCubit(gh<_i22.AdminRepository>()),
+    );
+    gh.factory<_i5.AdminPreferenceCubit>(
+      () => _i5.AdminPreferenceCubit(gh<_i22.AdminRepository>()),
+    );
+    gh.factory<_i926.AdminRevenueCubit>(
+      () => _i926.AdminRevenueCubit(gh<_i22.AdminRepository>()),
     );
     gh.lazySingleton<_i122.SubscriptionRemoteDataSource>(
       () => _i122.SubscriptionRemoteDataSourceImpl(

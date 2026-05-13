@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Resilio Architecture — Simple A4</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+body{
+  margin:0;
+  background:#0f172a;
+  display:flex;
+  justify-content:center;
+  padding:30px;
+  font-family:'Inter',sans-serif;
+}
+canvas{
+  background:#ffffff;
+  box-shadow:0 20px 60px rgba(0,0,0,.5);
+}
+</style>
+</head>
+<body>
+
+<canvas id="c"></canvas>
+
+<script>
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+
+/* ✅ A4 Portrait Ratio */
+const W = 1240;
+const H = 1754;
+canvas.width = W;
+canvas.height = H;
+canvas.style.width = "620px";
+canvas.style.height = "877px";
+
+/* Colors */
+const C = {
+  text:"#111827",
+  sub:"#6b7280",
+  box:"#f3f4f6",
+  border:"#d1d5db",
+  line:"#9ca3af"
+};
+
+/* Layout */
+const center = W/2;
+const row = {
+  title:100,
+  client:300,
+  api:500,
+  service:800,
+  data:1100,
+  external:1400
+};
+
+const cols5 = [
+  center-360,
+  center-180,
+  center,
+  center+180,
+  center+360
+];
+
+const BOX_W = 220;
+const BOX_H = 90;
+
+/* Draw Box */
+function box(x,y,title,sub){
+  ctx.fillStyle=C.box;
+  ctx.strokeStyle=C.border;
+  ctx.lineWidth=1.5;
+  ctx.beginPath();
+  ctx.roundRect(x-BOX_W/2,y-BOX_H/2,BOX_W,BOX_H,10);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle=C.text;
+  ctx.font="600 14px Inter";
+  ctx.textAlign="center";
+  ctx.fillText(title,x,y-8);
+
+  ctx.fillStyle=C.sub;
+  ctx.font="12px Inter";
+  ctx.fillText(sub,x,y+16);
+}
+
+/* Line */
+function line(x1,y1,x2,y2){
+  ctx.strokeStyle=C.line;
+  ctx.lineWidth=2;
+  ctx.beginPath();
+  ctx.moveTo(x1,y1);
+  ctx.lineTo(x2,y2);
+  ctx.stroke();
+}
+
+/* Background */
+ctx.fillStyle="#ffffff";
+ctx.fillRect(0,0,W,H);
+
+/* Title */
+ctx.fillStyle=C.text;
+ctx.font="700 22px Inter";
+ctx.textAlign="center";
+ctx.fillText("Resilio System Architecture",center,row.title);
+
+/* CLIENT LAYER */
+box(cols5[0],row.client,"SQLite DB","Offline Storage");
+box(cols5[1],row.client,"Patient App","Flutter");
+box(cols5[2],row.client,"Therapist App","Flutter");
+box(cols5[3],row.client,"Admin Portal","Web");
+
+/* API */
+box(center,row.api,"REST API Gateway","Node.js (Express)");
+
+/* SERVICES */
+box(cols5[0],row.service,"Auth Service","SuperTokens");
+box(cols5[1],row.service,"Content Service","Media");
+box(cols5[2],row.service,"Appointment Service","Booking");
+box(cols5[3],row.service,"WebRTC Gateway","Signaling");
+box(cols5[4],row.service,"Payment Service","Subscriptions");
+
+/* DATA */
+box(cols5[0],row.data,"ST Core DB","Auth Data");
+box(cols5[2],row.data,"Supabase","PostgreSQL");
+
+/* EXTERNAL */
+box(cols5[1],row.external,"Firebase FCM","Notifications");
+box(cols5[2],row.external,"Cloudinary","Media CDN");
+box(cols5[3],row.external,"Agora","Video/Voice");
+box(cols5[4],row.external,"eSewa","Payments");
+
+/* CONNECTIONS */
+
+/* Client → API */
+for(let i=1;i<=3;i++){
+  line(cols5[i],row.client+45,cols5[i],row.api-45);
+}
+
+/* API → Services (center drop only) */
+line(center,row.api+45,center,row.service-45);
+
+/* Services → Data */
+line(cols5[0],row.service+45,cols5[0],row.data-45); // Auth
+line(cols5[2],row.service+45,cols5[2],row.data-45); // Appointment
+line(cols5[4],row.service+45,cols5[2],row.data-45); // Payment to Supabase
+
+/* Services → External */
+line(cols5[1],row.service+45,cols5[1],row.external-45);
+line(cols5[2],row.service+45,cols5[2],row.external-45);
+line(cols5[3],row.service+45,cols5[3],row.external-45);
+line(cols5[4],row.service+45,cols5[4],row.external-45);
+
+/* Footer */
+ctx.fillStyle=C.sub;
+ctx.font="11px Inter";
+ctx.fillText("Milan Shrestha • 23057135",center,H-40);
+
+</script>
+
+</body>
+</html>

@@ -1,86 +1,84 @@
-/// Plain Dart state classes — no Freezed needed.
-abstract class TherapistState {
-  const TherapistState();
-}
+import 'package:equatable/equatable.dart';
 
-class TherapistInitial extends TherapistState {
-  const TherapistInitial();
-}
+// We use Equatable to help Bloc determine if state changed
+class TherapistState extends Equatable {
+  final bool isLoading;
+  final String? errorMessage;
+  final String? successMessage;
 
-class TherapistLoading extends TherapistState {
-  const TherapistLoading();
-}
+  // Single source of truth for all dashboard features
+  final Map<String, dynamic>? dashboardData;
+  final List<Map<String, dynamic>>? appointments;
+  final String activeAppointmentFilter;
+  final List<Map<String, dynamic>>? patients;
+  final List<Map<String, dynamic>>? filteredPatients;
+  final String patientQuery;
+  final Map<String, dynamic>? earningsData;
+  final Map<String, dynamic>? profile;
 
-class TherapistError extends TherapistState {
-  final String message;
-  const TherapistError(this.message);
-}
-
-class TherapistDashboardLoaded extends TherapistState {
-  final int todaySessions;
-  final int pendingRequests;
-  final int totalPatients;
-  final double weeklyEarnings;
-  final double totalEarnings;
-  final List<Map<String, dynamic>> sessionChart;
-  final Map<String, dynamic>? nextAppointment;
-
-  const TherapistDashboardLoaded({
-    required this.todaySessions,
-    required this.pendingRequests,
-    required this.totalPatients,
-    required this.weeklyEarnings,
-    required this.totalEarnings,
-    required this.sessionChart,
-    this.nextAppointment,
+  const TherapistState({
+    this.isLoading = false,
+    this.errorMessage,
+    this.successMessage,
+    this.dashboardData,
+    this.appointments,
+    this.activeAppointmentFilter = 'all',
+    this.patients,
+    this.filteredPatients,
+    this.patientQuery = '',
+    this.earningsData,
+    this.profile,
   });
-}
 
-class TherapistAppointmentsLoaded extends TherapistState {
-  final List<Map<String, dynamic>> appointments;
-  final String activeFilter;
+  TherapistState copyWith({
+    bool? isLoading,
+    String? errorMessage,
+    String? successMessage,
+    bool clearError = false,
+    bool clearSuccess = false,
+    Map<String, dynamic>? dashboardData,
+    List<Map<String, dynamic>>? appointments,
+    String? activeAppointmentFilter,
+    List<Map<String, dynamic>>? patients,
+    List<Map<String, dynamic>>? filteredPatients,
+    String? patientQuery,
+    Map<String, dynamic>? earningsData,
+    Map<String, dynamic>? profile,
+  }) {
+    return TherapistState(
+      isLoading: isLoading ?? this.isLoading,
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+      successMessage: clearSuccess ? null : (successMessage ?? this.successMessage),
+      dashboardData: dashboardData ?? this.dashboardData,
+      appointments: appointments ?? this.appointments,
+      activeAppointmentFilter: activeAppointmentFilter ?? this.activeAppointmentFilter,
+      patients: patients ?? this.patients,
+      filteredPatients: filteredPatients ?? this.filteredPatients,
+      patientQuery: patientQuery ?? this.patientQuery,
+      earningsData: earningsData ?? this.earningsData,
+      profile: profile ?? this.profile,
+    );
+  }
 
-  const TherapistAppointmentsLoaded({
-    required this.appointments,
-    this.activeFilter = 'all',
-  });
-}
+  // Getters for specific features
+  bool get hasDashboard => dashboardData != null;
+  bool get hasAppointments => appointments != null;
+  bool get hasPatients => patients != null;
+  bool get hasEarnings => earningsData != null;
+  bool get hasProfile => profile != null;
 
-class TherapistPatientsLoaded extends TherapistState {
-  final List<Map<String, dynamic>> patients;
-  final List<Map<String, dynamic>> filtered;
-  final String query;
-
-  const TherapistPatientsLoaded({
-    required this.patients,
-    required this.filtered,
-    this.query = '',
-  });
-}
-
-class TherapistEarningsLoaded extends TherapistState {
-  final double totalEarnings;
-  final double weekEarnings;
-  final double monthEarnings;
-  final List<Map<String, dynamic>> weeklyChart;
-  final List<Map<String, dynamic>> transactions;
-
-  const TherapistEarningsLoaded({
-    required this.totalEarnings,
-    required this.weekEarnings,
-    required this.monthEarnings,
-    required this.weeklyChart,
-    required this.transactions,
-  });
-}
-
-class TherapistProfileLoaded extends TherapistState {
-  final Map<String, dynamic> profile;
-
-  const TherapistProfileLoaded({required this.profile});
-}
-
-class TherapistActionSuccess extends TherapistState {
-  final String message;
-  const TherapistActionSuccess(this.message);
+  @override
+  List<Object?> get props => [
+        isLoading,
+        errorMessage,
+        successMessage,
+        dashboardData,
+        appointments,
+        activeAppointmentFilter,
+        patients,
+        filteredPatients,
+        patientQuery,
+        earningsData,
+        profile,
+      ];
 }

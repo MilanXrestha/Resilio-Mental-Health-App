@@ -7,32 +7,28 @@ import 'therapist_state.dart';
 class TherapistCubit extends Cubit<TherapistState> {
   final TherapistRepository _repository;
 
-  TherapistCubit(this._repository) : super(const TherapistInitial());
+  TherapistCubit(this._repository) : super(const TherapistState());
 
   // ── Dashboard ───────────────────────────────────────────────────────────────
   Future<void> loadDashboard() async {
-    emit(const TherapistLoading());
+    emit(state.copyWith(isLoading: true, clearError: true));
     try {
       final data = await _repository.getDashboardStats();
-      final chart = (data['sessionChart'] as List<dynamic>? ?? [])
-          .cast<Map<String, dynamic>>();
-      emit(TherapistDashboardLoaded(
-        todaySessions: (data['todaySessions'] as num?)?.toInt() ?? 0,
-        pendingRequests: (data['pendingRequests'] as num?)?.toInt() ?? 0,
-        totalPatients: (data['totalPatients'] as num?)?.toInt() ?? 0,
-        weeklyEarnings: (data['weeklyEarnings'] as num?)?.toDouble() ?? 0.0,
-        totalEarnings: (data['totalEarnings'] as num?)?.toDouble() ?? 0.0,
-        sessionChart: chart,
-        nextAppointment: data['nextAppointment'] as Map<String, dynamic>?,
-      ));
+      emit(state.copyWith(isLoading: false, dashboardData: data));
     } catch (e) {
-      emit(TherapistError(e.toString()));
+      emit(state.copyWith(isLoading: false, errorMessage: e.toString()));
     }
   }
 
   // ── Appointments ────────────────────────────────────────────────────────────
   Future<void> loadAppointments({String filter = 'all'}) async {
-    emit(const TherapistLoading());
+    emit(
+      state.copyWith(
+        isLoading: true,
+        clearError: true,
+        activeAppointmentFilter: filter,
+      ),
+    );
     try {
       String? statusParam;
       String? dateParam;
@@ -58,82 +54,102 @@ class TherapistCubit extends Cubit<TherapistState> {
         status: statusParam,
         date: dateParam,
       );
-      emit(TherapistAppointmentsLoaded(appointments: list, activeFilter: filter));
+      emit(state.copyWith(isLoading: false, appointments: list));
     } catch (e) {
-      emit(TherapistError(e.toString()));
+      emit(state.copyWith(isLoading: false, errorMessage: e.toString()));
     }
   }
 
-  Future<void> updateAppointmentStatus(String appointmentId, String status, {String currentFilter = 'all'}) async {
+  Future<void> updateAppointmentStatus(
+    String appointmentId,
+    String status, {
+    String currentFilter = 'all',
+  }) async {
     try {
       await _repository.updateAppointmentStatus(appointmentId, status);
       // Reload the list
       await loadAppointments(filter: currentFilter);
     } catch (e) {
-      emit(TherapistError(e.toString()));
+      emit(state.copyWith(errorMessage: e.toString()));
     }
   }
 
   // ── Patients ────────────────────────────────────────────────────────────────
   Future<void> loadPatients() async {
-    emit(const TherapistLoading());
+    emit(state.copyWith(isLoading: true, clearError: true));
     try {
       final list = await _repository.getPatients();
-      emit(TherapistPatientsLoaded(patients: list, filtered: list));
+      emit(
+        state.copyWith(
+          isLoading: false,
+          patients: list,
+          filteredPatients: list,
+          patientQuery: '',
+        ),
+      );
     } catch (e) {
-      emit(TherapistError(e.toString()));
+      emit(state.copyWith(isLoading: false, errorMessage: e.toString()));
     }
   }
 
   void filterPatients(String query) {
-    final state = this.state;
-    if (state is! TherapistPatientsLoaded) return;
+    if (!state.hasPatients) return;
     final q = query.toLowerCase().trim();
     final filtered = q.isEmpty
-        ? state.patients
-        : state.patients
-            .where((p) =>
-                (p['displayName'] as String? ?? '').toLowerCase().contains(q) ||
-                (p['email'] as String? ?? '').toLowerCase().contains(q))
-            .toList();
-    emit(TherapistPatientsLoaded(patients: state.patients, filtered: filtered, query: query));
+        ? state.patients!
+        : state.patients!
+              .where(
+                (p) =>
+                    (p['displayName'] as String? ?? '').toLowerCase().contains(
+                      q,
+                    ) ||
+                    (p['email'] as String? ?? '').toLowerCase().contains(q),
+              )
+              .toList();
+    emit(state.copyWith(filteredPatients: filtered, patientQuery: query));
   }
 
   // ── Earnings ────────────────────────────────────────────────────────────────
   Future<void> loadEarnings() async {
-    emit(const TherapistLoading());
+    emit(state.copyWith(isLoading: true, clearError: true));
     try {
       final data = await _repository.getEarnings();
-      emit(TherapistEarningsLoaded(
-        totalEarnings: (data['totalEarnings'] as num?)?.toDouble() ?? 0.0,
-        weekEarnings: (data['weekEarnings'] as num?)?.toDouble() ?? 0.0,
-        monthEarnings: (data['monthEarnings'] as num?)?.toDouble() ?? 0.0,
-        weeklyChart: (data['weeklyChart'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>(),
-        transactions: (data['transactions'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>(),
-      ));
+      emit(state.copyWith(isLoading: false, earningsData: data));
     } catch (e) {
-      emit(TherapistError(e.toString()));
+      emit(state.copyWith(isLoading: false, errorMessage: e.toString()));
     }
   }
 
   // ── Profile ─────────────────────────────────────────────────────────────────
   Future<void> loadProfile() async {
-    emit(const TherapistLoading());
+    emit(state.copyWith(isLoading: true, clearError: true));
     try {
       final profile = await _repository.getPortalProfile();
-      emit(TherapistProfileLoaded(profile: profile));
+      emit(state.copyWith(isLoading: false, profile: profile));
     } catch (e) {
-      emit(TherapistError(e.toString()));
+      emit(state.copyWith(isLoading: false, errorMessage: e.toString()));
     }
   }
 
   Future<void> updateProfile(Map<String, dynamic> data) async {
     try {
       await _repository.updatePortalProfile(data);
-      emit(const TherapistActionSuccess('Profile updated successfully'));
+      emit(state.copyWith(successMessage: 'Profile updated successfully'));
       await loadProfile();
     } catch (e) {
-      emit(TherapistError(e.toString()));
+      emit(state.copyWith(errorMessage: e.toString()));
+    }
+  }
+
+  Future<void> changePassword(
+    String currentPassword,
+    String newPassword,
+  ) async {
+    try {
+      await _repository.changePassword(currentPassword, newPassword);
+      emit(state.copyWith(successMessage: 'Password changed successfully'));
+    } catch (e) {
+      emit(state.copyWith(errorMessage: e.toString()));
     }
   }
 

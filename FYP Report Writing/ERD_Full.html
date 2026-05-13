@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Resilio ERD — Full System View</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+
+      --pk-color: #fbbf24;
+      --fk-color: #60a5fa;
+      --uk-color: #34d399;
+
+      /* Table headers by domain */
+      --dom-core: #2563eb;
+      --dom-therapy: #7c3aed;
+      --dom-money: #b45309;
+      --dom-content: #0d9488;
+      --dom-gamify: #db2777;
+      --dom-meta: #475569;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      overflow: auto;
+      /* Allow scrolling the giant canvas */
+    }
+
+    #canvas-container {
+      position: relative;
+      width: 2400px;
+      /* Huge workspace to fit 25 tables */
+      height: 1800px;
+      background-image: radial-gradient(#334155 1px, transparent 1px);
+      background-size: 20px 20px;
+      padding: 20px;
+    }
+
+    /* SVG layer for lines */
+    svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Connection line style */
+    .link-line {
+      fill: none;
+      stroke: #64748b;
+      stroke-width: 2px;
+      opacity: 0.6;
+      transition: all 0.3s ease;
+    }
+
+    /* Highlight on hover */
+    .table:hover~svg .link-line,
+    .link-line:hover {
+      stroke: #e2e8f0;
+      opacity: 1;
+      stroke-width: 3px;
+    }
+
+    /* Table styling */
+    .table {
+      position: absolute;
+      width: 220px;
+      background: var(--card-bg);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .table-hdr {
+      padding: 10px;
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+      letter-spacing: 0.5px;
+      color: #fff;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      padding: 6px 10px;
+      font-size: 10px;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+    }
+
+    .row:last-child {
+      border-bottom: none;
+    }
+
+    .badge {
+      font-size: 8px;
+      font-weight: 700;
+      padding: 2px 4px;
+      border-radius: 4px;
+      margin-right: 8px;
+    }
+
+    .pk-badge {
+      background: rgba(251, 191, 36, 0.2);
+      color: var(--pk-color);
+    }
+
+    .fk-badge {
+      background: rgba(96, 165, 250, 0.2);
+      color: var(--fk-color);
+    }
+
+    .uk-badge {
+      background: rgba(52, 211, 153, 0.2);
+      color: var(--uk-color);
+    }
+
+    .col-name {
+      flex: 1;
+      color: var(--text);
+    }
+
+    /* Pin anchors for SVG routing */
+    .pin {
+      width: 6px;
+      height: 6px;
+      background: #94a3b8;
+      border-radius: 50%;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .pin.left {
+      left: -3px;
+    }
+
+    .pin.right {
+      right: -3px;
+    }
+
+    /* Legend */
+    .legend {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      padding: 15px;
+      border-radius: 8px;
+      z-index: 10;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 11px;
+    }
+
+    .legend-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .btn {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: var(--dom-core);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      z-index: 10;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn:hover {
+      background: #1d4ed8;
+    }
+  </style>
+</head>
+
+<body>
+
+  <button class="btn" onclick="window.print()">Print / PDF (Set as A3 Landscape)</button>
+
+  <div class="legend">
+    <div style="font-weight:bold; margin-bottom:10px; font-size:12px;">Resilio Database ERD (25 Tables)</div>
+    <div class="legend-item"><span class="badge pk-badge">PK</span> Primary Key</div>
+    <div class="legend-item"><span class="badge fk-badge">FK</span> Foreign Key</div>
+    <div class="legend-item"><span class="badge uk-badge">UK</span> Unique Key</div>
+  </div>
+
+  <svg id="svg-layer">
+    <defs>
+      <marker id="arrowhead" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
+        <polygon points="0 0, 6 3, 0 6" fill="#64748b" />
+      </marker>
+    </defs>
+  </svg>
+  <!-- Grid layout controlled via JS -->
+  </div>
+
+  <script>
+    /* --------------------------------------------------------------------------
+       DATABASE SCHEMA (25 Tables)
+    -------------------------------------------------------------------------- */
+    const schema = {
+      // --- CORE DOMAIN ---
+      USERS: {
+        color: 'var(--dom-core)', x: 740, y: 700,
+        cols: [
+          { n: 'id', r: 'PK' }, { n: 'firebase_uid', r: 'UK' }, { n: 'email' }, { n: 'username' },
+          { n: 'display_name' }, { n: 'photo_url' }, { n: 'user_role' }, { n: 'account_status' },
+          { n: 'preferences_completed' }, { n: 'fcm_token' }, { n: 'language' },
+          { n: 'created_at' }, { n: 'last_login_at' }
+        ]
+      },
+      NOTIFICATIONS: {
+        color: 'var(--dom-core)', x: 1080, y: 450,
+        cols: [
+          { n: 'id', r: 'PK' }, { n: 'user_id', r: 'FK' }, { n: 'title' }, { n: 'body' },
+          { n: 'type' }, { n: 'is_read' }, { n: 'action_type' }, { n: 'action_payload' }, { n: 'created_at' }
+        ]
+      },
+
+      // --- THERAPY & BOOKINGS ---
+      THERAPIST_PROFILES: {
+        color: 'var(--dom-therapy)', x: 1080, y: 730,
+        cols: [
+          { n: 'id', r: 'PK' }, { n: 'user_id', r: 'FK' }, { n: 'bio' }, { n: 'specialty' },
+          { n: 'qualifications' }, { n: 'years_of_experience' }, { n: 'consultation_fee' },
+          { n: 'is_verified' }, { n: 'rating' }, { n: 'total_reviews' }, { n: 'availability_json' },
+          { n: 'languages' }, { n: 'created_at' }
+        ]
+      },
+      APPOINTMENTS: {
+        color: 'var(--dom-therapy)', x: 1420, y: 730,
+        cols: [
+          { n: 'id', r: 'PK' }, { n: 'patient_id', r: 'FK' }, { n: 'therapist_id', r: 'FK' },
+          { n: 'scheduled_time' }, { n: 'status' }, { n: 'payment_status' },
+          { n: 'payment_transaction_id' }, { n: 'meeting_room_id' }, { n: 'session_type' },
+          { n: 'notes' }, { n: 'created_at' }
+        ]
+      },
+      APPOINTMENT_MESSAGES: {
+        color: 'var(--dom-therapy)', x: 1760, y: 780,
+        cols: [
+          { n: 'id', r: 'PK' }, { n: 'appointment_id', r: 'FK' }, { n: 'sender_id', r: 'FK' },
+          { n: 'message_content' }, { n: 'is_read' }, { n: 'created_at' }
+        ]
+      },
+
+      // --- MONEY ---
+      SUBSCRIPTIONS: {
+        color: 'var(--dom-money)', x: 1080, y: 1100,
+        cols: [
+          { n: 'id', r: 'PK' }, { n: 'user_id', r: 'FK' }, { n: 'plan_id' }, { n: 'status' },
+          { n: 'start_date' }, { n: 'end_date' }, { n: 'payment_method' },
+          { n: 'last_transaction_id' }, { n: 'is_auto_renew' }, { n: 'created_at' }
+        ]
+      },
+      TRANSACTIONS: {
+        color: 'var(--dom-money)', x: 1420, y: 1100,
+        cols: [
+          { n: 'id', r: 'PK' }, { n: 'user_id', r: 'FK' }, { n: 'subscription_id', r: 'FK' },
+          { n: 'payment_provider' }, { n: 'amount' }, { n: 'currency' }, { n: 'status' },
+          { n: 'plan_id' }, { n: 'created_at' }
+        ]
+      },
+
+      // --- CONTENT HUB ---
+      CATEGORIES: {
+        color: 'var(--dom-content)', x: 1420, y: 400,
+        cols: [
+          { n: 'id', r: 'PK' }, { n: 'name', r: 'UK' }, { n: 'description' }, { n: 'icon_url' }, { n: 'is_active' }
+        ]
+      },
+      AUDIO_TRACKS: {
+        color: 'var(--dom-content)', x: 1760, y: 50,
+        cols: [
+          { n: 'id', r: 'PK' }, { n: 'category_id', r: 'FK' }, { n: 'title' }, { n: 'artist' },
+          { n: 'cloudinary_url' }, { n: 'cover_image_url' }, { n: 'duration_seconds' },
+          { n: 'is_premium' }, { n: 'play_count' }, { n: 'created_at' }
+        ]
+      },
+      VIDEO_TRACKS: {
+        color: 'var(--dom-content)', x: 1760, y: 310,
+        cols: [
+          { n: 'id', r: 'PK' }, { n: 'category_id', r: 'FK' }, { n: 'title' }, { n: 'therapist_name' },
+          { n: 'cloudinary_url' }, { n: 'thumbnail_url' }, { n: 'duration_seconds' },
+          { n: 'is_premium' }, { n: 'view_count' }, { n: 'created_at' }
+        ]
+      },
+      VIDEO_COMMENTS: {
+        color: 'var(--dom-content)', x: 2100, y: 350,
+        cols: [
+          { n: 'id', r: 'PK' }, { n: 'video_id', r: 'FK' }, { n: 'user_id', r: 'FK' },
+          { n: 'content' }, { n: 'created_at' }
+        ]
+      },
+      TIPS: {
+        color: 'var(--dom-content)', x: 1760, y: 560,
+        cols: [
+          { n: 'id', r: 'PK' }, { n: 'category_id', r: 'FK' }, { n: 'title' }, { n: 'content_body' },
+          { n: 'image_url' }, { n: 'is_premium' }, { n: 'created_at' }
+        ]
+      },
+      QUOTES: {
+        color: 'var(--dom-content)', x: 1760, y: 1000,
+        cols: [
+          { n: 'id', r: 'PK' }, { n: 'category_id', r: 'FK' }, { n: 'content_text' }, { n: 'author' },
+          { n: 'background_color' }, { n: 'background_image_url' }, { n: 'is_premium' }
+        ]
+      },
+      IMAGES: {
+        color: 'var(--dom-content)', x: 1760, y: 1220,
+        cols: [
+          { n: 'id', r: 'PK' }, { n: 'category_id', r: 'FK' }, { n: 'title' },
+          { n: 'cloudinary_url' }, { n: 'is_premium' }
+        ]
+      },
+
+      // --- TRACKING & GAMIFICATION ---
+      MOOD_ENTRIES: {
+        color: 'var(--dom-gamify)', x: 400, y: 900,
+        cols: [
+          { n: 'id', r: 'PK' }, { n: 'user_id', r: 'FK' }, { n: 'mood_score' }, { n: 'mood_label' },
+          { n: 'note' }, { n: 'entry_date' }, { n: 'created_at' }
+        ]
+      },
+      GAME_SESSIONS: {
+        color: 'var(--dom-gamify)', x: 400, y: 1100,
+        cols: [
+          { n: 'id', r: 'PK' }, { n: 'user_id', r: 'FK' }, { n: 'game_type' }, { n: 'start_time' },
+          { n: 'end_time' }, { n: 'duration_seconds' }, { n: 'score' }, { n: 'metadata' }
+        ]
+      },
+      QUIZZES: {
+        color: 'var(--dom-gamify)', x: 60, y: 220,
+        cols: [
+          { n: 'id', r: 'PK' }, { n: 'title' }, { n: 'description' }, { n: 'is_premium' }
+        ]
+      },
+      QUIZ_QUESTIONS: {
+        color: 'var(--dom-gamify)', x: 400, y: 120,
+        cols: [
+          { n: 'id', r: 'PK' }, { n: 'quiz_id', r: 'FK' }, { n: 'question_text' },
+          { n: 'options_json' }, { n: 'correct_option' }
+        ]
+      },
+      QUIZ_RESULTS: {
+        color: 'var(--dom-gamify)', x: 400, y: 300,
+        cols: [
+          { n: 'id', r: 'PK' }, { n: 'user_id', r: 'FK' }, { n: 'quiz_id', r: 'FK' },
+          { n: 'score' }, { n: 'total_questions' }, { n: 'completed_at' }
+        ]
+      },
+      ACHIEVEMENTS: {
+        color: 'var(--dom-gamify)', x: 60, y: 1400,
+        cols: [
+          { n: 'id', r: 'PK' }, { n: 'code', r: 'UK' }, { n: 'title' }, { n: 'description' },
+          { n: 'icon_url' }, { n: 'points' }
+        ]
+      },
+      USER_ACHIEVEMENTS: {
+        color: 'var(--dom-gamify)', x: 400, y: 1350,
+        cols: [
+          { n: 'id', r: 'PK' }, { n: 'user_id', r: 'FK' }, { n: 'achievement_id', r: 'FK' }, { n: 'earned_at' }
+        ]
+      },
+      FAVORITES: {
+        color: 'var(--dom-gamify)', x: 400, y: 700,
+        cols: [
+          { n: 'id', r: 'PK' }, { n: 'user_id', r: 'FK' }, { n: 'content_type' }, { n: 'content_id' }, { n: 'created_at' }
+        ]
+      },
+
+      // --- PREFS & META ---
+      PREFERENCES: {
+        color: 'var(--dom-meta)', x: 60, y: 550,
+        cols: [
+          { n: 'id', r: 'PK' }, { n: 'preference_id', r: 'UK' }, { n: 'preference_name' },
+          { n: 'preference_description' }, { n: 'preference_icon' }, { n: 'is_active' }, { n: 'created_at' }
+        ]
+      },
+      USER_PREFERENCES: {
+        color: 'var(--dom-meta)', x: 400, y: 530,
+        cols: [
+          { n: 'id', r: 'PK' }, { n: 'user_id', r: 'FK' }, { n: 'preference_id', r: 'FK' }, { n: 'created_at' }
+        ]
+      },
+      AFFIRMATIONS: {
+        color: 'var(--dom-meta)', x: 2100, y: 1400,
+        cols: [
+          { n: 'id', r: 'PK' }, { n: 'text_content' }, { n: 'category' }, { n: 'background_color' }
+        ]
+      }
+    };
+
+    /* --------------------------------------------------------------------------
+       FOREIGN KEY RELATIONSHIPS
+       from: { table, col } -> to: { table, col }
+    -------------------------------------------------------------------------- */
+    const relationships = [
+      // User references
+      { from: { t: 'NOTIFICATIONS', c: 'user_id' }, to: { t: 'USERS', c: 'id' } },
+      { from: { t: 'USER_PREFERENCES', c: 'user_id' }, to: { t: 'USERS', c: 'id' } },
+      { from: { t: 'THERAPIST_PROFILES', c: 'user_id' }, to: { t: 'USERS', c: 'id' } },
+      { from: { t: 'APPOINTMENTS', c: 'patient_id' }, to: { t: 'USERS', c: 'id' } },
+      { from: { t: 'APPOINTMENT_MESSAGES', c: 'sender_id' }, to: { t: 'USERS', c: 'id' } },
+      { from: { t: 'SUBSCRIPTIONS', c: 'user_id' }, to: { t: 'USERS', c: 'id' } },
+      { from: { t: 'TRANSACTIONS', c: 'user_id' }, to: { t: 'USERS', c: 'id' } },
+      { from: { t: 'MOOD_ENTRIES', c: 'user_id' }, to: { t: 'USERS', c: 'id' } },
+      { from: { t: 'GAME_SESSIONS', c: 'user_id' }, to: { t: 'USERS', c: 'id' } },
+      { from: { t: 'QUIZ_RESULTS', c: 'user_id' }, to: { t: 'USERS', c: 'id' } },
+      { from: { t: 'USER_ACHIEVEMENTS', c: 'user_id' }, to: { t: 'USERS', c: 'id' } },
+      { from: { t: 'FAVORITES', c: 'user_id' }, to: { t: 'USERS', c: 'id' } },
+      { from: { t: 'VIDEO_COMMENTS', c: 'user_id' }, to: { t: 'USERS', c: 'id' } },
+
+      // Therapy links
+      { from: { t: 'APPOINTMENTS', c: 'therapist_id' }, to: { t: 'THERAPIST_PROFILES', c: 'id' } },
+      { from: { t: 'APPOINTMENT_MESSAGES', c: 'appointment_id' }, to: { t: 'APPOINTMENTS', c: 'id' } },
+
+      // Money links
+      { from: { t: 'TRANSACTIONS', c: 'subscription_id' }, to: { t: 'SUBSCRIPTIONS', c: 'id' } },
+
+      // Content links
+      { from: { t: 'AUDIO_TRACKS', c: 'category_id' }, to: { t: 'CATEGORIES', c: 'id' } },
+      { from: { t: 'VIDEO_TRACKS', c: 'category_id' }, to: { t: 'CATEGORIES', c: 'id' } },
+      { from: { t: 'TIPS', c: 'category_id' }, to: { t: 'CATEGORIES', c: 'id' } },
+      { from: { t: 'QUOTES', c: 'category_id' }, to: { t: 'CATEGORIES', c: 'id' } },
+      { from: { t: 'IMAGES', c: 'category_id' }, to: { t: 'CATEGORIES', c: 'id' } },
+      { from: { t: 'VIDEO_COMMENTS', c: 'video_id' }, to: { t: 'VIDEO_TRACKS', c: 'id' } },
+
+      // Meta links
+      { from: { t: 'USER_PREFERENCES', c: 'preference_id' }, to: { t: 'PREFERENCES', c: 'id' } },
+      { from: { t: 'QUIZ_QUESTIONS', c: 'quiz_id' }, to: { t: 'QUIZZES', c: 'id' } },
+      { from: { t: 'QUIZ_RESULTS', c: 'quiz_id' }, to: { t: 'QUIZZES', c: 'id' } },
+      { from: { t: 'USER_ACHIEVEMENTS', c: 'achievement_id' }, to: { t: 'ACHIEVEMENTS', c: 'id' } },
+    ];
+
+    /* --------------------------------------------------------------------------
+       RENDERING ENGINE
+    -------------------------------------------------------------------------- */
+    const container = document.getElementById('canvas-container');
+    const svg = document.getElementById('svg-layer');
+
+    // 1. Render all tables as HTML blocks
+    Object.keys(schema).forEach(key => {
+      const t = schema[key];
+
+      const tDiv = document.createElement('div');
+      tDiv.className = 'table';
+      tDiv.id = `table_${key}`;
+      tDiv.style.left = `${t.x}px`;
+      tDiv.style.top = `${t.y}px`;
+
+      // Header (Draggable handle)
+      const hdr = document.createElement('div');
+      hdr.className = 'table-hdr';
+      hdr.style.backgroundColor = t.color;
+      hdr.style.cursor = 'grab';
+      hdr.innerText = key;
+      tDiv.appendChild(hdr);
+
+      // Rows
+      t.cols.forEach((col) => {
+        const rDiv = document.createElement('div');
+        rDiv.className = 'row';
+        rDiv.id = `col_${key}_${col.n}`;
+
+        // Anchor pins
+        const leftPin = document.createElement('div'); leftPin.className = 'pin left';
+        const rightPin = document.createElement('div'); rightPin.className = 'pin right';
+        rDiv.appendChild(leftPin);
+        rDiv.appendChild(rightPin);
+
+        // Badges
+        if (col.r) {
+          const b = document.createElement('span');
+          if (col.r === 'PK') { b.className = 'badge pk-badge'; b.innerText = 'PK'; }
+          if (col.r === 'FK') { b.className = 'badge fk-badge'; b.innerText = 'FK'; }
+          if (col.r === 'UK') { b.className = 'badge uk-badge'; b.innerText = 'UK'; }
+          rDiv.appendChild(b);
+        }
+
+        const n = document.createElement('div');
+        n.className = 'col-name';
+        n.innerText = col.n;
+        rDiv.appendChild(n);
+
+        tDiv.appendChild(rDiv);
+      });
+
+      container.appendChild(tDiv);
+
+      // Implement Draggable Logic
+      let isDragging = false, startX, startY, initialLeft, initialTop;
+
+      hdr.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        hdr.style.cursor = 'grabbing';
+        startX = e.clientX;
+        startY = e.clientY;
+        initialLeft = parseInt(tDiv.style.left, 10);
+        initialTop = parseInt(tDiv.style.top, 10);
+        tDiv.style.zIndex = 100; // bring to front
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+
+        // Update model and UI
+        t.x = initialLeft + dx;
+        t.y = initialTop + dy;
+        tDiv.style.left = `${t.x}px`;
+        tDiv.style.top = `${t.y}px`;
+
+        // Redraw SVG lines on move
+        drawLines();
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (isDragging) {
+          isDragging = false;
+          hdr.style.cursor = 'grab';
+          tDiv.style.zIndex = 2; // reset z-index
+        }
+      });
+
+    });
+
+    // 2. Render SVG Lines using Bezier Curves
+    const svgNS = "http://www.w3.org/2000/svg";
+    const paths = [];
+
+    // Initialize paths once
+    relationships.forEach((rel, index) => {
+      const path = document.createElementNS(svgNS, "path");
+      path.setAttribute("class", "link-line");
+      path.setAttribute("marker-end", "url(#arrowhead)");
+      svg.appendChild(path);
+      paths.push({ el: path, rel });
+    });
+
+    function drawLines() {
+      const containerRect = container.getBoundingClientRect();
+
+      paths.forEach(({ el, rel }) => {
+        const srcRow = document.getElementById(`col_${rel.from.t}_${rel.from.c}`);
+        const dstRow = document.getElementById(`col_${rel.to.t}_${rel.to.c}`);
+
+        if (!srcRow || !dstRow) return;
+
+        const srcTable = schema[rel.from.t];
+        const dstTable = schema[rel.to.t];
+
+        const srcRect = srcRow.getBoundingClientRect();
+        const dstRect = dstRow.getBoundingClientRect();
+
+        let sx = 0, sy = srcRect.top - containerRect.top + srcRect.height / 2;
+        let dx = 0, dy = dstRect.top - containerRect.top + dstRect.height / 2;
+
+        const curveOffset = 180;
+        let cp1x, cp2x;
+
+        if (srcTable.x < dstTable.x) {
+          sx = srcTable.x + 220; // right edge of source
+          dx = dstTable.x;       // left edge of dest
+          cp1x = sx + curveOffset;
+          cp2x = dx - curveOffset;
+        } else {
+          sx = srcTable.x;       // left edge of source
+          dx = dstTable.x + 220; // right edge of dest
+          cp1x = sx - curveOffset;
+          cp2x = dx + curveOffset;
+        }
+
+        if (srcTable.x === dstTable.x) {
+          sx = srcTable.x + 220;
+          dx = dstTable.x + 220;
+          cp1x = sx + Math.abs(dy - sy) * 0.5;
+          cp2x = dx + Math.abs(dy - sy) * 0.5;
+        }
+
+        const pathData = `M ${sx} ${sy} C ${cp1x} ${sy}, ${cp2x} ${dy}, ${dx} ${dy}`;
+        el.setAttribute("d", pathData);
+      });
+    }
+
+    // Draw lines on initial load (timeout ensures DOM elements are placed so bounding rects work)
+    setTimeout(drawLines, 100);
+
+  </script>
+</body>
+
+</html>

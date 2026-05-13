@@ -1,3 +1,4 @@
+import '../../widgets/shimmer_therapist_widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -28,7 +29,10 @@ class _TherapistContentHubTabState extends State<TherapistContentHubTab> {
     context.read<TherapistContentCubit>().switchTab(tab);
   }
 
-  void _showAddSheet(BuildContext context, [Map<String, dynamic>? initialData]) {
+  void _showAddSheet(
+    BuildContext context, [
+    Map<String, dynamic>? initialData,
+  ]) {
     final cubit = context.read<TherapistContentCubit>();
     showModalBottomSheet(
       context: context,
@@ -51,7 +55,10 @@ class _TherapistContentHubTabState extends State<TherapistContentHubTab> {
         title: const Text('Delete Content?'),
         content: const Text('This action cannot be undone.'),
         actions: [
-          CupertinoDialogAction(child: const Text('Cancel'), onPressed: () => Navigator.pop(ctx)),
+          CupertinoDialogAction(
+            child: const Text('Cancel'),
+            onPressed: () => Navigator.pop(ctx),
+          ),
           CupertinoDialogAction(
             isDestructiveAction: true,
             onPressed: () {
@@ -73,7 +80,14 @@ class _TherapistContentHubTabState extends State<TherapistContentHubTab> {
         onPressed: () => _showAddSheet(context),
         backgroundColor: context.primaryColor,
         icon: const Icon(Icons.add, color: Colors.white),
-        label: Text('Add ${_activeTab.capitalize()}', style: TextStyle(fontFamily: 'Poppins', color: Colors.white, fontWeight: FontWeight.w600)),
+        label: Text(
+          'Add ${StringExtension(_activeTab).capitalize()}',
+          style: TextStyle(
+            fontFamily: 'Poppins',
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
       body: SafeArea(
         child: Column(
@@ -96,15 +110,37 @@ class _TherapistContentHubTabState extends State<TherapistContentHubTab> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Content Hub', style: TextStyle(fontFamily: 'PlayfairDisplay', fontSize: 28.sp, fontWeight: FontWeight.w700, color: context.textPrimaryColor)),
-              Text('Manage your global resources', style: TextStyle(fontFamily: 'Poppins', fontSize: 13.sp, color: context.textSecondaryColor)),
+              Text(
+                'Content Hub',
+                style: TextStyle(
+                  fontFamily: 'PlayfairDisplay',
+                  fontSize: 28.sp,
+                  fontWeight: FontWeight.w700,
+                  color: context.textPrimaryColor,
+                ),
+              ),
+              Text(
+                'Manage your global resources',
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 13.sp,
+                  color: context.textSecondaryColor,
+                ),
+              ),
             ],
           ),
           Container(
             padding: EdgeInsets.all(12.w),
-            decoration: BoxDecoration(color: context.primaryColor.withOpacity(0.1), shape: BoxShape.circle),
-            child: Icon(Icons.library_add_check, color: context.primaryColor, size: 24.sp),
-          )
+            decoration: BoxDecoration(
+              color: context.primaryColor.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.library_add_check,
+              color: context.primaryColor,
+              size: 24.sp,
+            ),
+          ),
         ],
       ),
     );
@@ -130,10 +166,12 @@ class _TherapistContentHubTabState extends State<TherapistContentHubTab> {
               decoration: BoxDecoration(
                 color: isActive ? context.primaryColor : context.surfaceColor,
                 borderRadius: BorderRadius.circular(20.r),
-                border: Border.all(color: isActive ? Colors.transparent : context.dividerColor),
+                border: Border.all(
+                  color: isActive ? Colors.transparent : context.dividerColor,
+                ),
               ),
               child: Text(
-                tab.capitalize(),
+                StringExtension(tab).capitalize(),
                 style: TextStyle(
                   fontFamily: 'Poppins',
                   fontSize: 13.sp,
@@ -152,14 +190,23 @@ class _TherapistContentHubTabState extends State<TherapistContentHubTab> {
     return BlocBuilder<TherapistContentCubit, TherapistContentState>(
       builder: (context, state) {
         if (state is TherapistContentLoading) {
-          return const Center(child: CupertinoActivityIndicator());
+          return const TherapistListShimmer();
         }
         if (state is TherapistContentError) {
           return Center(child: Text('Error: ${state.message}'));
         }
         if (state is TherapistContentLoaded) {
           if (state.items.isEmpty) {
-            return Center(child: Text('No ${_activeTab} found.\nTap + to add some!', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Poppins', color: context.textSecondaryColor)));
+            return Center(
+              child: Text(
+                'No ${_activeTab} found.\nTap + to add some!',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  color: context.textSecondaryColor,
+                ),
+              ),
+            );
           }
           return ListView.builder(
             padding: EdgeInsets.all(24.w),
@@ -182,14 +229,14 @@ class _TherapistContentHubTabState extends State<TherapistContentHubTab> {
 
     if (_activeTab == 'tips') {
       title = item['title'] ?? 'Tip';
-      sub = item['tipText'] ?? '';
+      sub = item['tipText'] ?? item['tip_text'] ?? '';
     } else if (_activeTab == 'quotes') {
-      title = item['quoteText'] ?? 'Quote';
+      title = item['quoteText'] ?? item['quote_text'] ?? 'Quote';
       sub = item['author'] ?? '';
     } else {
       title = item['title'] ?? 'Media';
       sub = item['description'] ?? '';
-      thumb = item['thumbnailUrl'] ?? item['coverImageUrl'] ?? '';
+      thumb = item['thumbnailUrl'] ?? item['coverImageUrl'] ?? item['thumbnail_url'] ?? item['cover_image_url'] ?? '';
     }
 
     return Dismissible(
@@ -201,7 +248,10 @@ class _TherapistContentHubTabState extends State<TherapistContentHubTab> {
       },
       background: Container(
         margin: EdgeInsets.only(bottom: 12.h),
-        decoration: BoxDecoration(color: Colors.redAccent, borderRadius: BorderRadius.circular(16.r)),
+        decoration: BoxDecoration(
+          color: Colors.redAccent,
+          borderRadius: BorderRadius.circular(16.r),
+        ),
         alignment: Alignment.centerRight,
         padding: EdgeInsets.only(right: 20.w),
         child: const Icon(Icons.delete, color: Colors.white),
@@ -214,14 +264,31 @@ class _TherapistContentHubTabState extends State<TherapistContentHubTab> {
           decoration: BoxDecoration(
             color: context.surfaceColor,
             borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(color: context.dividerColor),
+            border: Border.all(color: context.borderColor, width: 0.5),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Row(
             children: [
               if (thumb.isNotEmpty) ...[
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8.r),
-                  child: Image.network(thumb, width: 60.w, height: 60.w, fit: BoxFit.cover, errorBuilder: (_,__,___) => Container(width: 60.w, height: 60.w, color: context.dividerColor)),
+                  child: Image.network(
+                    thumb,
+                    width: 60.w,
+                    height: 60.w,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      width: 60.w,
+                      height: 60.w,
+                      color: context.dividerColor,
+                    ),
+                  ),
                 ),
                 SizedBox(width: 16.w),
               ],
@@ -229,13 +296,36 @@ class _TherapistContentHubTabState extends State<TherapistContentHubTab> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(fontFamily: 'Poppins', fontSize: 15.sp, fontWeight: FontWeight.w600, color: context.textPrimaryColor)),
+                    Text(
+                      title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w600,
+                        color: context.textPrimaryColor,
+                      ),
+                    ),
                     SizedBox(height: 4.h),
-                    Text(sub, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(fontFamily: 'Poppins', fontSize: 12.sp, color: context.textSecondaryColor)),
+                    Text(
+                      sub,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 12.sp,
+                        color: context.textSecondaryColor,
+                      ),
+                    ),
                   ],
                 ),
               ),
-              Icon(Icons.chevron_right, color: context.textSecondaryColor, size: 20.sp),
+              Icon(
+                Icons.chevron_right,
+                color: context.textSecondaryColor,
+                size: 20.sp,
+              ),
             ],
           ),
         ),

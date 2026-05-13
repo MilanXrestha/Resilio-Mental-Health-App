@@ -15,11 +15,12 @@ class AdminHomeTab extends StatelessWidget {
         return SafeArea(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 24.w),
-            child: state.when(
-              initial: () => const SizedBox.shrink(),
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (msg) => Center(child: Text('Error: $msg')),
-              loaded: (stats, _, __, ___) => _buildContent(stats),
+            child: state.maybeMap(
+              initial: (_) => const SizedBox.shrink(),
+              loading: (_) => const Center(child: CircularProgressIndicator()),
+              error: (e) => Center(child: Text('Error: ${e.message}')),
+              loaded: (loaded) => _buildContent(loaded.stats),
+              orElse: () => const SizedBox.shrink(),
             ),
           ),
         );
@@ -41,17 +42,41 @@ class AdminHomeTab extends StatelessWidget {
         SizedBox(height: 24.h),
         Row(
           children: [
-            Expanded(child: _StatCard(title: 'Total Users', value: tUsers, color: Colors.blue.shade100)),
+            Expanded(
+              child: _StatCard(
+                title: 'Total Users',
+                value: tUsers,
+                color: Colors.blue.shade100,
+              ),
+            ),
             SizedBox(width: 16.w),
-            Expanded(child: _StatCard(title: 'Therapists', value: tTherapists, color: Colors.green.shade100)),
+            Expanded(
+              child: _StatCard(
+                title: 'Therapists',
+                value: tTherapists,
+                color: Colors.green.shade100,
+              ),
+            ),
           ],
         ),
         SizedBox(height: 16.h),
         Row(
           children: [
-            Expanded(child: _StatCard(title: 'Pending Verifications', value: pending, color: Colors.orange.shade100)),
+            Expanded(
+              child: _StatCard(
+                title: 'Pending Verifications',
+                value: pending,
+                color: Colors.orange.shade100,
+              ),
+            ),
             SizedBox(width: 16.w),
-            Expanded(child: _StatCard(title: 'Active Sessions', value: sessions, color: Colors.purple.shade100)),
+            Expanded(
+              child: _StatCard(
+                title: 'Active Sessions',
+                value: sessions,
+                color: Colors.purple.shade100,
+              ),
+            ),
           ],
         ),
         SizedBox(height: 32.h),
@@ -79,7 +104,11 @@ class _StatCard extends StatelessWidget {
   final String value;
   final Color color;
 
-  const _StatCard({required this.title, required this.value, required this.color});
+  const _StatCard({
+    required this.title,
+    required this.value,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -92,9 +121,15 @@ class _StatCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: AppTextStyles.bodyMedium.copyWith(color: Colors.black54)),
+          Text(
+            title,
+            style: AppTextStyles.bodyMedium.copyWith(color: Colors.black54),
+          ),
           SizedBox(height: 8.h),
-          Text(value, style: AppTextStyles.titleLarge.copyWith(color: Colors.black87)),
+          Text(
+            value,
+            style: AppTextStyles.titleLarge.copyWith(color: Colors.black87),
+          ),
         ],
       ),
     );

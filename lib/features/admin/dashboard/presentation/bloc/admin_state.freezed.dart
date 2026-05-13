@@ -128,12 +128,12 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( Map<String, dynamic> stats,  List<dynamic> users,  List<dynamic> pendingTherapists,  List<dynamic> approvedTherapists)?  loaded,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( Map<String, dynamic> stats,  List<dynamic> therapists,  int totalTherapists,  String therapistFilter,  String therapistSearch,  List<dynamic> users,  int totalUsers,  String userRoleFilter,  String userSearch,  List<dynamic> appointments,  int totalAppointments,  String appointmentFilter,  List<dynamic> content,  int totalContent,  String contentFilter,  bool isVerifyingTherapist,  bool isDeletingTherapist,  bool isUpdatingUser,  bool isDeletingContent)?  loaded,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial();case _Loading() when loading != null:
 return loading();case _Loaded() when loaded != null:
-return loaded(_that.stats,_that.users,_that.pendingTherapists,_that.approvedTherapists);case _Error() when error != null:
+return loaded(_that.stats,_that.therapists,_that.totalTherapists,_that.therapistFilter,_that.therapistSearch,_that.users,_that.totalUsers,_that.userRoleFilter,_that.userSearch,_that.appointments,_that.totalAppointments,_that.appointmentFilter,_that.content,_that.totalContent,_that.contentFilter,_that.isVerifyingTherapist,_that.isDeletingTherapist,_that.isUpdatingUser,_that.isDeletingContent);case _Error() when error != null:
 return error(_that.message);case _:
   return orElse();
 
@@ -152,12 +152,12 @@ return error(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( Map<String, dynamic> stats,  List<dynamic> users,  List<dynamic> pendingTherapists,  List<dynamic> approvedTherapists)  loaded,required TResult Function( String message)  error,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( Map<String, dynamic> stats,  List<dynamic> therapists,  int totalTherapists,  String therapistFilter,  String therapistSearch,  List<dynamic> users,  int totalUsers,  String userRoleFilter,  String userSearch,  List<dynamic> appointments,  int totalAppointments,  String appointmentFilter,  List<dynamic> content,  int totalContent,  String contentFilter,  bool isVerifyingTherapist,  bool isDeletingTherapist,  bool isUpdatingUser,  bool isDeletingContent)  loaded,required TResult Function( String message)  error,}) {final _that = this;
 switch (_that) {
 case _Initial():
 return initial();case _Loading():
 return loading();case _Loaded():
-return loaded(_that.stats,_that.users,_that.pendingTherapists,_that.approvedTherapists);case _Error():
+return loaded(_that.stats,_that.therapists,_that.totalTherapists,_that.therapistFilter,_that.therapistSearch,_that.users,_that.totalUsers,_that.userRoleFilter,_that.userSearch,_that.appointments,_that.totalAppointments,_that.appointmentFilter,_that.content,_that.totalContent,_that.contentFilter,_that.isVerifyingTherapist,_that.isDeletingTherapist,_that.isUpdatingUser,_that.isDeletingContent);case _Error():
 return error(_that.message);case _:
   throw StateError('Unexpected subclass');
 
@@ -175,12 +175,12 @@ return error(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( Map<String, dynamic> stats,  List<dynamic> users,  List<dynamic> pendingTherapists,  List<dynamic> approvedTherapists)?  loaded,TResult? Function( String message)?  error,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( Map<String, dynamic> stats,  List<dynamic> therapists,  int totalTherapists,  String therapistFilter,  String therapistSearch,  List<dynamic> users,  int totalUsers,  String userRoleFilter,  String userSearch,  List<dynamic> appointments,  int totalAppointments,  String appointmentFilter,  List<dynamic> content,  int totalContent,  String contentFilter,  bool isVerifyingTherapist,  bool isDeletingTherapist,  bool isUpdatingUser,  bool isDeletingContent)?  loaded,TResult? Function( String message)?  error,}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial();case _Loading() when loading != null:
 return loading();case _Loaded() when loaded != null:
-return loaded(_that.stats,_that.users,_that.pendingTherapists,_that.approvedTherapists);case _Error() when error != null:
+return loaded(_that.stats,_that.therapists,_that.totalTherapists,_that.therapistFilter,_that.therapistSearch,_that.users,_that.totalUsers,_that.userRoleFilter,_that.userSearch,_that.appointments,_that.totalAppointments,_that.appointmentFilter,_that.content,_that.totalContent,_that.contentFilter,_that.isVerifyingTherapist,_that.isDeletingTherapist,_that.isUpdatingUser,_that.isDeletingContent);case _Error() when error != null:
 return error(_that.message);case _:
   return null;
 
@@ -257,37 +257,69 @@ String toString() {
 
 
 class _Loaded implements AdminState {
-  const _Loaded({required final  Map<String, dynamic> stats, final  List<dynamic> users = const [], final  List<dynamic> pendingTherapists = const [], final  List<dynamic> approvedTherapists = const []}): _stats = stats,_users = users,_pendingTherapists = pendingTherapists,_approvedTherapists = approvedTherapists;
+  const _Loaded({required final  Map<String, dynamic> stats, final  List<dynamic> therapists = const [], this.totalTherapists = 0, this.therapistFilter = 'all', this.therapistSearch = '', final  List<dynamic> users = const [], this.totalUsers = 0, this.userRoleFilter = 'all', this.userSearch = '', final  List<dynamic> appointments = const [], this.totalAppointments = 0, this.appointmentFilter = 'all', final  List<dynamic> content = const [], this.totalContent = 0, this.contentFilter = 'all', this.isVerifyingTherapist = false, this.isDeletingTherapist = false, this.isUpdatingUser = false, this.isDeletingContent = false}): _stats = stats,_therapists = therapists,_users = users,_appointments = appointments,_content = content;
   
 
+// Dashboard
  final  Map<String, dynamic> _stats;
+// Dashboard
  Map<String, dynamic> get stats {
   if (_stats is EqualUnmodifiableMapView) return _stats;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableMapView(_stats);
 }
 
+// Therapists
+ final  List<dynamic> _therapists;
+// Therapists
+@JsonKey() List<dynamic> get therapists {
+  if (_therapists is EqualUnmodifiableListView) return _therapists;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_therapists);
+}
+
+@JsonKey() final  int totalTherapists;
+@JsonKey() final  String therapistFilter;
+@JsonKey() final  String therapistSearch;
+// Users
  final  List<dynamic> _users;
+// Users
 @JsonKey() List<dynamic> get users {
   if (_users is EqualUnmodifiableListView) return _users;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_users);
 }
 
- final  List<dynamic> _pendingTherapists;
-@JsonKey() List<dynamic> get pendingTherapists {
-  if (_pendingTherapists is EqualUnmodifiableListView) return _pendingTherapists;
+@JsonKey() final  int totalUsers;
+@JsonKey() final  String userRoleFilter;
+@JsonKey() final  String userSearch;
+// Appointments
+ final  List<dynamic> _appointments;
+// Appointments
+@JsonKey() List<dynamic> get appointments {
+  if (_appointments is EqualUnmodifiableListView) return _appointments;
   // ignore: implicit_dynamic_type
-  return EqualUnmodifiableListView(_pendingTherapists);
+  return EqualUnmodifiableListView(_appointments);
 }
 
- final  List<dynamic> _approvedTherapists;
-@JsonKey() List<dynamic> get approvedTherapists {
-  if (_approvedTherapists is EqualUnmodifiableListView) return _approvedTherapists;
+@JsonKey() final  int totalAppointments;
+@JsonKey() final  String appointmentFilter;
+// Content
+ final  List<dynamic> _content;
+// Content
+@JsonKey() List<dynamic> get content {
+  if (_content is EqualUnmodifiableListView) return _content;
   // ignore: implicit_dynamic_type
-  return EqualUnmodifiableListView(_approvedTherapists);
+  return EqualUnmodifiableListView(_content);
 }
 
+@JsonKey() final  int totalContent;
+@JsonKey() final  String contentFilter;
+// Loading states for operations
+@JsonKey() final  bool isVerifyingTherapist;
+@JsonKey() final  bool isDeletingTherapist;
+@JsonKey() final  bool isUpdatingUser;
+@JsonKey() final  bool isDeletingContent;
 
 /// Create a copy of AdminState
 /// with the given fields replaced by the non-null parameter values.
@@ -299,16 +331,16 @@ _$LoadedCopyWith<_Loaded> get copyWith => __$LoadedCopyWithImpl<_Loaded>(this, _
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Loaded&&const DeepCollectionEquality().equals(other._stats, _stats)&&const DeepCollectionEquality().equals(other._users, _users)&&const DeepCollectionEquality().equals(other._pendingTherapists, _pendingTherapists)&&const DeepCollectionEquality().equals(other._approvedTherapists, _approvedTherapists));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Loaded&&const DeepCollectionEquality().equals(other._stats, _stats)&&const DeepCollectionEquality().equals(other._therapists, _therapists)&&(identical(other.totalTherapists, totalTherapists) || other.totalTherapists == totalTherapists)&&(identical(other.therapistFilter, therapistFilter) || other.therapistFilter == therapistFilter)&&(identical(other.therapistSearch, therapistSearch) || other.therapistSearch == therapistSearch)&&const DeepCollectionEquality().equals(other._users, _users)&&(identical(other.totalUsers, totalUsers) || other.totalUsers == totalUsers)&&(identical(other.userRoleFilter, userRoleFilter) || other.userRoleFilter == userRoleFilter)&&(identical(other.userSearch, userSearch) || other.userSearch == userSearch)&&const DeepCollectionEquality().equals(other._appointments, _appointments)&&(identical(other.totalAppointments, totalAppointments) || other.totalAppointments == totalAppointments)&&(identical(other.appointmentFilter, appointmentFilter) || other.appointmentFilter == appointmentFilter)&&const DeepCollectionEquality().equals(other._content, _content)&&(identical(other.totalContent, totalContent) || other.totalContent == totalContent)&&(identical(other.contentFilter, contentFilter) || other.contentFilter == contentFilter)&&(identical(other.isVerifyingTherapist, isVerifyingTherapist) || other.isVerifyingTherapist == isVerifyingTherapist)&&(identical(other.isDeletingTherapist, isDeletingTherapist) || other.isDeletingTherapist == isDeletingTherapist)&&(identical(other.isUpdatingUser, isUpdatingUser) || other.isUpdatingUser == isUpdatingUser)&&(identical(other.isDeletingContent, isDeletingContent) || other.isDeletingContent == isDeletingContent));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_stats),const DeepCollectionEquality().hash(_users),const DeepCollectionEquality().hash(_pendingTherapists),const DeepCollectionEquality().hash(_approvedTherapists));
+int get hashCode => Object.hashAll([runtimeType,const DeepCollectionEquality().hash(_stats),const DeepCollectionEquality().hash(_therapists),totalTherapists,therapistFilter,therapistSearch,const DeepCollectionEquality().hash(_users),totalUsers,userRoleFilter,userSearch,const DeepCollectionEquality().hash(_appointments),totalAppointments,appointmentFilter,const DeepCollectionEquality().hash(_content),totalContent,contentFilter,isVerifyingTherapist,isDeletingTherapist,isUpdatingUser,isDeletingContent]);
 
 @override
 String toString() {
-  return 'AdminState.loaded(stats: $stats, users: $users, pendingTherapists: $pendingTherapists, approvedTherapists: $approvedTherapists)';
+  return 'AdminState.loaded(stats: $stats, therapists: $therapists, totalTherapists: $totalTherapists, therapistFilter: $therapistFilter, therapistSearch: $therapistSearch, users: $users, totalUsers: $totalUsers, userRoleFilter: $userRoleFilter, userSearch: $userSearch, appointments: $appointments, totalAppointments: $totalAppointments, appointmentFilter: $appointmentFilter, content: $content, totalContent: $totalContent, contentFilter: $contentFilter, isVerifyingTherapist: $isVerifyingTherapist, isDeletingTherapist: $isDeletingTherapist, isUpdatingUser: $isUpdatingUser, isDeletingContent: $isDeletingContent)';
 }
 
 
@@ -319,7 +351,7 @@ abstract mixin class _$LoadedCopyWith<$Res> implements $AdminStateCopyWith<$Res>
   factory _$LoadedCopyWith(_Loaded value, $Res Function(_Loaded) _then) = __$LoadedCopyWithImpl;
 @useResult
 $Res call({
- Map<String, dynamic> stats, List<dynamic> users, List<dynamic> pendingTherapists, List<dynamic> approvedTherapists
+ Map<String, dynamic> stats, List<dynamic> therapists, int totalTherapists, String therapistFilter, String therapistSearch, List<dynamic> users, int totalUsers, String userRoleFilter, String userSearch, List<dynamic> appointments, int totalAppointments, String appointmentFilter, List<dynamic> content, int totalContent, String contentFilter, bool isVerifyingTherapist, bool isDeletingTherapist, bool isUpdatingUser, bool isDeletingContent
 });
 
 
@@ -336,13 +368,28 @@ class __$LoadedCopyWithImpl<$Res>
 
 /// Create a copy of AdminState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? stats = null,Object? users = null,Object? pendingTherapists = null,Object? approvedTherapists = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? stats = null,Object? therapists = null,Object? totalTherapists = null,Object? therapistFilter = null,Object? therapistSearch = null,Object? users = null,Object? totalUsers = null,Object? userRoleFilter = null,Object? userSearch = null,Object? appointments = null,Object? totalAppointments = null,Object? appointmentFilter = null,Object? content = null,Object? totalContent = null,Object? contentFilter = null,Object? isVerifyingTherapist = null,Object? isDeletingTherapist = null,Object? isUpdatingUser = null,Object? isDeletingContent = null,}) {
   return _then(_Loaded(
 stats: null == stats ? _self._stats : stats // ignore: cast_nullable_to_non_nullable
-as Map<String, dynamic>,users: null == users ? _self._users : users // ignore: cast_nullable_to_non_nullable
-as List<dynamic>,pendingTherapists: null == pendingTherapists ? _self._pendingTherapists : pendingTherapists // ignore: cast_nullable_to_non_nullable
-as List<dynamic>,approvedTherapists: null == approvedTherapists ? _self._approvedTherapists : approvedTherapists // ignore: cast_nullable_to_non_nullable
-as List<dynamic>,
+as Map<String, dynamic>,therapists: null == therapists ? _self._therapists : therapists // ignore: cast_nullable_to_non_nullable
+as List<dynamic>,totalTherapists: null == totalTherapists ? _self.totalTherapists : totalTherapists // ignore: cast_nullable_to_non_nullable
+as int,therapistFilter: null == therapistFilter ? _self.therapistFilter : therapistFilter // ignore: cast_nullable_to_non_nullable
+as String,therapistSearch: null == therapistSearch ? _self.therapistSearch : therapistSearch // ignore: cast_nullable_to_non_nullable
+as String,users: null == users ? _self._users : users // ignore: cast_nullable_to_non_nullable
+as List<dynamic>,totalUsers: null == totalUsers ? _self.totalUsers : totalUsers // ignore: cast_nullable_to_non_nullable
+as int,userRoleFilter: null == userRoleFilter ? _self.userRoleFilter : userRoleFilter // ignore: cast_nullable_to_non_nullable
+as String,userSearch: null == userSearch ? _self.userSearch : userSearch // ignore: cast_nullable_to_non_nullable
+as String,appointments: null == appointments ? _self._appointments : appointments // ignore: cast_nullable_to_non_nullable
+as List<dynamic>,totalAppointments: null == totalAppointments ? _self.totalAppointments : totalAppointments // ignore: cast_nullable_to_non_nullable
+as int,appointmentFilter: null == appointmentFilter ? _self.appointmentFilter : appointmentFilter // ignore: cast_nullable_to_non_nullable
+as String,content: null == content ? _self._content : content // ignore: cast_nullable_to_non_nullable
+as List<dynamic>,totalContent: null == totalContent ? _self.totalContent : totalContent // ignore: cast_nullable_to_non_nullable
+as int,contentFilter: null == contentFilter ? _self.contentFilter : contentFilter // ignore: cast_nullable_to_non_nullable
+as String,isVerifyingTherapist: null == isVerifyingTherapist ? _self.isVerifyingTherapist : isVerifyingTherapist // ignore: cast_nullable_to_non_nullable
+as bool,isDeletingTherapist: null == isDeletingTherapist ? _self.isDeletingTherapist : isDeletingTherapist // ignore: cast_nullable_to_non_nullable
+as bool,isUpdatingUser: null == isUpdatingUser ? _self.isUpdatingUser : isUpdatingUser // ignore: cast_nullable_to_non_nullable
+as bool,isDeletingContent: null == isDeletingContent ? _self.isDeletingContent : isDeletingContent // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

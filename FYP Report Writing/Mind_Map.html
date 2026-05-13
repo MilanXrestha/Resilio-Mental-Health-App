@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Resilio — Mind Map</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background: #e0e0e0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      gap: 12px;
+      font-family: Arial, sans-serif;
+    }
+    canvas { background:#fff; box-shadow: 0 4px 20px rgba(0,0,0,.22); }
+    button {
+      padding: 9px 24px;
+      background: #2980b9; color: #fff;
+      border: none; border-radius: 5px;
+      cursor: pointer; font-size: 14px;
+      font-family: Arial, sans-serif;
+    }
+    button:hover { background: #1f6aa8; }
+  </style>
+</head>
+<body>
+  <canvas id="c"></canvas>
+  <button onclick="dl()">Download PNG</button>
+
+<script>
+const cv  = document.getElementById('c');
+const ctx = cv.getContext('2d');
+
+/* ── roundRect polyfill ── */
+if (!ctx.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function(x,y,w,h,r){
+    this.beginPath();
+    this.moveTo(x+r,y); this.lineTo(x+w-r,y);
+    this.quadraticCurveTo(x+w,y,x+w,y+r);
+    this.lineTo(x+w,y+h-r);
+    this.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+    this.lineTo(x+r,y+h);
+    this.quadraticCurveTo(x,y+h,x,y+h-r);
+    this.lineTo(x,y+r);
+    this.quadraticCurveTo(x,y,x+r,y);
+    this.closePath();
+  };
+}
+
+/* ════════════════════════════════════════════
+   DATA
+═══════════════════════════════════════════ */
+const LEFT = [
+  { label: 'Problem Domain', children: [
+    { label: '29% Mental Health Prevalence' },
+    { label: '80% Treatment Gap' },
+    { label: '2 Psychiatrists per 100,000' },
+    { label: 'Geographic Barriers' },
+    { label: 'High Cost of Therapy' },
+    { label: 'Social Stigma' },
+  ]},
+  { label: 'User Roles', children: [
+    { label: 'Customer', children: [
+      { label: 'Browse & Book Therapists' },
+      { label: 'Video Consultations' },
+      { label: 'Mood Tracking' },
+      { label: 'Wellness Games' },
+    ]},
+    { label: 'Therapist', children: [
+      { label: 'Manage Schedule' },
+      { label: 'Conduct Sessions' },
+      { label: 'Track Earnings' },
+    ]},
+    { label: 'Admin', children: [
+      { label: 'Verify Therapists' },
+      { label: 'Moderate Content' },
+      { label: 'View Analytics' },
+    ]},
+  ]},
+  { label: 'Methodology — RUP', children: [
+    { label: 'Inception (Weeks 1–5)' },
+    { label: 'Elaboration (Weeks 6–10)' },
+    { label: 'Construction (Weeks 11–19)', children: [
+      { label: '7 Development Iterations' },
+    ]},
+    { label: 'Transition (Week 20)' },
+  ]},
+  { label: 'Technology Stack', children: [
+    { label: 'Flutter + Dart' },
+    { label: 'Node.js + Express' },
+    { label: 'Supabase (PostgreSQL)' },
+    { label: 'BLoC / Cubit' },
+    { label: 'Clean Architecture' },
+    { label: 'GoRouter + GetIt' },
+  ]},
+];
+
+const RIGHT = [
+  { label: 'Core Features', children: [
+    { label: 'Authentication', children: [
+      { label: 'OTP Passwordless' },
+      { label: 'Google Sign-In' },
+      { label: 'Facebook Sign-In' },
+    ]},
+    { label: 'Appointment Booking', children: [
+      { label: 'Real-Time Slot Selection' },
+      { label: 'eSewa Payment' },
+      { label: 'FCM Confirmation' },
+    ]},
+    { label: 'Live Consultation', children: [
+      { label: 'WebRTC Peer-to-Peer' },
+      { label: 'Socket.IO Signalling' },
+      { label: 'STUN / TURN Fallback' },
+    ]},
+    { label: 'Mental Health Tracking', children: [
+      { label: 'Daily Mood Log' },
+      { label: 'PHQ-9 Questionnaire' },
+      { label: 'GAD-7 Questionnaire' },
+      { label: 'Crisis Alert (PHQ ≥ 20)' },
+    ]},
+  ]},
+  { label: 'Content Hub', children: [
+    { label: 'Articles & Blog Posts' },
+    { label: 'Audio Guided Sessions' },
+    { label: 'Long-Form Videos' },
+    { label: 'Short Reels' },
+    { label: 'Daily Quotes & Tips' },
+    { label: 'Premium Content Gating' },
+  ]},
+  { label: 'Wellness Games', children: [
+    { label: 'Breathing Bubble (4-7-8)' },
+    { label: 'Mental Health Trivia' },
+    { label: 'Affirmation Builder' },
+    { label: 'Motivational Story' },
+    { label: 'Achievement Badges' },
+  ]},
+  { label: 'Services & Deployment', children: [
+    { label: 'SuperTokens + Firebase Auth' },
+    { label: 'Firebase FCM (Push)' },
+    { label: 'Cloudinary CDN (Media)' },
+    { label: 'eSewa Payment Gateway' },
+    { label: 'Vercel (REST API)' },
+    { label: 'Railway (Socket.IO)' },
+    { label: '99.05% Test Pass Rate' },
+  ]},
+];
+
+/* ════════════════════════════════════════════
+   CONSTANTS  — portrait A4 @ ~150 dpi
+═══════════════════════════════════════════ */
+const COLORS = [
+  '#c0392b','#8e44ad','#2980b9','#16a085',   // left branches
+  '#e67e22','#27ae60','#154360','#d35400'    // right branches
+];
+
+const W      = 1240;   // A4 portrait width  (210 mm @ 150 dpi)
+const V_PAD  = 170;    // vertical padding each side
+const BOX_H  = 21;     // depth-1 box height
+
+/* x-offsets from canvas centre per depth level */
+const DX_L = [-145, -288, -422];
+const DX_R = [ 145,  288,  422];
+
+/* ════════════════════════════════════════════
+   LAYOUT
+═══════════════════════════════════════════ */
+function leafCount(n) {
+  if (!n.children || !n.children.length) return 1;
+  return n.children.reduce((s,c) => s + leafCount(c), 0);
+}
+
+function assignPos(nodes, side, CX, CY, ROW) {
+  const dx    = side === 'left' ? DX_L : DX_R;
+  const total = nodes.reduce((s,n) => s + leafCount(n), 0);
+  let   curY  = CY - (total * ROW) / 2;
+
+  function place(n, d, sy, ey) {
+    n.x = CX + dx[d-1];  n.y = (sy+ey)/2;
+    n.side = side;        n.depth = d;
+    if (!n.children || !n.children.length) return;
+    let y = sy;
+    for (const c of n.children) {
+      const h = leafCount(c) * ROW;
+      place(c, d+1, y, y+h);
+      y += h;
+    }
+  }
+
+  for (const n of nodes) {
+    const h = leafCount(n) * ROW;
+    place(n, 1, curY, curY+h);
+    curY += h;
+  }
+}
+
+/* ════════════════════════════════════════════
+   BOX HELPERS
+═══════════════════════════════════════════ */
+function bw(label) {
+  ctx.font = 'bold 12px Arial';
+  return ctx.measureText(label).width + 22;
+}
+
+/* edge of box that faces the parent (line arrives here) */
+function connPt(n) {
+  if (n.depth === 1) {
+    const hw = bw(n.label) / 2;
+    return { x: n.side === 'left' ? n.x + hw : n.x - hw, y: n.y };
+  }
+  return { x: n.x, y: n.y };
+}
+
+/* edge of box that faces children (line leaves here) */
+function childPt(n) {
+  if (n.depth === 1) {
+    const hw = bw(n.label) / 2;
+    return { x: n.side === 'left' ? n.x - hw : n.x + hw, y: n.y };
+  }
+  return { x: n.x, y: n.y };
+}
+
+/* ════════════════════════════════════════════
+   DRAWING PRIMITIVES
+═══════════════════════════════════════════ */
+function bezier(x1,y1,x2,y2,col,lw) {
+  const mx = (x1+x2)/2;
+  ctx.beginPath();
+  ctx.moveTo(x1,y1);
+  ctx.bezierCurveTo(mx,y1, mx,y2, x2,y2);
+  ctx.strokeStyle = col; ctx.lineWidth = lw;
+  ctx.stroke();
+}
+
+function arrowTip(x, y, dir, col) {
+  const L=8, A=3.5;
+  ctx.strokeStyle = col; ctx.lineWidth = 1.4;
+  ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+L*dir,y); ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(x+L*dir,y); ctx.lineTo(x+(L-A)*dir, y-A);
+  ctx.moveTo(x+L*dir,y); ctx.lineTo(x+(L-A)*dir, y+A);
+  ctx.stroke();
+}
+
+/* ════════════════════════════════════════════
+   PASS 1 — curves only (no labels)
+═══════════════════════════════════════════ */
+function passCurves(n, pp, col) {
+  const cp = connPt(n);
+  bezier(pp.x, pp.y, cp.x, cp.y, col, n.depth === 1 ? 2.2 : 1.2);
+  if (n.children) {
+    const out = childPt(n);
+    for (const c of n.children) passCurves(c, out, col);
+  }
+}
+
+/* ════════════════════════════════════════════
+   PASS 2 — labels with white backing
+═══════════════════════════════════════════ */
+function passLabels(n, col) {
+  const { x, y, depth, side, label } = n;
+  const isLeaf = !n.children || !n.children.length;
+
+  if (depth === 1) {
+    ctx.font = 'bold 12px Arial';
+    const BW = bw(label);
+    const lx = x - BW/2, ly = y - BOX_H/2;
+    /* solid white wipes any curve behind the box */
+    ctx.roundRect(lx, ly, BW, BOX_H, 5);
+    ctx.fillStyle = '#ffffff'; ctx.fill();
+    /* light colour tint */
+    ctx.roundRect(lx, ly, BW, BOX_H, 5);
+    ctx.fillStyle = col + '1a'; ctx.fill();
+    /* border */
+    ctx.strokeStyle = col; ctx.lineWidth = 1.6; ctx.stroke();
+    /* text */
+    ctx.fillStyle = col;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(label, x, y);
+
+  } else {
+    ctx.font = '10px Arial';
+    const tw = ctx.measureText(label).width;
+    const px = 4, py = 6;
+
+    if (side === 'left') {
+      /* white rect wipes line behind text */
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(x - tw - px, y - py, tw + px*2, py*2);
+      ctx.fillStyle = '#111';
+      ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+      ctx.fillText(label, x, y);
+      if (isLeaf) arrowTip(x - tw - 5, y, -1, col);
+    } else {
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(x - px, y - py, tw + px*2, py*2);
+      ctx.fillStyle = '#111';
+      ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+      ctx.fillText(label, x, y);
+      if (isLeaf) arrowTip(x + tw + 5, y, +1, col);
+    }
+  }
+
+  if (n.children) for (const c of n.children) passLabels(c, col);
+}
+
+/* ════════════════════════════════════════════
+   RENDER
+═══════════════════════════════════════════ */
+function render() {
+  const lLeaves = LEFT.reduce( (s,n) => s + leafCount(n), 0);
+  const rLeaves = RIGHT.reduce((s,n) => s + leafCount(n), 0);
+  const maxL    = Math.max(lLeaves, rLeaves);
+
+  /* compute ROW so total height ≈ A4 portrait (1754 px @ 150 dpi) */
+  const TARGET_H = 1754;
+  const ROW      = Math.round((TARGET_H - V_PAD * 2) / maxL);
+
+  const H  = maxL * ROW + V_PAD * 2;
+  const CX = W / 2, CY = H / 2;
+
+  cv.width = W; cv.height = H;
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, W, H);
+
+  assignPos(LEFT,  'left',  CX, CY, ROW);
+  assignPos(RIGHT, 'right', CX, CY, ROW);
+
+  /* pass 1 — all curves */
+  LEFT.forEach( (b,i) => passCurves(b, {x:CX,y:CY}, COLORS[i]));
+  RIGHT.forEach((b,i) => passCurves(b, {x:CX,y:CY}, COLORS[i+4]));
+
+  /* pass 2 — all labels */
+  LEFT.forEach( (b,i) => passLabels(b, COLORS[i]));
+  RIGHT.forEach((b,i) => passLabels(b, COLORS[i+4]));
+
+  /* centre node — drawn last so it's always on top */
+  ctx.beginPath(); ctx.ellipse(CX, CY, 66, 31, 0, 0, Math.PI*2);
+  ctx.fillStyle = '#ffffff'; ctx.fill();
+  ctx.beginPath(); ctx.ellipse(CX, CY, 66, 31, 0, 0, Math.PI*2);
+  ctx.fillStyle = '#f5d742'; ctx.fill();
+  ctx.strokeStyle = '#c9a800'; ctx.lineWidth = 2.5; ctx.stroke();
+
+  ctx.font = 'bold 16px Arial';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#1a1a1a';
+  ctx.fillText('Resilio', CX, CY);
+}
+
+render();
+
+function dl() {
+  const a = document.createElement('a');
+  a.download = 'resilio-mindmap.png';
+  a.href = cv.toDataURL('image/png');
+  a.click();
+}
+</script>
+</body>
+</html>

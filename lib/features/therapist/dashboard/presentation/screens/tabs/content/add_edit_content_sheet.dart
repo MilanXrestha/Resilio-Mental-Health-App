@@ -26,11 +26,25 @@ class _AddEditContentSheetState extends State<AddEditContentSheet> {
   final _formKey = GlobalKey<FormState>();
   bool _isUploading = false;
 
-  // Form Fields
+  // Shared form fields
   String _title = '';
   String _description = '';
+  bool _isFeatured = false;
+  bool _isPremium = false;
+
+  // Videos / Audio Form fields
   String _mediaUrl = '';
   String _thumbnailUrl = '';
+  String _artistName = '';
+  int _durationSeconds = 0;
+  String _videoType = 'long'; // 'short' or 'long'
+
+  // Tips / Quotes Form fields
+  String _author = '';
+  String _authorIconUrl = '';
+  String _tipType = 'general';
+  String _quoteType = 'quote';
+
   File? _selectedFile;
   File? _selectedThumbnail;
 
@@ -39,16 +53,30 @@ class _AddEditContentSheetState extends State<AddEditContentSheet> {
     super.initState();
     if (widget.initialData != null) {
       final d = widget.initialData!;
+      _isFeatured = d['isFeatured'] ?? d['is_featured'] ?? false;
+      _isPremium = d['isPremium'] ?? d['is_premium'] ?? false;
+
       if (widget.contentType == 'tips') {
         _title = d['title'] ?? '';
-        _description = d['tipText'] ?? '';
+        _description = d['tipText'] ?? d['tip_text'] ?? '';
+        _author = d['author'] ?? '';
+        _authorIconUrl = d['authorIconUrl'] ?? d['author_icon_url'] ?? '';
+        _tipType = d['tipType'] ?? d['tip_type'] ?? 'general';
       } else if (widget.contentType == 'quotes') {
-        _description = d['quoteText'] ?? '';
+        _description = d['quoteText'] ?? d['quote_text'] ?? '';
+        _author = d['author'] ?? '';
+        _authorIconUrl = d['authorIconUrl'] ?? d['author_icon_url'] ?? '';
+        _quoteType = d['quoteType'] ?? d['quote_type'] ?? 'quote';
       } else {
         _title = d['title'] ?? '';
         _description = d['description'] ?? '';
-        _mediaUrl = d['videoUrl'] ?? d['audioUrl'] ?? '';
-        _thumbnailUrl = d['thumbnailUrl'] ?? d['coverImageUrl'] ?? '';
+        _mediaUrl = d['videoUrl'] ?? d['audioUrl'] ?? d['video_url'] ?? d['audio_url'] ?? '';
+        _thumbnailUrl = d['thumbnailUrl'] ?? d['coverImageUrl'] ?? d['thumbnail_url'] ?? d['cover_image_url'] ?? '';
+        _artistName = d['artistName'] ?? d['artist_name'] ?? '';
+        _durationSeconds = (d['durationSeconds'] ?? d['duration_seconds'] as num?)?.toInt() ?? 0;
+        if (widget.contentType == 'videos') {
+           _videoType = d['videoType'] ?? d['video_type'] ?? 'long';
+        }
       }
     }
   }
@@ -73,8 +101,6 @@ class _AddEditContentSheetState extends State<AddEditContentSheet> {
     }
   }
 
-  // Uses Resilio's default public preset - assuming environment configuration is set up server-side, 
-  // but for the demo we'll use a placeholder or let it fail gently.
   Future<String?> _uploadToCloudinary(File file, {bool isVideo = false}) async {
     try {
       final cloudinary = CloudinaryPublic('resilio_cloud', 'ml_default', cache: false);
@@ -86,7 +112,7 @@ class _AddEditContentSheetState extends State<AddEditContentSheet> {
       );
       return res.secureUrl;
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Upload failed: $e')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Upload failed: $e')));
       return null;
     }
   }
@@ -107,17 +133,34 @@ class _AddEditContentSheetState extends State<AddEditContentSheet> {
       }
 
       final data = <String, dynamic>{};
+      
+      // Map to proper snake_case depending on backend matching
+      // The content cubit handles passing it as JSON. You should pass the camelCase keys 
+      // if your backend has snakecase conversion middleware, otherwise send exactly what's below.
+      data['isFeatured'] = _isFeatured;
+      data['isPremium'] = _isPremium;
+
       if (widget.contentType == 'tips') {
         data['title'] = _title;
         data['tipText'] = _description;
+        data['author'] = _author;
+        data['authorIconUrl'] = _authorIconUrl;
+        data['tipType'] = _tipType;
       } else if (widget.contentType == 'quotes') {
         data['quoteText'] = _description;
+        data['author'] = _author;
+        data['authorIconUrl'] = _authorIconUrl;
+        data['quoteType'] = _quoteType;
       } else {
         data['title'] = _title;
         data['description'] = _description;
+        data['artistName'] = _artistName;
+        data['durationSeconds'] = _durationSeconds;
+        
         if (widget.contentType == 'videos') {
           data['videoUrl'] = _mediaUrl;
           data['thumbnailUrl'] = _thumbnailUrl;
+          data['videoType'] = _videoType;
         } else {
           data['audioUrl'] = _mediaUrl;
           data['coverImageUrl'] = _thumbnailUrl;
@@ -138,14 +181,39 @@ class _AddEditContentSheetState extends State<AddEditContentSheet> {
     }
   }
 
+  Widget _buildTextField({
+    required String label, 
+    required String initialValue, 
+    FormFieldSetter<String>? onSaved,
+    int maxLines = 1,
+    TextInputType? keyboardType,
+    bool required = true,
+  }) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 16.h),
+      child: TextFormField(
+        initialValue: initialValue,
+        maxLines: maxLines,
+        keyboardType: keyboardType,
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: TextStyle(fontFamily: 'Poppins', fontSize: 14.sp),
+          contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: maxLines > 1 ? 16.h : 0),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r), borderSide: BorderSide(color: context.borderColor)),
+          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r), borderSide: BorderSide(color: context.borderColor)),
+        ),
+        validator: required ? (v) => v == null || v.isEmpty ? 'Required' : null : null,
+        onSaved: onSaved,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final title = widget.initialData == null ? 'Add New ${widget.contentType}' : 'Edit ${widget.contentType}';
+    final title = widget.initialData == null ? 'Add New ${widget.contentType.capitalize()}' : 'Edit ${widget.contentType.capitalize()}';
+    
     return Container(
-      padding: EdgeInsets.only(
-        left: 20.w, right: 20.w, top: 20.h,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 20.h,
-      ),
+      padding: EdgeInsets.only(left: 24.w, right: 24.w, top: 20.h, bottom: MediaQuery.of(context).viewInsets.bottom + 20.h),
       decoration: BoxDecoration(
         color: context.surfaceColor,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
@@ -153,64 +221,164 @@ class _AddEditContentSheetState extends State<AddEditContentSheet> {
       child: Form(
         key: _formKey,
         child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Center(child: Container(width: 40.w, height: 4.h, decoration: BoxDecoration(color: context.dividerColor, borderRadius: BorderRadius.circular(2.r)))),
-              SizedBox(height: 20.h),
-              Text(title, style: TextStyle(fontFamily: 'Poppins', fontSize: 20.sp, fontWeight: FontWeight.w700, color: context.textPrimaryColor)),
-              SizedBox(height: 20.h),
+              SizedBox(height: 24.h),
+              Text(title, style: TextStyle(fontFamily: 'Poppins', fontSize: 22.sp, fontWeight: FontWeight.w700, color: context.textPrimaryColor)),
+              SizedBox(height: 24.h),
 
-              if (widget.contentType != 'quotes') ...[
-                TextFormField(
-                  initialValue: _title,
-                  decoration: InputDecoration(
-                    labelText: 'Title',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
-                  ),
-                  validator: (v) => v!.isEmpty ? 'Required' : null,
+              if (widget.contentType != 'quotes')
+                _buildTextField(
+                  label: 'Title', 
+                  initialValue: _title, 
                   onSaved: (v) => _title = v!,
                 ),
-                SizedBox(height: 16.h),
-              ],
 
-              TextFormField(
+              _buildTextField(
+                label: widget.contentType == 'quotes' ? 'Quote Text' : (widget.contentType == 'tips' ? 'Tip Content' : 'Description'),
                 initialValue: _description,
                 maxLines: widget.contentType == 'quotes' ? 4 : 3,
-                decoration: InputDecoration(
-                  labelText: widget.contentType == 'quotes' ? 'Quote Text' : 'Description / Text',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
-                ),
-                validator: (v) => v!.isEmpty ? 'Required' : null,
                 onSaved: (v) => _description = v!,
               ),
-              SizedBox(height: 16.h),
+
+              if (widget.contentType == 'quotes' || widget.contentType == 'tips') ...[
+                _buildTextField(
+                  label: 'Author Name',
+                  initialValue: _author,
+                  required: widget.contentType == 'quotes',
+                  onSaved: (v) => _author = v ?? '',
+                ),
+                _buildTextField(
+                  label: 'Author Icon URL (Optional)',
+                  initialValue: _authorIconUrl,
+                  required: false,
+                  onSaved: (v) => _authorIconUrl = v ?? '',
+                ),
+                
+                if (widget.contentType == 'quotes')
+                  Padding(
+                    padding: EdgeInsets.only(bottom: 16.h),
+                    child: DropdownButtonFormField<String>(
+                      value: _quoteType,
+                      decoration: InputDecoration(
+                        labelText: 'Quote Type',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
+                      ),
+                      items: const [
+                        DropdownMenuItem(value: 'quote', child: Text('Quote')),
+                        DropdownMenuItem(value: 'tip', child: Text('Tip')),
+                        DropdownMenuItem(value: 'affirmation', child: Text('Affirmation')),
+                      ],
+                      onChanged: (v) => setState(() => _quoteType = v!),
+                      onSaved: (v) => _quoteType = v!,
+                    ),
+                  ),
+
+                if (widget.contentType == 'tips')
+                  Padding(
+                    padding: EdgeInsets.only(bottom: 16.h),
+                    child: DropdownButtonFormField<String>(
+                      value: _tipType,
+                      decoration: InputDecoration(
+                        labelText: 'Tip Type',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
+                      ),
+                      items: const [
+                        DropdownMenuItem(value: 'general', child: Text('General')),
+                        DropdownMenuItem(value: 'relationship_booster', child: Text('Relationship Booster')),
+                        DropdownMenuItem(value: 'letting_go', child: Text('Letting Go')),
+                        DropdownMenuItem(value: 'communication', child: Text('Communication')),
+                        DropdownMenuItem(value: 'self_care', child: Text('Self Care')),
+                        DropdownMenuItem(value: 'mindfulness', child: Text('Mindfulness')),
+                      ],
+                      onChanged: (v) => setState(() => _tipType = v!),
+                      onSaved: (v) => _tipType = v!,
+                    ),
+                  ),
+              ],
 
               if (widget.contentType == 'videos' || widget.contentType == 'audio') ...[
+                _buildTextField(
+                  label: 'Artist / Creator Name',
+                  initialValue: _artistName,
+                  required: false,
+                  onSaved: (v) => _artistName = v ?? '',
+                ),
+                _buildTextField(
+                  label: 'Duration (in Seconds)',
+                  initialValue: _durationSeconds > 0 ? _durationSeconds.toString() : '',
+                  keyboardType: TextInputType.number,
+                  required: true,
+                  onSaved: (v) => _durationSeconds = int.tryParse(v ?? '0') ?? 0,
+                ),
+
+                if (widget.contentType == 'videos')
+                  Padding(
+                    padding: EdgeInsets.only(bottom: 16.h),
+                    child: DropdownButtonFormField<String>(
+                      value: _videoType,
+                      decoration: InputDecoration(
+                        labelText: 'Video Type',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
+                      ),
+                      items: const [
+                        DropdownMenuItem(value: 'long', child: Text('Long Form (16:9)')),
+                        DropdownMenuItem(value: 'short', child: Text('Short/Reel (9:16)')),
+                      ],
+                      onChanged: (v) => setState(() => _videoType = v!),
+                      onSaved: (v) => _videoType = v!,
+                    ),
+                  ),
+
                 // Media Upload
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: Text(_selectedFile != null ? 'Media selected' : 'Upload Media File', style: TextStyle(fontFamily: 'Poppins', fontSize: 13.sp)),
-                  subtitle: _mediaUrl.isNotEmpty && _selectedFile == null ? Text('Existing: $_mediaUrl', maxLines: 1) : null,
-                  trailing: ElevatedButton(
+                  title: Text(_selectedFile != null ? 'Media File Selected' : 'Upload Media File', style: TextStyle(fontFamily: 'Poppins', fontSize: 14.sp)),
+                  subtitle: _mediaUrl.isNotEmpty && _selectedFile == null ? Text('Existing URL...', maxLines: 1) : null,
+                  trailing: ElevatedButton.icon(
                     onPressed: () => _pickFile(false),
-                    child: const Text('Browse'),
+                    icon: Icon(Icons.upload_rounded, size: 18.sp),
+                    label: const Text('Browse'),
+                    style: ElevatedButton.styleFrom(backgroundColor: context.surfaceColor, foregroundColor: context.primaryColor, elevation: 0, side: BorderSide(color: context.primaryColor)),
                   ),
                 ),
                 // Thumbnail Upload
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: Text(_selectedThumbnail != null ? 'Thumbnail selected' : 'Upload Thumbnail Cover', style: TextStyle(fontFamily: 'Poppins', fontSize: 13.sp)),
-                  subtitle: _thumbnailUrl.isNotEmpty && _selectedThumbnail == null ? Text('Existing: $_thumbnailUrl', maxLines: 1) : null,
-                  trailing: ElevatedButton(
+                  title: Text(_selectedThumbnail != null ? 'Thumbnail Selected' : 'Upload Cover/Thumbnail', style: TextStyle(fontFamily: 'Poppins', fontSize: 14.sp)),
+                  subtitle: _thumbnailUrl.isNotEmpty && _selectedThumbnail == null ? Text('Existing URL...', maxLines: 1) : null,
+                  trailing: ElevatedButton.icon(
                     onPressed: () => _pickFile(true),
-                    child: const Text('Browse'),
+                    icon: Icon(Icons.image_rounded, size: 18.sp),
+                    label: const Text('Browse'),
+                    style: ElevatedButton.styleFrom(backgroundColor: context.surfaceColor, foregroundColor: context.primaryColor, elevation: 0, side: BorderSide(color: context.primaryColor)),
                   ),
                 ),
               ],
 
-              SizedBox(height: 24.h),
+              // Toggles
+              SwitchListTile.adaptive(
+                contentPadding: EdgeInsets.zero,
+                activeColor: context.primaryColor,
+                title: Text('Featured Content', style: TextStyle(fontFamily: 'Poppins', fontSize: 14.sp, fontWeight: FontWeight.w500)),
+                subtitle: Text('Show on main dashboard banners.', style: TextStyle(fontFamily: 'Poppins', fontSize: 12.sp, color: context.textSecondaryColor)),
+                value: _isFeatured,
+                onChanged: (v) => setState(() => _isFeatured = v),
+              ),
+              SwitchListTile.adaptive(
+                contentPadding: EdgeInsets.zero,
+                activeColor: context.primaryColor,
+                title: Text('Premium Content', style: TextStyle(fontFamily: 'Poppins', fontSize: 14.sp, fontWeight: FontWeight.w500)),
+                subtitle: Text('Requires an active subscription to access.', style: TextStyle(fontFamily: 'Poppins', fontSize: 12.sp, color: context.textSecondaryColor)),
+                value: _isPremium,
+                onChanged: (v) => setState(() => _isPremium = v),
+              ),
+
+              SizedBox(height: 32.h),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -218,11 +386,12 @@ class _AddEditContentSheetState extends State<AddEditContentSheet> {
                     padding: EdgeInsets.symmetric(vertical: 16.h),
                     backgroundColor: context.primaryColor,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                    elevation: 0,
                   ),
                   onPressed: _isUploading ? null : _submit,
                   child: _isUploading
                       ? const CircularProgressIndicator(color: Colors.white)
-                      : Text('Save ${widget.contentType}', style: TextStyle(fontFamily: 'Poppins', fontSize: 15.sp, color: Colors.white)),
+                      : Text('Save Content', style: TextStyle(fontFamily: 'Poppins', fontSize: 15.sp, fontWeight: FontWeight.w600, color: Colors.white)),
                 ),
               )
             ],
@@ -230,5 +399,12 @@ class _AddEditContentSheetState extends State<AddEditContentSheet> {
         ),
       ),
     );
+  }
+}
+
+extension StringExtension on String {
+  String capitalize() {
+    if (isEmpty) return this;
+    return "${this[0].toUpperCase()}${substring(1)}";
   }
 }

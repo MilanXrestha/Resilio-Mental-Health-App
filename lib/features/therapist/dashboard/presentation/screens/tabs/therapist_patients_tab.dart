@@ -1,3 +1,4 @@
+import '../../widgets/shimmer_therapist_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -59,18 +60,36 @@ class _TherapistPatientsTabState extends State<TherapistPatientsTab> {
                   color: context.surfaceColor,
                   borderRadius: BorderRadius.circular(14.r),
                   border: Border.all(color: context.borderColor, width: 0.5),
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8)],
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 8,
+                    ),
+                  ],
                 ),
                 child: TextField(
                   controller: _searchController,
-                  onChanged: (q) => context.read<TherapistCubit>().filterPatients(q),
+                  onChanged: (q) =>
+                      context.read<TherapistCubit>().filterPatients(q),
                   decoration: InputDecoration(
                     hintText: 'Search patients…',
-                    hintStyle: TextStyle(fontFamily: 'Poppins', fontSize: 14.sp, color: context.textHintColor),
-                    prefixIcon: Icon(Icons.search_rounded, color: context.textSecondaryColor, size: 20.sp),
+                    hintStyle: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 14.sp,
+                      color: context.textHintColor,
+                    ),
+                    prefixIcon: Icon(
+                      Icons.search_rounded,
+                      color: context.textSecondaryColor,
+                      size: 20.sp,
+                    ),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
-                            icon: Icon(Icons.close_rounded, size: 18.sp, color: context.textSecondaryColor),
+                            icon: Icon(
+                              Icons.close_rounded,
+                              size: 18.sp,
+                              color: context.textSecondaryColor,
+                            ),
                             onPressed: () {
                               _searchController.clear();
                               context.read<TherapistCubit>().filterPatients('');
@@ -78,7 +97,10 @@ class _TherapistPatientsTabState extends State<TherapistPatientsTab> {
                           )
                         : null,
                     border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 16.w,
+                      vertical: 14.h,
+                    ),
                   ),
                 ),
               ),
@@ -88,40 +110,70 @@ class _TherapistPatientsTabState extends State<TherapistPatientsTab> {
             Expanded(
               child: BlocBuilder<TherapistCubit, TherapistState>(
                 builder: (context, state) {
-                  if (state is TherapistLoading) {
-                    return const Center(child: CircularProgressIndicator());
+                  if (state.isLoading && !state.hasPatients) {
+                    return const TherapistListShimmer();
                   }
-                  if (state is TherapistError) {
+                  if (state.errorMessage != null && !state.hasPatients) {
                     return Center(
-                      child: Column(mainAxisSize: MainAxisSize.min, children: [
-                        Icon(Icons.error_outline_rounded, size: 48.sp, color: context.errorColor),
-                        SizedBox(height: 12.h),
-                        TextButton(onPressed: () => context.read<TherapistCubit>().loadPatients(), child: const Text('Retry')),
-                      ]),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.error_outline_rounded,
+                            size: 48.sp,
+                            color: context.errorColor,
+                          ),
+                          SizedBox(height: 12.h),
+                          TextButton(
+                            onPressed: () =>
+                                context.read<TherapistCubit>().loadPatients(),
+                            child: const Text('Retry'),
+                          ),
+                        ],
+                      ),
                     );
                   }
-                  if (state is! TherapistPatientsLoaded) return const SizedBox.shrink();
-                  if (state.filtered.isEmpty) {
+                  if (!state.hasPatients) {
+                    return const SizedBox.shrink();
+                  }
+                  if (state.filteredPatients!.isEmpty) {
                     return Center(
-                      child: Column(mainAxisSize: MainAxisSize.min, children: [
-                        Icon(Icons.people_outline_rounded, size: 64.sp, color: context.textSecondaryColor.withOpacity(0.4)),
-                        SizedBox(height: 16.h),
-                        Text(
-                          state.query.isEmpty ? 'No patients yet' : 'No results for "${state.query}"',
-                          style: TextStyle(fontFamily: 'Poppins', fontSize: 15.sp, color: context.textSecondaryColor),
-                        ),
-                      ]),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.people_outline_rounded,
+                            size: 64.sp,
+                            color: context.textSecondaryColor.withOpacity(0.4),
+                          ),
+                          SizedBox(height: 16.h),
+                          Text(
+                            state.patientQuery.isEmpty
+                                ? 'No patients yet'
+                                : 'No results for "${state.patientQuery}"',
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              fontSize: 15.sp,
+                              color: context.textSecondaryColor,
+                            ),
+                          ),
+                        ],
+                      ),
                     );
                   }
                   return RefreshIndicator(
                     color: context.primaryColor,
-                    onRefresh: () => context.read<TherapistCubit>().loadPatients(),
+                    onRefresh: () =>
+                        context.read<TherapistCubit>().loadPatients(),
                     child: ListView.separated(
                       padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 100.h),
-                      physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
-                      itemCount: state.filtered.length,
+                      physics: const AlwaysScrollableScrollPhysics(
+                        parent: BouncingScrollPhysics(),
+                      ),
+                      itemCount: state.filteredPatients!.length,
                       separatorBuilder: (_, __) => SizedBox(height: 12.h),
-                      itemBuilder: (context, i) => _PatientCard(patient: state.filtered[i]),
+                      itemBuilder: (context, i) =>
+                          _PatientCard(patient: state.filteredPatients![i]),
                     ),
                   );
                 },
@@ -146,7 +198,9 @@ class _PatientCard extends StatelessWidget {
     final lastStr = patient['lastSessionDate'] as String?;
     DateTime? lastDate;
     if (lastStr != null) lastDate = DateTime.tryParse(lastStr);
-    final lastFormatted = lastDate != null ? DateFormat('MMM d, yyyy').format(lastDate.toLocal()) : 'No sessions';
+    final lastFormatted = lastDate != null
+        ? DateFormat('MMM d, yyyy').format(lastDate.toLocal())
+        : 'No sessions';
 
     return Container(
       padding: EdgeInsets.all(16.w),
@@ -154,7 +208,13 @@ class _PatientCard extends StatelessWidget {
         color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: context.borderColor, width: 0.5),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 2))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -163,7 +223,12 @@ class _PatientCard extends StatelessWidget {
             backgroundColor: context.primaryColor.withOpacity(0.1),
             child: Text(
               name.isNotEmpty ? name[0].toUpperCase() : 'P',
-              style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w700, color: context.primaryColor, fontSize: 18.sp),
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                fontWeight: FontWeight.w700,
+                color: context.primaryColor,
+                fontSize: 18.sp,
+              ),
             ),
           ),
           SizedBox(width: 14.w),
@@ -171,23 +236,49 @@ class _PatientCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name, style: TextStyle(fontFamily: 'Poppins', fontSize: 15.sp, fontWeight: FontWeight.w600, color: context.textPrimaryColor)),
+                Text(
+                  name,
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w600,
+                    color: context.textPrimaryColor,
+                  ),
+                ),
                 if (email.isNotEmpty) ...[
                   SizedBox(height: 2.h),
-                  Text(email, style: TextStyle(fontFamily: 'Poppins', fontSize: 12.sp, color: context.textSecondaryColor), overflow: TextOverflow.ellipsis),
+                  Text(
+                    email,
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 12.sp,
+                      color: context.textSecondaryColor,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ],
                 SizedBox(height: 6.h),
                 Row(
                   children: [
-                    _PillBadge(label: '$sessions session${sessions != 1 ? 's' : ''}', color: context.primaryColor),
+                    _PillBadge(
+                      label: '$sessions session${sessions != 1 ? 's' : ''}',
+                      color: context.primaryColor,
+                    ),
                     SizedBox(width: 8.w),
-                    _PillBadge(label: 'Last: $lastFormatted', color: context.textSecondaryColor),
+                    _PillBadge(
+                      label: 'Last: $lastFormatted',
+                      color: context.textSecondaryColor,
+                    ),
                   ],
                 ),
               ],
             ),
           ),
-          Icon(Icons.chevron_right_rounded, color: context.textSecondaryColor, size: 20.sp),
+          Icon(
+            Icons.chevron_right_rounded,
+            color: context.textSecondaryColor,
+            size: 20.sp,
+          ),
         ],
       ),
     );
@@ -207,7 +298,15 @@ class _PillBadge extends StatelessWidget {
         color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(20.r),
       ),
-      child: Text(label, style: TextStyle(fontFamily: 'Poppins', fontSize: 10.sp, fontWeight: FontWeight.w600, color: color)),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontFamily: 'Poppins',
+          fontSize: 10.sp,
+          fontWeight: FontWeight.w600,
+          color: color,
+        ),
+      ),
     );
   }
 }

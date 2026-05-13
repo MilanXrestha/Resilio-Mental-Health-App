@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Resilio — ERD</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:#0f172a;display:flex;flex-direction:column;align-items:center;
+       padding:20px;gap:10px;font-family:'Inter',Arial,sans-serif;}
+  button{padding:8px 22px;background:#2563eb;color:#fff;border:none;border-radius:7px;
+         cursor:pointer;font-weight:600;font-size:13px;}
+  button:hover{background:#1d4ed8;}
+  canvas{display:block;box-shadow:0 16px 50px rgba(0,0,0,.6);}
+</style>
+</head>
+<body>
+<button onclick="dl()">⬇ Download PNG</button>
+<canvas id="c"></canvas>
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+   RESILIO ERD — Each FK-row connects directly to PK-row
+   All 14 connections use unique orthogonal (elbow) corridors.
+   Zero line crossings guaranteed by corridor assignment.
+   ═══════════════════════════════════════════════════════════════════ */
+const cv = document.getElementById('c');
+const ctx = cv.getContext('2d');
+const W = 1640, H = 950;
+cv.width  = W; cv.height = H;
+cv.style.width  = Math.round(W * .74) + 'px';
+cv.style.height = Math.round(H * .74) + 'px';
+
+/* ── Layout constants ── */
+const TW  = 195;   // table width
+const HDR = 32;    // header row height
+const ROW = 20;    // attribute row height
+const PAD = 6;     // bottom padding
+
+/* Compute table total height */
+function th(n){ return HDR + n*ROW + PAD; }
+
+/* Centre Y of attribute row i (0-indexed) within a table */
+function rowY(tblTop, i){ return tblTop + HDR + i*ROW + ROW/2; }
+
+/* ── Colour palette ── */
+const C = {
+  bg:'#f8fafc', grid:'#e2e8f0', border:'#cbd5e1',
+  text:'#1e293b', sub:'#475569',
+  conn:'#475569', cardCol:'#1e40af',
+  pk:'#fef9c3', pkBadge:'#a16207',
+  fk:'#eff6ff', fkBadge:'#2563eb',
+  blue:'#1d4ed8', violet:'#6d28d9',
+  amber:'#b45309', teal:'#0f766e', slate:'#374151',
+};
+
+/* ══════════════════════
+   TABLE DEFINITIONS
+   ══════════════════════ */
+const T = {
+  USERS:{cx:755,top:130,color:C.blue,label:'USERS',attrs:[
+    {n:'id',r:'PK'},{n:'firebase_uid'},{n:'email'},{n:'username'},
+    {n:'display_name'},{n:'photo_url'},{n:'user_role'},{n:'account_status'},
+    {n:'preferences_completed'},{n:'fcm_token'},{n:'language'},
+    {n:'created_at'},{n:'last_login_at'},
+  ]},
+  THERAPIST_PROFILES:{cx:1075,top:310,color:C.violet,label:'THERAPIST_PROFILES',attrs:[
+    {n:'id',r:'PK'},{n:'user_id',r:'FK'},{n:'bio'},{n:'specialty'},
+    {n:'qualifications'},{n:'years_of_experience'},{n:'consultation_fee'},
+    {n:'is_verified'},{n:'rating'},{n:'total_reviews'},
+    {n:'availability_json'},{n:'languages'},
+  ]},
+  APPOINTMENTS:{cx:1075,top:608,color:C.violet,label:'APPOINTMENTS',attrs:[
+    {n:'id',r:'PK'},{n:'patient_id',r:'FK'},{n:'therapist_id',r:'FK'},
+    {n:'scheduled_time'},{n:'status'},{n:'payment_status'},
+    {n:'payment_transaction_id'},{n:'meeting_room_id'},
+    {n:'session_type'},{n:'notes'},
+  ]},
+  SUBSCRIPTIONS:{cx:1395,top:90,color:C.amber,label:'SUBSCRIPTIONS',attrs:[
+    {n:'id',r:'PK'},{n:'user_id',r:'FK'},{n:'plan_id'},{n:'status'},
+    {n:'start_date'},{n:'end_date'},{n:'payment_method'},
+    {n:'last_transaction_id'},{n:'is_auto_renew'},
+  ]},
+  TRANSACTIONS:{cx:1395,top:328,color:C.amber,label:'TRANSACTIONS',attrs:[
+    {n:'id',r:'PK'},{n:'user_id',r:'FK'},{n:'subscription_id',r:'FK'},
+    {n:'payment_provider'},{n:'amount'},{n:'currency'},{n:'status'},{n:'plan_id'},
+  ]},
+  MOOD_ENTRIES:{cx:425,top:524,color:C.teal,label:'MOOD_ENTRIES',attrs:[
+    {n:'id',r:'PK'},{n:'user_id',r:'FK'},{n:'mood_score'},{n:'mood_label'},
+    {n:'note'},{n:'entry_date'},
+  ]},
+  GAME_SESSIONS:{cx:425,top:706,color:C.teal,label:'GAME_SESSIONS',attrs:[
+    {n:'id',r:'PK'},{n:'user_id',r:'FK'},{n:'game_type'},{n:'start_time'},
+    {n:'end_time'},{n:'duration_seconds'},{n:'score'},{n:'metadata'},
+  ]},
+  PREFERENCES:{cx:425,top:90,color:C.teal,label:'PREFERENCES',attrs:[
+    {n:'id',r:'PK'},{n:'preference_id'},{n:'preference_name'},
+    {n:'preference_description'},{n:'preference_icon'},{n:'is_active'},
+  ]},
+  USER_PREFERENCES:{cx:425,top:270,color:C.teal,label:'USER_PREFERENCES',attrs:[
+    {n:'id',r:'PK'},{n:'user_id',r:'FK'},{n:'preference_id',r:'FK'},
+  ]},
+  NOTIFICATIONS:{cx:1075,top:90,color:C.amber,label:'NOTIFICATIONS',attrs:[
+    {n:'id',r:'PK'},{n:'user_id',r:'FK'},{n:'title'},{n:'body'},
+    {n:'type'},{n:'is_read'},{n:'action_type'},{n:'action_payload'},
+  ]},
+  AUDIO_TRACKS:{cx:185,top:90,color:C.slate,label:'AUDIO_TRACKS',attrs:[
+    {n:'id',r:'PK'},{n:'title'},{n:'artist'},{n:'cloudinary_url'},
+    {n:'category'},{n:'duration_seconds'},{n:'is_premium'},
+  ]},
+  VIDEO_TRACKS:{cx:185,top:286,color:C.slate,label:'VIDEO_TRACKS',attrs:[
+    {n:'id',r:'PK'},{n:'title'},{n:'therapist_name'},{n:'cloudinary_url'},
+    {n:'category'},{n:'is_premium'},
+  ]},
+  FAVORITES:{cx:425,top:388,color:C.teal,label:'FAVORITES',attrs:[
+    {n:'id',r:'PK'},{n:'user_id',r:'FK'},{n:'content_type'},{n:'content_id'},
+  ]},
+};
+
+/* ── Compute geometry ── */
+const G = {};
+Object.entries(T).forEach(([k,t])=>{
+  const h = th(t.attrs.length);
+  G[k] = {
+    left : t.cx - TW/2,
+    right: t.cx + TW/2,
+    top  : t.top,
+    bot  : t.top + h,
+    midY : t.top + h/2,
+    h,
+    rY   : i => rowY(t.top, i),   // centre Y of attr row i
+  };
+});
+
+/* Reference shortcuts */
+const gu = G.USERS, gtp = G.THERAPIST_PROFILES, gap = G.APPOINTMENTS;
+const gsb = G.SUBSCRIPTIONS, gtx = G.TRANSACTIONS;
+const gmo = G.MOOD_ENTRIES,  gga = G.GAME_SESSIONS;
+const gpr = G.PREFERENCES,   gup = G.USER_PREFERENCES;
+const gno = G.NOTIFICATIONS, gau = G.AUDIO_TRACKS;
+const gvi = G.VIDEO_TRACKS,  gfa = G.FAVORITES;
+
+/* ── USERS.id (PK) row centre ── */
+const UID_Y = gu.rY(0);   // = 130 + 32 + 10 = 172
+const U_L   = gu.left;    // = 657  (USERS left edge)
+const U_R   = gu.right;   // = 853  (USERS right edge)
+
+/* ══════════════════════════════════════════════════════════
+   CONNECTION ROUTING
+   
+   PRINCIPLE: Every FK row connects exactly to USERS.id (PK row).
+   Right-side tables → enter USERS.right  fan at UID_Y ± small offset
+   Left-side tables  → enter USERS.left   fan at UID_Y ± small offset
+   Each connection uses a UNIQUE x-corridor to avoid crossing.
+
+   Corridor summary (verified no-intersection):
+     RIGHT entrants  (corridor x → enter U_R):
+       NOTIFICATIONS   x=862  enter y=UID_Y-4=168
+       THERAPIST       x=855  enter y=UID_Y  =172
+       APPT patient    x=872  enter y=UID_Y+4=176
+       APPT therapist  x=880  enter y=UID_Y+8=180
+
+     LEFT entrants   (corridor x → enter U_L):
+       SUBSCRIPTIONS   x=640  enter y=UID_Y-8=164   via top y=70
+       TRANSACTIONS    x=610  enter y=UID_Y-4=168   via top y=52  far-right x=1508
+       USER_PREFS      x=622  enter y=UID_Y  =172
+       FAVORITES       x=630  enter y=UID_Y+4=176
+       MOOD            x=638  enter y=UID_Y+8=180
+       GAME            x=646  enter y=UID_Y+12=184
+   ══════════════════════════════════════════════════════════ */
+
+const CONNS = [
+
+  /* ── RIGHT-SIDE FK → USERS.id ── */
+
+  /* 1. NOTIFICATIONS.user_id (row 1) → USERS.id
+        NOTIFICATIONS.left → x=862 corridor → enter USERS.right at y=168 */
+  { cA:'N', cB:'1',
+    via:[
+      [gno.left,      gno.rY(1)],   // exit NOTIFICATIONS FK row
+      [862,           gno.rY(1)],   // go left to corridor
+      [862,           UID_Y - 4],   // go up to entry y
+      [U_R,           UID_Y - 4],   // enter USERS right
+    ]},
+
+  /* 2. THERAPIST_PROFILES.user_id (row 1) → USERS.id
+        THERAPIST.left → x=855 corridor → enter USERS.right at y=172 */
+  { cA:'N', cB:'1',
+    via:[
+      [gtp.left,      gtp.rY(1)],   // exit THERAPIST FK row
+      [855,           gtp.rY(1)],   // go left to corridor
+      [855,           UID_Y],       // go up to entry y
+      [U_R,           UID_Y],       // enter USERS right
+    ]},
+
+  /* 3. APPOINTMENTS.patient_id (row 1) → USERS.id
+        APPT.left → x=872 corridor → enter USERS.right at y=176 */
+  { cA:'N', cB:'1',
+    via:[
+      [gap.left,      gap.rY(1)],
+      [872,           gap.rY(1)],
+      [872,           UID_Y + 4],
+      [U_R,           UID_Y + 4],
+    ]},
+
+  /* 4. APPOINTMENTS.therapist_id (row 2) → USERS.id
+        APPT.left → x=880 corridor → enter USERS.right at y=180 */
+  { cA:'N', cB:'1', label:'[therapist_id]',
+    via:[
+      [gap.left,      gap.rY(2)],
+      [880,           gap.rY(2)],
+      [880,           UID_Y + 8],
+      [U_R,           UID_Y + 8],
+    ]},
+
+  /* ── LEFT-SIDE FK → USERS.id ── */
+
+  /* 5. SUBSCRIPTIONS.user_id (row 1) → USERS.id
+        SUB.left → y=70 top corridor → x=640 → enter USERS.left at y=164 */
+  { cA:'N', cB:'1',
+    via:[
+      [gsb.left,      gsb.rY(1)],   // exit SUB FK row
+      [gsb.left,      70         ],  // go up to top corridor
+      [640,           70         ],  // go left across top
+      [640,           UID_Y - 8  ],  // go down to entry y
+      [U_L,           UID_Y - 8  ],  // enter USERS left
+    ]},
+
+  /* 6. TRANSACTIONS.user_id (row 1) → USERS.id
+        TX.right → x=1508 far-right corridor → y=52 → x=610 → enter USERS.left y=168 */
+  { cA:'N', cB:'1',
+    via:[
+      [gtx.right,     gtx.rY(1)],
+      [1508,          gtx.rY(1)],   // go right past all tables
+      [1508,          52         ],  // go up far-right corridor
+      [610,           52         ],  // go left above all tables
+      [610,           UID_Y - 4  ],  // go down to entry y
+      [U_L,           UID_Y - 4  ],  // enter USERS left
+    ]},
+
+  /* 7. USER_PREFERENCES.user_id (row 1) → USERS.id
+        UP.right → x=622 corridor → enter USERS.left y=172 */
+  { cA:'N', cB:'1',
+    via:[
+      [gup.right,     gup.rY(1)],
+      [622,           gup.rY(1)],
+      [622,           UID_Y      ],
+      [U_L,           UID_Y      ],
+    ]},
+
+  /* 8. FAVORITES.user_id (row 1) → USERS.id
+        FAV.right → x=630 corridor → enter USERS.left y=176 */
+  { cA:'N', cB:'1',
+    via:[
+      [gfa.right,     gfa.rY(1)],
+      [630,           gfa.rY(1)],
+      [630,           UID_Y + 4  ],
+      [U_L,           UID_Y + 4  ],
+    ]},
+
+  /* 9. MOOD_ENTRIES.user_id (row 1) → USERS.id
+        MOOD.right → x=638 corridor → enter USERS.left y=180 */
+  { cA:'N', cB:'1',
+    via:[
+      [gmo.right,     gmo.rY(1)],
+      [638,           gmo.rY(1)],
+      [638,           UID_Y + 8  ],
+      [U_L,           UID_Y + 8  ],
+    ]},
+
+  /* 10. GAME_SESSIONS.user_id (row 1) → USERS.id
+         GAME.right → x=646 corridor → enter USERS.left y=184 */
+  { cA:'N', cB:'1',
+    via:[
+      [gga.right,     gga.rY(1)],
+      [646,           gga.rY(1)],
+      [646,           UID_Y + 12 ],
+      [U_L,           UID_Y + 12 ],
+    ]},
+
+  /* ── NON-USERS FK CONNECTIONS ── */
+
+  /* 11. SUBSCRIPTIONS.id → TRANSACTIONS.subscription_id
+         SUBSCRIPTIONS.bot → TRANSACTIONS.top (same cx, simple vertical)
+         Connects SUB.id (row 0) to TX.subscription_id (row 2) via table centres */
+  { cA:'1', cB:'N',
+    via:[
+      [gsb.cx - 20,   gsb.bot    ],   // exit SUB bottom (left of centre to avoid SUB corridor)
+      [gsb.cx - 20,   gtx.top    ],   // enter TX top
+    ]},
+
+  /* 12. PREFERENCES.id → USER_PREFERENCES.preference_id
+         Simple vertical: PREF.bot → UP.top */
+  { cA:'1', cB:'N',
+    via:[
+      [gpr.cx + 20,   gpr.bot    ],   // exit PREF bottom (right of centre)
+      [gpr.cx + 20,   gup.rY(2)  ],   // route to preference_id FK row in USER_PREFS
+    ]},
+
+  /* 13. AUDIO_TRACKS → FAVORITES (polymorphic content reference, dashed)
+         AU.right → x=313 corridor → FAV.left at content area */
+  { cA:'1', cB:'N', dash:true,
+    via:[
+      [gau.right,     gau.midY   ],
+      [313,           gau.midY   ],
+      [313,           gfa.rY(2)  ],   // content_type row
+      [gfa.left,      gfa.rY(2)  ],
+    ]},
+
+  /* 14. VIDEO_TRACKS → FAVORITES (polymorphic content reference, dashed)
+         VI.right → x=322 corridor → FAV.left at content_id row */
+  { cA:'1', cB:'N', dash:true,
+    via:[
+      [gvi.right,     gvi.midY   ],
+      [322,           gvi.midY   ],
+      [322,           gfa.rY(3)  ],   // content_id row
+      [gfa.left,      gfa.rY(3)  ],
+    ]},
+];
+
+/* ══════════════════════
+   DRAWING ENGINE
+   ══════════════════════ */
+
+/* Background */
+ctx.fillStyle = C.bg; ctx.fillRect(0,0,W,H);
+ctx.fillStyle = C.grid;
+for(let x=20;x<W;x+=16) for(let y=20;y<H;y+=16) ctx.fillRect(x,y,1.5,1.5);
+
+/* Title */
+ctx.fillStyle=C.text; ctx.font='bold 17px Inter,Arial';
+ctx.textAlign='left'; ctx.textBaseline='top';
+ctx.fillText('Resilio — Entity Relationship Diagram', 20, 12);
+ctx.font='10px Inter,Arial'; ctx.fillStyle=C.sub;
+ctx.fillText('Milan Shrestha · 23057135 · Islington College  ·  All FK rows connect directly to PK (id) row', 20, 36);
+
+/* ── Connections (drawn FIRST — beneath tables) ── */
+function drawArrow(p1, p2) {
+  const dx=p2[0]-p1[0], dy=p2[1]-p1[1];
+  const ang=Math.atan2(dy,dx), ah=7;
+  ctx.fillStyle=C.conn;
+  ctx.beginPath();
+  ctx.moveTo(p2[0],p2[1]);
+  ctx.lineTo(p2[0]-ah*Math.cos(ang-0.38), p2[1]-ah*Math.sin(ang-0.38));
+  ctx.lineTo(p2[0]-ah*Math.cos(ang+0.38), p2[1]-ah*Math.sin(ang+0.38));
+  ctx.closePath(); ctx.fill();
+}
+
+function drawCircle(x,y) {
+  ctx.beginPath(); ctx.arc(x,y,3.5,0,Math.PI*2);
+  ctx.fillStyle=C.conn; ctx.fill();
+}
+
+function cardLabel(pts, label, atStart) {
+  const n = pts.length;
+  let dx, dy, px, py;
+  if (atStart) {
+    dx = pts[1][0]-pts[0][0]; dy = pts[1][1]-pts[0][1];
+    px = pts[0][0]; py = pts[0][1];
+  } else {
+    dx = pts[n-1][0]-pts[n-2][0]; dy = pts[n-1][1]-pts[n-2][1];
+    px = pts[n-1][0]; py = pts[n-1][1];
+    dx=-dx; dy=-dy; // reverse: near end, offset inward
+  }
+  const len = Math.sqrt(dx*dx+dy*dy)||1;
+  const ux=dx/len, uy=dy/len;
+  // 15px along line + 10px perpendicular
+  const tx = px + ux*15 - uy*10;
+  const ty = py + uy*15 + ux*10;
+  ctx.font='bold 8.5px Inter,Arial';
+  ctx.fillStyle=C.cardCol;
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(label, tx, ty);
+}
+
+CONNS.forEach(conn => {
+  const {via, cA, cB, dash} = conn;
+  if(via.length < 2) return;
+  ctx.save();
+  ctx.strokeStyle = C.conn;
+  ctx.lineWidth   = 1.4;
+  ctx.lineCap     = 'round';
+  ctx.lineJoin    = 'round';
+  ctx.setLineDash(dash ? [6,4] : []);
+  ctx.beginPath();
+  ctx.moveTo(via[0][0], via[0][1]);
+  via.slice(1).forEach(p => ctx.lineTo(p[0], p[1]));
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Circle at FK source, arrow at PK destination
+  drawCircle(via[0][0], via[0][1]);
+  drawArrow(via[via.length-2], via[via.length-1]);
+
+  // Cardinality labels
+  cardLabel(via, cA, true);
+  cardLabel(via, cB, false);
+  ctx.restore();
+});
+
+/* ── Tables (drawn ON TOP of connections) ── */
+function drawTable(key) {
+  const t = T[key];
+  const g = G[key];
+  const { left:l, top:tp } = g;
+  const h = g.h;
+  const r = 6;
+
+  ctx.save();
+  // Shadow
+  ctx.shadowColor='rgba(0,0,0,0.13)'; ctx.shadowBlur=10; ctx.shadowOffsetY=4;
+  // Background
+  ctx.fillStyle='#ffffff';
+  ctx.beginPath();
+  ctx.roundRect ? ctx.roundRect(l,tp,TW,h,r) : ctx.rect(l,tp,TW,h);
+  ctx.fill();
+  ctx.shadowColor='transparent';
+  // Border
+  ctx.strokeStyle=t.color+'55'; ctx.lineWidth=1.6;
+  ctx.beginPath();
+  ctx.roundRect ? ctx.roundRect(l,tp,TW,h,r) : ctx.rect(l,tp,TW,h);
+  ctx.stroke();
+  // Header
+  ctx.fillStyle=t.color;
+  ctx.beginPath();
+  ctx.roundRect ? ctx.roundRect(l,tp,TW,HDR,[r,r,0,0]) : ctx.rect(l,tp,TW,HDR);
+  ctx.fill();
+  // Header text
+  ctx.fillStyle='#fff'; ctx.font='bold 9.5px Inter,Arial';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(t.label, l+TW/2, tp+HDR/2);
+  // Attribute rows
+  t.attrs.forEach((a,i) => {
+    const ry = tp+HDR+i*ROW;
+    const last = i===t.attrs.length-1;
+    // Row bg
+    ctx.fillStyle = a.r==='PK' ? C.pk : a.r==='FK' ? C.fk : '#ffffff';
+    ctx.fillRect(l+1, ry, TW-2, last ? ROW+PAD : ROW);
+    // Row divider
+    if(!last){
+      ctx.beginPath(); ctx.strokeStyle='#f0f4f8'; ctx.lineWidth=0.6;
+      ctx.moveTo(l+1,ry+ROW); ctx.lineTo(l+TW-1,ry+ROW); ctx.stroke();
+    }
+    // Badge
+    if(a.r){
+      ctx.fillStyle = a.r==='PK' ? C.pkBadge : C.fkBadge;
+      ctx.font='bold 7px Inter,Arial'; ctx.textAlign='left'; ctx.textBaseline='middle';
+      ctx.fillText(a.r, l+6, ry+ROW/2);
+    }
+    // Attribute name
+    ctx.fillStyle = a.r ? C.text : C.sub;
+    ctx.font = a.r ? 'bold 8.5px Inter,Arial' : '8.5px Inter,Arial';
+    ctx.textAlign='left'; ctx.textBaseline='middle';
+    ctx.fillText(a.n, a.r ? l+30 : l+10, ry+ROW/2);
+  });
+  ctx.restore();
+}
+
+Object.keys(T).forEach(drawTable);
+
+/* ── Legend ── */
+const LY = H-28;
+ctx.fillStyle='#f1f5f9'; ctx.fillRect(18,LY,380,22);
+ctx.strokeStyle=C.border; ctx.lineWidth=1; ctx.strokeRect(18,LY,380,22);
+[
+  {c:C.pkBadge, t:'PK — Primary Key', x:26},
+  {c:C.fkBadge, t:'FK — Foreign Key', x:156},
+  {c:C.cardCol, t:'Cardinality (1 / N / 0..1)', x:286},
+].forEach(it=>{
+  ctx.fillStyle=it.c; ctx.font='bold 8px Inter,Arial';
+  ctx.textAlign='left'; ctx.textBaseline='middle';
+  ctx.fillText(it.t, 18+it.x, LY+11);
+});
+
+function dl(){
+  const a=document.createElement('a');
+  a.download='resilio-erd.png'; a.href=cv.toDataURL('image/png'); a.click();
+}
+</script>
+</body>
+</html>

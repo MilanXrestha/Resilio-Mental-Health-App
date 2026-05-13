@@ -11,17 +11,17 @@ class AdminUsersTab extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('User Management'),
-        actions: [
-          IconButton(icon: const Icon(Icons.search), onPressed: () {}),
-        ],
+        actions: [IconButton(icon: const Icon(Icons.search), onPressed: () {})],
       ),
       body: BlocBuilder<AdminCubit, AdminState>(
         builder: (context, state) {
-          return state.maybeWhen(
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (msg) => Center(child: Text('Error: $msg')),
-            loaded: (_, users, __, ___) {
-              if (users.isEmpty) return const Center(child: Text('No users found.'));
+          return state.maybeMap(
+            loading: (_) => const Center(child: CircularProgressIndicator()),
+            error: (e) => Center(child: Text('Error: ${e.message}')),
+            loaded: (loaded) {
+              final users = loaded.users;
+              if (users.isEmpty)
+                return const Center(child: Text('No users found.'));
 
               return ListView.builder(
                 itemCount: users.length,
@@ -37,8 +37,14 @@ class AdminUsersTab extends StatelessWidget {
                     subtitle: Text('$email • Role: $role'),
                     trailing: PopupMenuButton(
                       itemBuilder: (context) => [
-                        const PopupMenuItem(value: 'view', child: Text('View Profile')),
-                        const PopupMenuItem(value: 'suspend', child: Text('Suspend Account')),
+                        const PopupMenuItem(
+                          value: 'view',
+                          child: Text('View Profile'),
+                        ),
+                        const PopupMenuItem(
+                          value: 'suspend',
+                          child: Text('Suspend Account'),
+                        ),
                       ],
                     ),
                   );
@@ -52,4 +58,3 @@ class AdminUsersTab extends StatelessWidget {
     );
   }
 }
-

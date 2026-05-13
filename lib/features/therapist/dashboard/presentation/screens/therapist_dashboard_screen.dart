@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../../../core/theme/app_colors.dart';
-import '../../../../../../core/di/injection.dart';
 import '../bloc/therapist_cubit.dart';
-import '../bloc/therapist_content_cubit.dart';
 
 import 'tabs/therapist_home_tab.dart';
 import 'tabs/therapist_appointments_tab.dart';
 import 'tabs/therapist_patients_tab.dart';
 import 'tabs/therapist_earnings_tab.dart';
 import 'tabs/therapist_content_hub_tab.dart';
-import 'tabs/therapist_settings_tab.dart';
 
 class TherapistDashboardScreen extends StatefulWidget {
   const TherapistDashboardScreen({super.key});
@@ -29,33 +27,26 @@ class _TherapistDashboardScreenState extends State<TherapistDashboardScreen> {
   void initState() {
     super.initState();
     _tabs = [
-      TherapistHomeTab(onNavigateToSessions: () => setState(() => _currentIndex = 1)),
+      TherapistHomeTab(
+        onNavigateToSessions: () => setState(() => _currentIndex = 1),
+        onNavigateToContent: () => setState(() => _currentIndex = 4),
+        onNavigateToSettings: () => context.push('/therapist/settings'),
+      ),
       const TherapistAppointmentsTab(),
       const TherapistPatientsTab(),
       const TherapistEarningsTab(),
       const TherapistContentHubTab(),
-      const TherapistSettingsTab(),
     ];
   }
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(
-          create: (_) => getIt<TherapistCubit>()..loadDashboard(),
-        ),
-        BlocProvider(
-          create: (_) => getIt<TherapistContentCubit>(),
-        ),
-      ],
-      child: Scaffold(
-        backgroundColor: context.backgroundColor,
-        body: IndexedStack(index: _currentIndex, children: _tabs),
-        bottomNavigationBar: _TherapistNavBar(
-          currentIndex: _currentIndex,
-          onTap: (i) => setState(() => _currentIndex = i),
-        ),
+    return Scaffold(
+      backgroundColor: context.backgroundColor,
+      body: IndexedStack(index: _currentIndex, children: _tabs),
+      bottomNavigationBar: _TherapistNavBar(
+        currentIndex: _currentIndex,
+        onTap: (i) => setState(() => _currentIndex = i),
       ),
     );
   }
@@ -66,34 +57,34 @@ class _TherapistNavBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
 
-  const _TherapistNavBar(
-      {required this.currentIndex, required this.onTap});
+  const _TherapistNavBar({required this.currentIndex, required this.onTap});
 
   static const _items = [
     _NavItem(
-        icon: Icons.home_outlined,
-        activeIcon: Icons.home_rounded,
-        label: 'Home'),
+      icon: Icons.home_outlined,
+      activeIcon: Icons.home_rounded,
+      label: 'Home',
+    ),
     _NavItem(
-        icon: Icons.calendar_month_outlined,
-        activeIcon: Icons.calendar_month_rounded,
-        label: 'Sessions'),
+      icon: Icons.calendar_month_outlined,
+      activeIcon: Icons.calendar_month_rounded,
+      label: 'Sessions',
+    ),
     _NavItem(
-        icon: Icons.people_outline_rounded,
-        activeIcon: Icons.people_rounded,
-        label: 'Patients'),
+      icon: Icons.people_outline_rounded,
+      activeIcon: Icons.people_rounded,
+      label: 'Patients',
+    ),
     _NavItem(
-        icon: Icons.account_balance_wallet_outlined,
-        activeIcon: Icons.account_balance_wallet_rounded,
-        label: 'Earnings'),
+      icon: Icons.account_balance_wallet_outlined,
+      activeIcon: Icons.account_balance_wallet_rounded,
+      label: 'Earnings',
+    ),
     _NavItem(
-        icon: Icons.library_books_outlined,
-        activeIcon: Icons.library_books_rounded,
-        label: 'Content'),
-    _NavItem(
-        icon: Icons.settings_outlined,
-        activeIcon: Icons.settings_rounded,
-        label: 'Settings'),
+      icon: Icons.library_books_outlined,
+      activeIcon: Icons.library_books_rounded,
+      label: 'Content',
+    ),
   ];
 
   @override
@@ -135,10 +126,11 @@ class _NavItem {
   final IconData icon;
   final IconData activeIcon;
   final String label;
-  const _NavItem(
-      {required this.icon,
-      required this.activeIcon,
-      required this.label});
+  const _NavItem({
+    required this.icon,
+    required this.activeIcon,
+    required this.label,
+  });
 }
 
 class _NavBarItem extends StatelessWidget {
@@ -146,8 +138,11 @@ class _NavBarItem extends StatelessWidget {
   final bool selected;
   final VoidCallback onTap;
 
-  const _NavBarItem(
-      {required this.item, required this.selected, required this.onTap});
+  const _NavBarItem({
+    required this.item,
+    required this.selected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -157,7 +152,9 @@ class _NavBarItem extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: EdgeInsets.symmetric(
-            horizontal: selected ? 12.w : 6.w, vertical: 6.h),
+          horizontal: selected ? 12.w : 6.w,
+          vertical: 6.h,
+        ),
         decoration: BoxDecoration(
           color: selected
               ? context.primaryColor.withOpacity(0.12)

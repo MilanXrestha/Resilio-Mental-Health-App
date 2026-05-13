@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Resilio — System Use Case Diagram</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family:'Inter',Arial,sans-serif;
+    background:#e2e8f0;
+    min-height:100vh;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    padding:24px; gap:14px;
+  }
+  .controls { display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:center; }
+  .btn { padding:8px 20px; background:#2563eb; color:#fff; border:none; border-radius:6px; cursor:pointer; font-family:inherit; font-size:13px; font-weight:600; }
+  .btn:hover { background:#1d4ed8; }
+  .note { color:#64748b; font-size:12px; text-align:center; }
+  canvas { display:block; box-shadow:0 10px 40px rgba(0,0,0,.18); }
+</style>
+</head>
+<body>
+<div class="controls">
+  <button class="btn" onclick="dl()">⬇ Download PNG (A4 Portrait)</button>
+</div>
+<div class="note">A4 Portrait · System boundary with actors outside · <<include>> / <<extend>> / Generalization notation</div>
+<canvas id="uc"></canvas>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════
+   RESILIO — UML USE CASE DIAGRAM (A4 Portrait 794 × 1123)
+   Actors: outside system boundary
+   Use Cases: ellipses inside system boundary
+   Relationships: solid (association), dashed (include/extend), open-triangle (generalization)
+   ═══════════════════════════════════════════════════════════════════════ */
+
+const cv = document.getElementById('uc');
+const ctx = cv.getContext('2d');
+
+// A4 at 96 DPI
+const W = 794, H = 1123;
+cv.width = W; cv.height = H;
+cv.style.width  = W + 'px';
+cv.style.height = H + 'px';
+
+const DARK = '#1e293b', GRAY = '#64748b', MED = '#475569';
+const BORDER = '#cbd5e1', BG = '#f8fafc';
+const ACTOR_W = 52; // half-width of actor column
+
+/* ─── System Boundary ─── */
+const SB = { x: 108, y: 68, w: 578, h: 1012 };
+
+/* ─── Actor definitions ─── */
+// Actor shape: stick figure centered at (cx, midY)
+// figureMidY = top of head
+const ACTORS = [
+  // Left side
+  { id:'guest',    cx:56,  midY:178, label:'Guest\nUser',       right:false },
+  { id:'customer', cx:56,  midY:498, label:'Customer',          right:false },
+  // Right side
+  { id:'therapist',cx:738, midY:385, label:'Therapist',         right:true  },
+  { id:'admin',    cx:738, midY:740, label:'Admin',             right:true  },
+  // External (below boundary)
+  { id:'esewa',    cx:185, midY:1096, label:'eSewa\nGateway',   right:false, external:true },
+  { id:'firebase', cx:397, midY:1096, label:'Firebase\nFCM',    right:false, external:true },
+  { id:'cloudinary',cx:609,midY:1096,label:'Cloudinary\nCDN',  right:false, external:true },
+];
+
+/* ─── Use Case definitions ─── */
+// Each UC: { id, label (1 or 2 lines separated by \n), cx, cy, w, h }
+const UC_W = 148, UC_H = 28;  // default oval size
+const UC_WS = 116, UC_HS = 24; // small sub-UC oval
+
+const UCS = [
+  // ── AUTH (top center) ──────────────────────────────────────────
+  { id:'login',     label:'Register / Login',    cx:285, cy:105, w:UC_W+20, h:UC_H },
+  { id:'otp',       label:'Verify OTP',          cx:397, cy:158, w:UC_W-10, h:UC_H },
+  { id:'routing',   label:'Role-Based Routing',  cx:524, cy:105, w:UC_W+10, h:UC_H },
+
+  // ── CUSTOMER USE CASES (left column) ──────────────────────────
+  { id:'onboard',   label:'Complete Onboarding',          cx:216, cy:225, w:UC_W+10, h:UC_H },
+  { id:'browse',    label:'Browse Therapist\nDirectory',  cx:216, cy:278, w:UC_W+10, h:UC_H+8 },
+  { id:'filter',    label:'Apply Filters',                cx:216, cy:336, w:UC_WS+10, h:UC_HS, sub:true },
+  { id:'book',      label:'Book Appointment',             cx:216, cy:385, w:UC_W+10, h:UC_H },
+  { id:'pay',       label:'Process eSewa\nPayment',       cx:216, cy:438, w:UC_W+10, h:UC_H+8 },
+  { id:'join',      label:'Join Video Session',           cx:216, cy:498, w:UC_W+10, h:UC_H },
+  { id:'mood',      label:'Log Daily Mood',               cx:216, cy:551, w:UC_W, h:UC_H },
+  { id:'phq',       label:'Complete PHQ-9\n/ GAD-7',      cx:216, cy:604, w:UC_W+10, h:UC_H+8, sub:true },
+  { id:'content',   label:'Browse Content Hub',           cx:216, cy:660, w:UC_W+10, h:UC_H },
+  { id:'premium',   label:'Check Premium Status',         cx:216, cy:712, w:UC_W+16, h:UC_HS, sub:true },
+  { id:'games',     label:'Play Wellness Games',          cx:216, cy:760, w:UC_W+10, h:UC_H },
+  { id:'subscribe', label:'Purchase Subscription',        cx:216, cy:812, w:UC_W+10, h:UC_H },
+
+  // ── SHARED (center) ────────────────────────────────────────────
+  { id:'webrtc',    label:'WebRTC Signalling',            cx:397, cy:498, w:UC_W, h:UC_H },
+  { id:'notif',     label:'Receive Notifications',        cx:397, cy:812, w:UC_W+10, h:UC_H },
+
+  // ── THERAPIST USE CASES (right column) ────────────────────────
+  { id:'t_avail',   label:'Set Availability',             cx:578, cy:225, w:UC_W, h:UC_H },
+  { id:'t_appts',   label:'View Appointments',            cx:578, cy:278, w:UC_W, h:UC_H },
+  { id:'t_patients',label:'View Patient Data',            cx:578, cy:331, w:UC_W, h:UC_H },
+  { id:'t_upload',  label:'Upload Content',               cx:578, cy:385, w:UC_WS+10, h:UC_H },
+  { id:'t_cloudinary',label:'Upload to Cloudinary',       cx:578, cy:435, w:UC_W+10, h:UC_HS, sub:true },
+  { id:'t_session', label:'Conduct Video Session',        cx:578, cy:485, w:UC_W+10, h:UC_H },
+  { id:'t_earnings',label:'View Earnings Summary',        cx:578, cy:538, w:UC_W+10, h:UC_H },
+
+  // ── ADMIN USE CASES (right column lower) ──────────────────────
+  { id:'a_verify',  label:'Verify Therapist Profile',     cx:578, cy:640, w:UC_W+16, h:UC_H },
+  { id:'a_approve', label:'Approve / Reject Therapist',   cx:578, cy:693, w:UC_W+20, h:UC_H, sub:true },
+  { id:'a_content', label:'Review & Publish Content',     cx:578, cy:746, w:UC_W+14, h:UC_H },
+  { id:'a_users',   label:'Manage User Accounts',         cx:578, cy:799, w:UC_W+10, h:UC_H },
+  { id:'a_suspend', label:'Suspend / Remove User',        cx:578, cy:849, w:UC_W+10, h:UC_HS, sub:true },
+  { id:'a_analytics',label:'View Platform Analytics',     cx:578, cy:898, w:UC_W+14, h:UC_H },
+];
+
+/* Build lookup */
+const UC_MAP = {}, AC_MAP = {};
+UCS.forEach(u => UC_MAP[u.id] = u);
+ACTORS.forEach(a => AC_MAP[a.id] = a);
+
+/* ─── Relationships ─── */
+const RELS = [
+  // Actor → UC (associations, solid)
+  { from:'guest',     to:'login',       type:'assoc' },
+  { from:'customer',  to:'onboard',     type:'assoc' },
+  { from:'customer',  to:'browse',      type:'assoc' },
+  { from:'customer',  to:'book',        type:'assoc' },
+  { from:'customer',  to:'join',        type:'assoc' },
+  { from:'customer',  to:'mood',        type:'assoc' },
+  { from:'customer',  to:'content',     type:'assoc' },
+  { from:'customer',  to:'games',       type:'assoc' },
+  { from:'customer',  to:'subscribe',   type:'assoc' },
+  { from:'customer',  to:'notif',       type:'assoc' },
+  { from:'therapist', to:'t_avail',     type:'assoc' },
+  { from:'therapist', to:'t_appts',     type:'assoc' },
+  { from:'therapist', to:'t_patients',  type:'assoc' },
+  { from:'therapist', to:'t_upload',    type:'assoc' },
+  { from:'therapist', to:'t_session',   type:'assoc' },
+  { from:'therapist', to:'t_earnings',  type:'assoc' },
+  { from:'therapist', to:'notif',       type:'assoc' },
+  { from:'admin',     to:'a_verify',    type:'assoc' },
+  { from:'admin',     to:'a_content',   type:'assoc' },
+  { from:'admin',     to:'a_users',     type:'assoc' },
+  { from:'admin',     to:'a_analytics', type:'assoc' },
+  { from:'esewa',     to:'pay',         type:'assoc' },
+  { from:'firebase',  to:'notif',       type:'assoc' },
+  { from:'cloudinary',to:'t_cloudinary',type:'assoc' },
+
+  // UC → UC include  (dashed, open arrowhead, label <<include>>)
+  { from:'login',     to:'otp',         type:'include' },
+  { from:'otp',       to:'routing',     type:'include' },
+  { from:'browse',    to:'filter',      type:'include' },
+  { from:'book',      to:'pay',         type:'include' },
+  { from:'join',      to:'webrtc',      type:'include' },
+  { from:'content',   to:'premium',     type:'include' },
+  { from:'subscribe', to:'pay',         type:'include' },
+  { from:'t_upload',  to:'t_cloudinary',type:'include' },
+  { from:'t_session', to:'webrtc',      type:'include' },
+  { from:'a_verify',  to:'a_approve',   type:'include' },
+  { from:'a_content', to:'a_content',   type:null }, // skip self
+
+  // UC → UC extend  (dashed, open arrowhead, label <<extend>>)
+  { from:'phq',       to:'mood',        type:'extend' },
+  { from:'a_users',   to:'a_suspend',   type:'extend' },
+  { from:'a_approve', to:'notif',       type:'extend' },
+  { from:'a_content', to:'notif',       type:'extend' },
+
+  // Actor generalization  (solid, open triangle at parent)
+  { from:'customer',  to:'guest',       type:'generalize' },
+];
+
+/* ──────────────────────────────────────────────────────────────────
+   DRAWING HELPERS
+   ────────────────────────────────────────────────────────────────── */
+
+function ellipsePoint(cx, cy, rx, ry, angle) {
+  return [cx + rx * Math.cos(angle), cy + ry * Math.sin(angle)];
+}
+function angle(x1,y1,x2,y2){ return Math.atan2(y2-y1, x2-x1); }
+
+/* Stick figure actor */
+function drawActor(a) {
+  const { cx, midY, label, external } = a;
+  const headR = 11;
+  const bodyH = 24;
+  const armW  = 14;
+  const legW  = 11;
+  const legH  = 18;
+
+  ctx.save();
+  ctx.strokeStyle = external ? GRAY : DARK;
+  ctx.lineWidth   = external ? 1.2 : 1.5;
+  ctx.fillStyle   = external ? GRAY : DARK;
+  if (external) ctx.setLineDash([4,3]);
+
+  // Head
+  ctx.beginPath(); ctx.arc(cx, midY + headR, headR, 0, Math.PI*2); ctx.stroke();
+  // Body
+  ctx.beginPath();
+  ctx.moveTo(cx, midY + headR*2);
+  ctx.lineTo(cx, midY + headR*2 + bodyH); ctx.stroke();
+  // Arms
+  ctx.beginPath();
+  ctx.moveTo(cx - armW, midY + headR*2 + 8);
+  ctx.lineTo(cx + armW, midY + headR*2 + 8); ctx.stroke();
+  // Legs
+  ctx.beginPath();
+  ctx.moveTo(cx, midY + headR*2 + bodyH);
+  ctx.lineTo(cx - legW, midY + headR*2 + bodyH + legH); ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx, midY + headR*2 + bodyH);
+  ctx.lineTo(cx + legW, midY + headR*2 + bodyH + legH); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Label
+  ctx.font = external ? 'italic 9px Inter,Arial' : '9.5px Inter,Arial';
+  ctx.fillStyle = external ? GRAY : DARK;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  const lines = label.split('\n');
+  const baseY = midY + headR*2 + bodyH + legH + 4;
+  lines.forEach((ln, i) => ctx.fillText(ln, cx, baseY + i * 11));
+  ctx.restore();
+}
+
+/* Actor bounding rect helpers */
+function actorBottom(a) { return a.midY + 11*2 + 24 + 18; }
+function actorTop(a)    { return a.midY; }
+function actorLeft(a)   { return a.cx - 14; }
+function actorRight(a)  { return a.cx + 14; }
+function actorMidY(a)   { return a.midY + 11 + 12 + 8; } // mid of body
+
+/* Use case oval */
+function drawUC(uc) {
+  const { cx, cy, label, w, h, sub } = uc;
+  ctx.save();
+  // shadow
+  ctx.shadowColor = 'rgba(0,0,0,0.08)'; ctx.shadowBlur = 4; ctx.shadowOffsetY = 2;
+  ctx.fillStyle = sub ? '#f1f5f9' : '#ffffff';
+  ctx.beginPath(); ctx.ellipse(cx, cy, w/2, h/2, 0, 0, Math.PI*2); ctx.fill();
+  ctx.shadowColor = 'transparent';
+  ctx.strokeStyle = sub ? '#94a3b8' : BORDER;
+  ctx.lineWidth = sub ? 1 : 1.4;
+  ctx.beginPath(); ctx.ellipse(cx, cy, w/2, h/2, 0, 0, Math.PI*2); ctx.stroke();
+  ctx.restore();
+
+  // Text
+  ctx.font = sub ? '8.5px Inter,Arial' : '9.5px Inter,Arial';
+  ctx.fillStyle = sub ? GRAY : DARK;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const lines = label.split('\n');
+  const lh = 11;
+  lines.forEach((ln, i) => ctx.fillText(ln, cx, cy + (i - (lines.length-1)/2)*lh));
+}
+
+/* ─── Relationship drawing ─── */
+function drawArrowhead(x, y, ang, open=true, filled=false, size=7) {
+  ctx.save();
+  ctx.translate(x, y); ctx.rotate(ang);
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(-size, -size*0.55);
+  ctx.lineTo(-size,  size*0.55);
+  ctx.closePath();
+  if (filled) { ctx.fillStyle = DARK; ctx.fill(); }
+  else if (open) { ctx.strokeStyle = DARK; ctx.lineWidth = 1.2; ctx.stroke(); }
+  ctx.restore();
+}
+
+function drawTriangle(x, y, ang, size=8) {
+  // Open hollow triangle for generalization (pointing toward parent)
+  ctx.save();
+  ctx.translate(x, y); ctx.rotate(ang);
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(-size, -size*0.6);
+  ctx.lineTo(-size,  size*0.6);
+  ctx.closePath();
+  ctx.fillStyle = '#ffffff';
+  ctx.fill();
+  ctx.strokeStyle = DARK; ctx.lineWidth = 1.3; ctx.stroke();
+  ctx.restore();
+}
+
+function getUCEdge(uc, fromX, fromY) {
+  // Returns point on ellipse boundary closest to (fromX, fromY)
+  const a = uc.w/2, b = uc.h/2;
+  const ang = Math.atan2(fromY - uc.cy, fromX - uc.cx);
+  // Ellipse parametric: x=cx+a*cos, y=cy+b*sin
+  // Find where the ray from fromX,fromY toward uc.cx,uc.cy hits the ellipse
+  const dx = uc.cx - fromX, dy = uc.cy - fromY;
+  const len = Math.sqrt(dx*dx+dy*dy);
+  // approximate intersection
+  const t = Math.atan2(dy/b, dx/a);
+  return [uc.cx + a*Math.cos(t), uc.cy + b*Math.sin(t)];
+}
+
+function drawRelationship(rel) {
+  if (!rel.type) return;
+  const { from, to, type } = rel;
+
+  let x1, y1, x2, y2;
+
+  // From = actor or UC?
+  const fromActor = AC_MAP[from];
+  const toActor   = AC_MAP[to];
+  const fromUC    = UC_MAP[from];
+  const toUC      = UC_MAP[to];
+
+  if (!fromActor && !fromUC) return;
+  if (!toActor && !toUC) return;
+  if (from === to) return;
+
+  // Get center points
+  const fc = fromActor ? { x: fromActor.cx, y: actorMidY(fromActor) } : { x: fromUC.cx, y: fromUC.cy };
+  const tc = toActor   ? { x: toActor.cx,   y: actorMidY(toActor)   } : { x: toUC.cx,   y: toUC.cy   };
+
+  // Get exact endpoints
+  if (fromUC) {
+    [x1, y1] = getUCEdge(fromUC, tc.x, tc.y);
+  } else {
+    x1 = fromActor.cx;
+    y1 = (tc.y > actorMidY(fromActor)) ? actorBottom(fromActor) : actorTop(fromActor);
+    // side exit for left/right
+    if (Math.abs(tc.x - fromActor.cx) > 30) {
+      x1 = (tc.x > fromActor.cx) ? actorRight(fromActor)+4 : actorLeft(fromActor)-4;
+      y1 = actorMidY(fromActor);
+    }
+  }
+  if (toUC) {
+    [x2, y2] = getUCEdge(toUC, fc.x, fc.y);
+  } else {
+    x2 = toActor.cx;
+    y2 = (fc.y < actorMidY(toActor)) ? actorTop(toActor) : actorBottom(toActor);
+    if (Math.abs(fc.x - toActor.cx) > 30) {
+      x2 = (fc.x < toActor.cx) ? actorLeft(toActor)-4 : actorRight(toActor)+4;
+      y2 = actorMidY(toActor);
+    }
+  }
+
+  const lineAng = Math.atan2(y2-y1, x2-x1);
+
+  ctx.save();
+  ctx.lineCap = 'round';
+
+  switch(type) {
+    case 'assoc':
+      ctx.strokeStyle = MED; ctx.lineWidth = 1.1; ctx.setLineDash([]);
+      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+      break;
+
+    case 'include':
+    case 'extend':
+      ctx.strokeStyle = GRAY; ctx.lineWidth = 1.1; ctx.setLineDash([5,3]);
+      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+      ctx.setLineDash([]);
+      drawArrowhead(x2, y2, lineAng, true, false, 6);
+      // label
+      const mx = (x1+x2)*0.5, my = (y1+y2)*0.5;
+      const lbl = type === 'include' ? '<<include>>' : '<<extend>>';
+      ctx.save();
+      ctx.translate(mx, my); ctx.rotate(lineAng);
+      ctx.font = '7.5px Inter,Arial'; ctx.fillStyle = GRAY;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+      ctx.fillText(lbl, 0, -3);
+      ctx.restore();
+      break;
+
+    case 'generalize':
+      ctx.strokeStyle = DARK; ctx.lineWidth = 1.2; ctx.setLineDash([]);
+      // Shorten line end by triangle size
+      const tLen = Math.sqrt((x2-x1)**2+(y2-y1)**2);
+      const tSize = 9;
+      const ux = (x2-x1)/tLen, uy = (y2-y1)/tLen;
+      const lx2 = x2 - ux*tSize, ly2 = y2 - uy*tSize;
+      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(lx2,ly2); ctx.stroke();
+      drawTriangle(x2, y2, lineAng, tSize);
+      ctx.save();
+      const gx = (x1+x2)*0.5, gy = (y1+y2)*0.5;
+      ctx.font = '7.5px Inter,Arial'; ctx.fillStyle = GRAY;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+      ctx.fillText('generalization', gx, gy-4);
+      ctx.restore();
+      break;
+  }
+  ctx.restore();
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   MAIN RENDER
+   ══════════════════════════════════════════════════════════════════ */
+
+// 1. White background
+ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
+
+// 2. Dot grid inside boundary
+ctx.fillStyle = '#f0f4f8';
+for(let x=SB.x+8; x<SB.x+SB.w-8; x+=14)
+  for(let y=SB.y+8; y<SB.y+SB.h-8; y+=14)
+    ctx.fillRect(x, y, 1.5, 1.5);
+
+// 3. System boundary rectangle
+ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 2; ctx.setLineDash([]);
+ctx.strokeRect(SB.x, SB.y, SB.w, SB.h);
+
+// 4. System boundary label (top center of box)
+const lbl = 'Resilio — Mental Health & Wellness App';
+ctx.font = 'bold 11px Inter,Arial'; ctx.fillStyle = DARK;
+ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+const lw = ctx.measureText(lbl).width + 16;
+ctx.fillStyle = '#ffffff'; ctx.fillRect(SB.x + SB.w/2 - lw/2, SB.y-1, lw, 14);
+ctx.fillStyle = DARK;
+ctx.fillText(lbl, SB.x + SB.w/2, SB.y + 2);
+
+// 5. Title (above boundary)
+ctx.fillStyle = DARK; ctx.font = 'bold 15px Inter,Arial';
+ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+ctx.fillText('System Use Case Diagram', 14, 16);
+ctx.font = '10px Inter,Arial'; ctx.fillStyle = GRAY;
+ctx.fillText('UML 2.x  ·  Milan Shrestha / 23057135  ·  Resilio FYP  ·  Islington College', 14, 35);
+
+// 6. Section labels inside boundary
+const sectionLabel = (text, x, y) => {
+  ctx.fillStyle = '#94a3b8'; ctx.font = 'bold 8px Inter,Arial';
+  ctx.textAlign='left'; ctx.textBaseline='top';
+  ctx.fillText(text, x, y);
+};
+sectionLabel('« Authentication »', 166, SB.y+6);
+sectionLabel('« Customer »',        118, 210);
+sectionLabel('« Therapist »',       490, 210);
+sectionLabel('« Admin »',           500, 624);
+
+// Horizontal divider: auth from rest
+ctx.beginPath(); ctx.strokeStyle='#e2e8f0'; ctx.lineWidth=1; ctx.setLineDash([4,4]);
+ctx.moveTo(SB.x+8, 193); ctx.lineTo(SB.x+SB.w-8, 193); ctx.stroke();
+ctx.setLineDash([]);
+
+// Vertical divider: customer | shared | therapist
+ctx.beginPath(); ctx.strokeStyle='#e2e8f0'; ctx.lineWidth=1;
+ctx.moveTo(310, 200); ctx.lineTo(310, SB.y+SB.h-20); ctx.stroke();
+ctx.beginPath();
+ctx.moveTo(480, 200); ctx.lineTo(480, SB.y+SB.h-20); ctx.stroke();
+
+// 7. Draw relationships FIRST (under UCs)
+RELS.forEach(drawRelationship);
+
+// 8. Draw use cases ON TOP of relationship lines
+UCS.forEach(drawUC);
+
+// 9. Draw actors ON TOP (they're outside boundary)
+ACTORS.forEach(drawActor);
+
+// 10. Legend
+const legX=SB.x, legY=H-55, legW=SB.w, legH=42;
+ctx.fillStyle='#f8fafc'; ctx.fillRect(legX, legY, legW, legH);
+ctx.strokeStyle=BORDER; ctx.lineWidth=1; ctx.strokeRect(legX, legY, legW, legH);
+
+ctx.font='8px Inter,Arial'; ctx.textBaseline='middle'; ctx.fillStyle=DARK;
+let lx=legX+12, ly=legY+legH/2;
+
+// Solid line legend
+ctx.beginPath(); ctx.strokeStyle=MED; ctx.lineWidth=1.1; ctx.setLineDash([]);
+ctx.moveTo(lx, ly); ctx.lineTo(lx+22, ly); ctx.stroke();
+ctx.textAlign='left'; ctx.fillStyle=DARK;
+ctx.fillText('Association', lx+26, ly); lx+=100;
+
+// Dashed include
+ctx.beginPath(); ctx.strokeStyle=GRAY; ctx.lineWidth=1.1; ctx.setLineDash([5,3]);
+ctx.moveTo(lx, ly); ctx.lineTo(lx+22, ly); ctx.stroke();
+ctx.setLineDash([]); drawArrowhead(lx+22, ly, 0, true, false, 5);
+ctx.fillStyle=DARK; ctx.fillText('<<include>>', lx+26, ly); lx+=108;
+
+// Dashed extend
+ctx.beginPath(); ctx.strokeStyle=GRAY; ctx.lineWidth=1.1; ctx.setLineDash([5,3]);
+ctx.moveTo(lx, ly); ctx.lineTo(lx+22, ly); ctx.stroke();
+ctx.setLineDash([]); drawArrowhead(lx+22, ly, 0, true, false, 5);
+ctx.fillStyle=DARK; ctx.fillText('<<extend>>', lx+26, ly); lx+=105;
+
+// Generalization
+ctx.beginPath(); ctx.strokeStyle=DARK; ctx.lineWidth=1.2; ctx.setLineDash([]);
+ctx.moveTo(lx, ly); ctx.lineTo(lx+15, ly); ctx.stroke();
+drawTriangle(lx+22, ly, 0, 7);
+ctx.fillStyle=DARK; ctx.fillText('Generalization', lx+26, ly); lx+=115;
+
+// External
+ctx.setLineDash([4,3]); ctx.strokeStyle=GRAY; ctx.lineWidth=1;
+ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(lx+22, ly); ctx.stroke();
+ctx.setLineDash([]); ctx.fillText('External Actor', lx+26, ly);
+
+// Footer
+ctx.font='8px Inter,Arial'; ctx.fillStyle='#94a3b8'; ctx.textAlign='right';
+ctx.fillText('Paste Mermaid code into mermaid.live for alternative rendering', W-14, H-10);
+
+function dl() {
+  const a = document.createElement('a');
+  a.download = 'resilio-usecase-a4.png';
+  a.href = cv.toDataURL('image/png'); a.click();
+}
+</script>
+</body>
+</html>

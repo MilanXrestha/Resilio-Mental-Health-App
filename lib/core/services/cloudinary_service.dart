@@ -30,4 +30,22 @@ class CloudinaryService {
 
     return response.secureUrl;
   }
+
+  /// Uploads general media (Video/Audio/Image) to a specified folder.
+  Future<String> uploadMedia(File file, String type, {String folder = 'resilio/content'}) async {
+    final resourceType = type == 'video' || type == 'audio'
+        ? CloudinaryResourceType.Video
+        : CloudinaryResourceType.Image;
+
+    final response = await _cloudinary.uploadFile(
+      CloudinaryFile.fromFile(
+        file.path,
+        folder: folder,
+        publicId: '${type}_${DateTime.now().millisecondsSinceEpoch}', 
+        resourceType: resourceType,
+      ),
+    );
+
+    return response.secureUrl;
+  }
 }

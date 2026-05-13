@@ -19,12 +19,18 @@ class TherapistRepositoryImpl implements TherapistRepository {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getAppointments({String? status, String? date}) async {
+  Future<List<Map<String, dynamic>>> getAppointments({
+    String? status,
+    String? date,
+  }) async {
     try {
       final queryParams = <String, dynamic>{};
       if (status != null) queryParams['status'] = status;
       if (date != null) queryParams['date'] = date;
-      final response = await _dio.get('/therapist-portal/appointments', queryParameters: queryParams);
+      final response = await _dio.get(
+        '/therapist-portal/appointments',
+        queryParameters: queryParams,
+      );
       final list = response.data['appointments'] as List<dynamic>? ?? [];
       return list.cast<Map<String, dynamic>>();
     } catch (e) {
@@ -33,7 +39,10 @@ class TherapistRepositoryImpl implements TherapistRepository {
   }
 
   @override
-  Future<bool> updateAppointmentStatus(String appointmentId, String status) async {
+  Future<bool> updateAppointmentStatus(
+    String appointmentId,
+    String status,
+  ) async {
     try {
       await _dio.patch(
         '/therapist-portal/appointments/$appointmentId/status',
@@ -93,9 +102,28 @@ class TherapistRepositoryImpl implements TherapistRepository {
   }
 
   @override
+  Future<bool> changePassword(
+    String currentPassword,
+    String newPassword,
+  ) async {
+    try {
+      await _dio.post(
+        '/therapist-portal/change-password',
+        data: {'currentPassword': currentPassword, 'newPassword': newPassword},
+      );
+      return true;
+    } catch (e) {
+      throw Exception('Failed to change password: $e');
+    }
+  }
+
+  @override
   Future<bool> notifyCall(String appointmentId) async {
     try {
-      await _dio.post('/therapist-portal/call/notify', data: {'appointmentId': appointmentId});
+      await _dio.post(
+        '/therapist-portal/call/notify',
+        data: {'appointmentId': appointmentId},
+      );
       return true;
     } catch (e) {
       return false;
@@ -126,11 +154,19 @@ class TherapistRepositoryImpl implements TherapistRepository {
   }
 
   @override
-  Future<Map<String, dynamic>> createContent(String type, Map<String, dynamic> data) async {
+  Future<Map<String, dynamic>> createContent(
+    String type,
+    Map<String, dynamic> data,
+  ) async {
     try {
-      final response = await _dio.post('/therapist-portal/content/$type', data: data);
+      final response = await _dio.post(
+        '/therapist-portal/content/$type',
+        data: data,
+      );
       // Backend returns { tip: {...} } or { quote: {...} } or { video: {...} }
-      final key = type == 'audio' ? 'audio' : type.substring(0, type.length - 1);
+      final key = type == 'audio'
+          ? 'audio'
+          : type.substring(0, type.length - 1);
       return response.data[key] as Map<String, dynamic>? ?? response.data;
     } catch (e) {
       throw Exception('Failed to create $type: $e');
@@ -138,10 +174,19 @@ class TherapistRepositoryImpl implements TherapistRepository {
   }
 
   @override
-  Future<Map<String, dynamic>> updateContent(String type, String id, Map<String, dynamic> data) async {
+  Future<Map<String, dynamic>> updateContent(
+    String type,
+    String id,
+    Map<String, dynamic> data,
+  ) async {
     try {
-      final response = await _dio.put('/therapist-portal/content/$type/$id', data: data);
-      final key = type == 'audio' ? 'audio' : type.substring(0, type.length - 1);
+      final response = await _dio.put(
+        '/therapist-portal/content/$type/$id',
+        data: data,
+      );
+      final key = type == 'audio'
+          ? 'audio'
+          : type.substring(0, type.length - 1);
       return response.data[key] as Map<String, dynamic>? ?? response.data;
     } catch (e) {
       throw Exception('Failed to update $type: $e');

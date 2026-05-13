@@ -1,5 +1,6 @@
 import 'package:Resilio/core/routing/route_names.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:convert';
 import 'package:Resilio/features/customer/audio/domain/entities/audio_entity.dart';
@@ -37,7 +38,19 @@ import '../../features/customer/profile/presentation/screens/edit_profile_screen
 import '../../features/customer/subscription/presentation/screens/subscription_screen.dart';
 import '../../features/customer/subscription/presentation/screens/transaction_history_screen.dart';
 import '../../features/therapist/dashboard/presentation/screens/therapist_dashboard_screen.dart';
+import '../../features/therapist/dashboard/presentation/screens/therapist_notifications_screen.dart';
+import '../../features/therapist/dashboard/presentation/screens/therapist_edit_profile_screen.dart';
+import '../../features/therapist/dashboard/presentation/screens/therapist_settings_screen.dart';
+import '../../features/therapist/dashboard/presentation/bloc/therapist_cubit.dart';
+import '../../features/therapist/dashboard/presentation/bloc/therapist_content_cubit.dart';
+import '../../features/admin/dashboard/presentation/bloc/admin_revenue_cubit.dart';
+import '../../features/admin/dashboard/presentation/bloc/admin_notification_cubit.dart';
+import '../../features/admin/dashboard/presentation/bloc/admin_preference_cubit.dart';
 import '../../features/admin/dashboard/presentation/screens/admin_dashboard_screen.dart';
+import '../../features/admin/dashboard/presentation/screens/admin_revenue_screen.dart';
+import '../../features/admin/dashboard/presentation/screens/admin_notifications_screen.dart';
+import '../../features/admin/dashboard/presentation/screens/admin_preferences_screen.dart';
+import '../../features/admin/dashboard/presentation/screens/admin_settings_screen.dart';
 import '../../features/customer/matching/presentation/screens/matching_questionnaire_screen.dart';
 import '../../features/customer/booking/presentation/screens/session_booking_screen.dart';
 import '../../features/customer/therapist/presentation/screens/therapist_list_screen.dart';
@@ -110,9 +123,9 @@ class AppRouter {
         name: RouteNames.shortsPlayer,
         builder: (context, state) {
           final videos = state.extra as List?;
-          final index = state.uri.queryParameters['index'] != null 
-            ? int.parse(state.uri.queryParameters['index']!) 
-            : 0;
+          final index = state.uri.queryParameters['index'] != null
+              ? int.parse(state.uri.queryParameters['index']!)
+              : 0;
           if (videos == null || videos.isEmpty) {
             return const SizedBox.shrink();
           }
@@ -173,7 +186,7 @@ class AppRouter {
         builder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
           final images = extra?['images'] as List?;
-          
+
           return ImageViewerScreen(
             images: images ?? [],
             titles: (extra?['titles'] as List?)?.cast<String>(),
@@ -190,13 +203,22 @@ class AppRouter {
           final category = state.extra as CategoryCardEntity;
           final contentTypeStr = state.uri.queryParameters['contentType'];
           ExploreItemType? contentType;
-          if (contentTypeStr == 'audio') contentType = ExploreItemType.audio;
-          else if (contentTypeStr == 'shortVideo') contentType = ExploreItemType.shortVideo;
-          else if (contentTypeStr == 'longVideo') contentType = ExploreItemType.longVideo;
-          else if (contentTypeStr == 'tip') contentType = ExploreItemType.tip;
-          else if (contentTypeStr == 'quote') contentType = ExploreItemType.quote;
-          else if (contentTypeStr == 'image') contentType = ExploreItemType.image;
-          return CategoryDetailScreen(category: category, contentType: contentType);
+          if (contentTypeStr == 'audio')
+            contentType = ExploreItemType.audio;
+          else if (contentTypeStr == 'shortVideo')
+            contentType = ExploreItemType.shortVideo;
+          else if (contentTypeStr == 'longVideo')
+            contentType = ExploreItemType.longVideo;
+          else if (contentTypeStr == 'tip')
+            contentType = ExploreItemType.tip;
+          else if (contentTypeStr == 'quote')
+            contentType = ExploreItemType.quote;
+          else if (contentTypeStr == 'image')
+            contentType = ExploreItemType.image;
+          return CategoryDetailScreen(
+            category: category,
+            contentType: contentType,
+          );
         },
       ),
       GoRoute(
@@ -222,12 +244,12 @@ class AppRouter {
           final userId = state.uri.queryParameters['userId'] ?? '';
           final gameId = state.uri.queryParameters['gameId'] ?? '';
           final gameConfigStr = state.uri.queryParameters['gameConfig'];
-          final gameConfig = gameConfigStr != null 
-            ? jsonDecode(gameConfigStr) as Map<String, dynamic> 
-            : <String, dynamic>{};
+          final gameConfig = gameConfigStr != null
+              ? jsonDecode(gameConfigStr) as Map<String, dynamic>
+              : <String, dynamic>{};
           return WellnessQuizScreen(
-            userId: userId, 
-            gameId: gameId, 
+            userId: userId,
+            gameId: gameId,
             gameConfig: gameConfig,
           );
         },
@@ -239,12 +261,12 @@ class AppRouter {
           final userId = state.uri.queryParameters['userId'] ?? '';
           final gameId = state.uri.queryParameters['gameId'] ?? '';
           final gameConfigStr = state.uri.queryParameters['gameConfig'];
-          final gameConfig = gameConfigStr != null 
-            ? jsonDecode(gameConfigStr) as Map<String, dynamic> 
-            : <String, dynamic>{};
+          final gameConfig = gameConfigStr != null
+              ? jsonDecode(gameConfigStr) as Map<String, dynamic>
+              : <String, dynamic>{};
           return BreathingGameScreen(
-            userId: userId, 
-            gameId: gameId, 
+            userId: userId,
+            gameId: gameId,
             gameConfig: gameConfig,
           );
         },
@@ -256,12 +278,12 @@ class AppRouter {
           final userId = state.uri.queryParameters['userId'] ?? '';
           final gameId = state.uri.queryParameters['gameId'] ?? '';
           final gameConfigStr = state.uri.queryParameters['gameConfig'];
-          final gameConfig = gameConfigStr != null 
-            ? jsonDecode(gameConfigStr) as Map<String, dynamic> 
-            : <String, dynamic>{};
+          final gameConfig = gameConfigStr != null
+              ? jsonDecode(gameConfigStr) as Map<String, dynamic>
+              : <String, dynamic>{};
           return AffirmationBuilderScreen(
-            userId: userId, 
-            gameId: gameId, 
+            userId: userId,
+            gameId: gameId,
             gameConfig: gameConfig,
           );
         },
@@ -300,12 +322,51 @@ class AppRouter {
       GoRoute(
         path: '/therapist-dashboard',
         name: RouteNames.therapistDashboard,
-        builder: (context, state) => const TherapistDashboardScreen(),
+        builder: (context, state) => MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (_) => getIt<TherapistCubit>()
+                ..loadDashboard()
+                ..loadProfile(),
+            ),
+            BlocProvider(create: (_) => getIt<TherapistContentCubit>()),
+          ],
+          child: const TherapistDashboardScreen(),
+        ),
       ),
       GoRoute(
         path: '/admin-dashboard',
         name: RouteNames.adminDashboard,
         builder: (context, state) => const AdminDashboardScreen(),
+      ),
+      GoRoute(
+        path: '/admin-revenue',
+        name: RouteNames.adminRevenue,
+        builder: (context, state) => BlocProvider.value(
+          value: getIt<AdminRevenueCubit>(),
+          child: const AdminRevenueScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/admin-notifications',
+        name: RouteNames.adminNotifications,
+        builder: (context, state) => BlocProvider.value(
+          value: getIt<AdminNotificationCubit>(),
+          child: const AdminNotificationsScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/admin-preferences',
+        name: RouteNames.adminPreferences,
+        builder: (context, state) => BlocProvider.value(
+          value: getIt<AdminPreferenceCubit>(),
+          child: const AdminPreferencesScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/admin-settings',
+        name: RouteNames.adminSettings,
+        builder: (context, state) => const AdminSettingsScreen(),
       ),
       GoRoute(
         path: '/matching',
@@ -319,6 +380,27 @@ class AppRouter {
           final matchParams = state.extra as Map<String, dynamic>?;
           return TherapistListScreen(matchParams: matchParams);
         },
+      ),
+      GoRoute(
+        path: '/therapist/notifications',
+        name: RouteNames.therapistNotifications,
+        builder: (context, state) => const TherapistNotificationsScreen(),
+      ),
+      GoRoute(
+        path: '/therapist/edit-profile',
+        name: RouteNames.therapistEditProfile,
+        builder: (context, state) => BlocProvider(
+          create: (_) => getIt<TherapistCubit>(),
+          child: const TherapistEditProfileScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/therapist/settings',
+        name: 'therapistSettings',
+        builder: (context, state) => BlocProvider(
+          create: (_) => getIt<TherapistCubit>(),
+          child: const TherapistSettingsScreen(),
+        ),
       ),
       GoRoute(
         path: '/therapist/:therapistId',
@@ -378,10 +460,7 @@ class AppRouter {
         builder: (context, state) {
           final id = state.pathParameters['appointmentId'] ?? '';
           final appt = state.extra as Map<String, dynamic>?;
-          return AppointmentChatScreen(
-            appointmentId: id,
-            appointment: appt,
-          );
+          return AppointmentChatScreen(appointmentId: id, appointment: appt);
         },
       ),
     ],
