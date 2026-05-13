@@ -14,6 +14,7 @@ import 'package:Resilio/features/customer/subscription/presentation/bloc/subscri
 import 'package:Resilio/features/customer/profile/presentation/bloc/profile_bloc.dart';
 import 'package:Resilio/features/customer/profile/presentation/widgets/premium_profile_card.dart';
 import 'package:Resilio/features/customer/profile/presentation/widgets/profile_menu_item.dart';
+import 'package:Resilio/l10n/app_localizations.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -24,22 +25,23 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   void _handleLogout() {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Logout'),
-        content: const Text('Are you sure you want to logout?'),
+        title: Text(l10n.logout),
+        content: Text(l10n.logoutConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () {
               context.read<AuthBloc>().add(LogoutRequested());
               Navigator.pop(context); // Close dialog
             },
-            child: const Text('Logout', style: TextStyle(color: Colors.red)),
+            child: Text(l10n.logout, style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -48,10 +50,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
-          title: const Text('My Profile'),
+          title: Text(AppLocalizations.of(context)!.yourProfile),
           centerTitle: true,
           elevation: 0,
           backgroundColor: Colors.transparent,
@@ -85,7 +88,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             subState.subscription.isActive;
                         final planName = subState is SubscriptionLoaded && isPremium
                             ? subState.subscription.planId
-                            : 'Free';
+                            : AppLocalizations.of(context)!.free;
 
                         if (isPremium) {
                           return PremiumProfileCard(
@@ -103,26 +106,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     // Menu Options
                     ProfileMenuItem(
                       icon: Icons.person_outline_rounded,
-                      title: 'Edit Profile',
-                      description: 'Change your name, email, and photo',
+                      title: l10n.editProfile,
+                      description: l10n.changeNameEmailPhoto,
                       onTap: () => context.pushNamed(RouteNames.editProfile, extra: profile),
                     ),
                     ProfileMenuItem(
                       icon: Icons.subscriptions_outlined,
-                      title: 'Subscription',
-                      description: 'Manage your premium plan',
+                      title: l10n.subscription,
+                      description: l10n.managePremiumPlan,
                       onTap: () => context.pushNamed(RouteNames.subscription),
                     ),
                     ProfileMenuItem(
                       icon: Icons.history_rounded,
-                      title: 'Transactions',
-                      description: 'View your billing history',
+                      title: l10n.transactions,
+                      description: l10n.viewBillingHistory,
                       onTap: () => context.pushNamed(RouteNames.transactionHistory),
                     ),
                     ProfileMenuItem(
                       icon: Icons.logout_rounded,
-                      title: 'Logout',
-                      description: 'Sign out of your account',
+                      title: l10n.logout,
+                      description: l10n.signOutAccount,
                       isDestructive: true,
                       onTap: _handleLogout,
                     ),

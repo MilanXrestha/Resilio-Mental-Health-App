@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:injectable/injectable.dart';
-import 'package:protobuf/protobuf.dart';
 import '../../../../../../core/database/database_helper.dart';
 import '../../../../../../core/proto_generated/user.pb.dart';
 

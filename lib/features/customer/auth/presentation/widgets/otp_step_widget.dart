@@ -178,6 +178,7 @@ class _OtpInputContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
@@ -215,7 +216,7 @@ class _OtpInputContainer extends StatelessWidget {
               ),
               SizedBox(width: 6.w),
               Text(
-                'Enter 6-digit code',
+                l10n.enter6DigitCode,
                 style: AppTextStyles.bodySmall.copyWith(
                   color: context.textSecondaryColor,
                 ),
@@ -349,7 +350,7 @@ class _ResendOtpRow extends StatelessWidget {
             child: Text(
               canResend
                   ? l10n.resendOtp
-                  : '${l10n.resendOtp} (${resendCountdown}s)',
+                  : l10n.resendOtpIn(resendCountdown.toString()),
               style: AppTextStyles.bodySmall.copyWith(
                 color: canResend
                     ? context.primaryColor

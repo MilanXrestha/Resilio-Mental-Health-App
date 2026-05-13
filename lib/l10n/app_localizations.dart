@@ -272,6 +272,12 @@ abstract class AppLocalizations {
   /// **'Verify & Sign In'**
   String get verifyOtp;
 
+  /// No description provided for @enter6DigitCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter 6-digit code'**
+  String get enter6DigitCode;
+
   /// No description provided for @didNotReceiveOtp.
   ///
   /// In en, this message translates to:
@@ -475,6 +481,1692 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Exit'**
   String get exitButton;
+
+  /// No description provided for @hello.
+  ///
+  /// In en, this message translates to:
+  /// **'Hello, {name}'**
+  String hello(String name);
+
+  /// No description provided for @timeToUnwind.
+  ///
+  /// In en, this message translates to:
+  /// **'Time to unwind'**
+  String get timeToUnwind;
+
+  /// No description provided for @setReminder.
+  ///
+  /// In en, this message translates to:
+  /// **'Set Reminder'**
+  String get setReminder;
+
+  /// No description provided for @neverMissQuotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Never miss your favorite quotes'**
+  String get neverMissQuotes;
+
+  /// No description provided for @dailyInspiration.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Inspiration'**
+  String get dailyInspiration;
+
+  /// No description provided for @swipeFeaturedQuotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Swipe through today\'s featured quotes'**
+  String get swipeFeaturedQuotes;
+
+  /// No description provided for @calmingAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Calming Audio'**
+  String get calmingAudio;
+
+  /// No description provided for @meditationSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Meditation & wellness sessions'**
+  String get meditationSessions;
+
+  /// No description provided for @shortVideos.
+  ///
+  /// In en, this message translates to:
+  /// **'Short Videos'**
+  String get shortVideos;
+
+  /// No description provided for @quickMindfulness.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick mindfulness moments'**
+  String get quickMindfulness;
+
+  /// No description provided for @featuredVideos.
+  ///
+  /// In en, this message translates to:
+  /// **'Featured Videos'**
+  String get featuredVideos;
+
+  /// No description provided for @inDepthContent.
+  ///
+  /// In en, this message translates to:
+  /// **'In-depth wellness content'**
+  String get inDepthContent;
+
+  /// No description provided for @wellnessTips.
+  ///
+  /// In en, this message translates to:
+  /// **'Wellness Tips'**
+  String get wellnessTips;
+
+  /// No description provided for @quickAdvice.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick advice for daily wellness'**
+  String get quickAdvice;
+
+  /// No description provided for @moreQuotes.
+  ///
+  /// In en, this message translates to:
+  /// **'More Quotes'**
+  String get moreQuotes;
+
+  /// No description provided for @discoverWords.
+  ///
+  /// In en, this message translates to:
+  /// **'Discover words to lift your spirit'**
+  String get discoverWords;
+
+  /// No description provided for @exploreCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore Categories'**
+  String get exploreCategories;
+
+  /// No description provided for @findQuotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Find quotes that resonate with you'**
+  String get findQuotes;
+
+  /// No description provided for @seeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'See All'**
+  String get seeAll;
+
+  /// No description provided for @somethingWentWrong.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong'**
+  String get somethingWentWrong;
+
+  /// No description provided for @tryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try Again'**
+  String get tryAgain;
+
+  /// No description provided for @wellnessExpert.
+  ///
+  /// In en, this message translates to:
+  /// **'Wellness Expert'**
+  String get wellnessExpert;
+
+  /// No description provided for @yourTherapySessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Therapy Sessions'**
+  String get yourTherapySessions;
+
+  /// No description provided for @talkToProfessional.
+  ///
+  /// In en, this message translates to:
+  /// **'Talk to a Professional'**
+  String get talkToProfessional;
+
+  /// No description provided for @viewUpcomingSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'View your upcoming and past sessions with your therapist.'**
+  String get viewUpcomingSessions;
+
+  /// No description provided for @findRightTherapist.
+  ///
+  /// In en, this message translates to:
+  /// **'Find the right therapist for your mental wellness journey.'**
+  String get findRightTherapist;
+
+  /// No description provided for @mySessions.
+  ///
+  /// In en, this message translates to:
+  /// **'My Sessions'**
+  String get mySessions;
+
+  /// No description provided for @getMatched.
+  ///
+  /// In en, this message translates to:
+  /// **'Get Matched'**
+  String get getMatched;
+
+  /// No description provided for @findNew.
+  ///
+  /// In en, this message translates to:
+  /// **'Find New'**
+  String get findNew;
+
+  /// No description provided for @editProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Profile'**
+  String get editProfile;
+
+  /// No description provided for @changeNameEmailPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Change your name, email, and photo'**
+  String get changeNameEmailPhoto;
+
+  /// No description provided for @subscription.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription'**
+  String get subscription;
+
+  /// No description provided for @managePremiumPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage your premium plan'**
+  String get managePremiumPlan;
+
+  /// No description provided for @transactions.
+  ///
+  /// In en, this message translates to:
+  /// **'Transactions'**
+  String get transactions;
+
+  /// No description provided for @viewBillingHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'View your billing history'**
+  String get viewBillingHistory;
+
+  /// No description provided for @logout.
+  ///
+  /// In en, this message translates to:
+  /// **'Logout'**
+  String get logout;
+
+  /// No description provided for @logoutConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to logout?'**
+  String get logoutConfirm;
+
+  /// No description provided for @signOutAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out of your account'**
+  String get signOutAccount;
+
+  /// No description provided for @free.
+  ///
+  /// In en, this message translates to:
+  /// **'Free'**
+  String get free;
+
+  /// No description provided for @profileSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get profileSection;
+
+  /// No description provided for @yourProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Profile'**
+  String get yourProfile;
+
+  /// No description provided for @manageAccountPrefs.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage account, subscription, and preferences'**
+  String get manageAccountPrefs;
+
+  /// No description provided for @appearanceSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get appearanceSection;
+
+  /// No description provided for @generalSection.
+  ///
+  /// In en, this message translates to:
+  /// **'General'**
+  String get generalSection;
+
+  /// No description provided for @resetToDefaults.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset to Defaults'**
+  String get resetToDefaults;
+
+  /// No description provided for @restoreThemeLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore theme and language to defaults'**
+  String get restoreThemeLanguage;
+
+  /// No description provided for @settingsReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings reset to defaults'**
+  String get settingsReset;
+
+  /// No description provided for @appSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'App Settings'**
+  String get appSettings;
+
+  /// No description provided for @errorLoadingSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading settings'**
+  String get errorLoadingSettings;
+
+  /// No description provided for @cacheCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Cache cleared successfully'**
+  String get cacheCleared;
+
+  /// No description provided for @clearCacheConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to clear cache?'**
+  String get clearCacheConfirm;
+
+  /// No description provided for @currentCacheSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Current cache size: {size}'**
+  String currentCacheSize(String size);
+
+  /// No description provided for @clear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clear;
+
+  /// No description provided for @clearCache.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Cache'**
+  String get clearCache;
+
+  /// No description provided for @freeUpSpace.
+  ///
+  /// In en, this message translates to:
+  /// **'Free up space'**
+  String get freeUpSpace;
+
+  /// No description provided for @freeUpSpaceSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Free up space · {size}'**
+  String freeUpSpaceSize(String size);
+
+  /// No description provided for @aboutResilio.
+  ///
+  /// In en, this message translates to:
+  /// **'About Resilio'**
+  String get aboutResilio;
+
+  /// No description provided for @aboutResilioDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Your mental wellness companion for a healthier, more balanced life. Resilio brings you guided meditations, expert tips, breathing exercises, and personalised wellness journeys — all in one place.'**
+  String get aboutResilioDesc;
+
+  /// No description provided for @madeWithLove.
+  ///
+  /// In en, this message translates to:
+  /// **'© 2026 Resilio Team · Made with ❤️ in Nepal'**
+  String get madeWithLove;
+
+  /// No description provided for @versionLearnMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version} · Learn more'**
+  String versionLearnMore(String version);
+
+  /// No description provided for @myAppointments.
+  ///
+  /// In en, this message translates to:
+  /// **'My Appointments'**
+  String get myAppointments;
+
+  /// No description provided for @upcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming'**
+  String get upcoming;
+
+  /// No description provided for @past.
+  ///
+  /// In en, this message translates to:
+  /// **'Past'**
+  String get past;
+
+  /// No description provided for @dateNotSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Date not set'**
+  String get dateNotSet;
+
+  /// No description provided for @tapToMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to message your therapist'**
+  String get tapToMessage;
+
+  /// No description provided for @joinSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Join Session'**
+  String get joinSession;
+
+  /// No description provided for @sessionIn15Min.
+  ///
+  /// In en, this message translates to:
+  /// **'Session in 15 minutes'**
+  String get sessionIn15Min;
+
+  /// No description provided for @sessionStartingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Your session with {name} starts soon.'**
+  String sessionStartingSoon(String name);
+
+  /// No description provided for @noUpcomingAppointments.
+  ///
+  /// In en, this message translates to:
+  /// **'No upcoming appointments'**
+  String get noUpcomingAppointments;
+
+  /// No description provided for @noPastAppointments.
+  ///
+  /// In en, this message translates to:
+  /// **'No past appointments'**
+  String get noPastAppointments;
+
+  /// No description provided for @myTherapy.
+  ///
+  /// In en, this message translates to:
+  /// **'My Therapy'**
+  String get myTherapy;
+
+  /// No description provided for @errorLoadingAppointments.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load appointments'**
+  String get errorLoadingAppointments;
+
+  /// No description provided for @noUpcomingSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'No upcoming sessions'**
+  String get noUpcomingSessions;
+
+  /// No description provided for @noUpcomingSessionsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Book a session with a therapist to get started.'**
+  String get noUpcomingSessionsDesc;
+
+  /// No description provided for @noPastSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'No past sessions'**
+  String get noPastSessions;
+
+  /// No description provided for @noPastSessionsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Your completed sessions will appear here.'**
+  String get noPastSessionsDesc;
+
+  /// No description provided for @findTherapist.
+  ///
+  /// In en, this message translates to:
+  /// **'Find a Therapist'**
+  String get findTherapist;
+
+  /// No description provided for @statusConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmed'**
+  String get statusConfirmed;
+
+  /// No description provided for @statusPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get statusPending;
+
+  /// No description provided for @statusCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get statusCancelled;
+
+  /// No description provided for @statusCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get statusCompleted;
+
+  /// No description provided for @statusRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get statusRejected;
+
+  /// No description provided for @statusScheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'Scheduled'**
+  String get statusScheduled;
+
+  /// No description provided for @statusAccepted.
+  ///
+  /// In en, this message translates to:
+  /// **'Accepted'**
+  String get statusAccepted;
+
+  /// No description provided for @statusUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get statusUnknown;
+
+  /// No description provided for @bookSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Book Session'**
+  String get bookSession;
+
+  /// No description provided for @selectDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Date'**
+  String get selectDate;
+
+  /// No description provided for @selectTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Time'**
+  String get selectTime;
+
+  /// No description provided for @allTimesLocal.
+  ///
+  /// In en, this message translates to:
+  /// **'All times are in your local timezone'**
+  String get allTimesLocal;
+
+  /// No description provided for @statusBooked.
+  ///
+  /// In en, this message translates to:
+  /// **'Booked'**
+  String get statusBooked;
+
+  /// No description provided for @sessionBooked.
+  ///
+  /// In en, this message translates to:
+  /// **'Session Booked!'**
+  String get sessionBooked;
+
+  /// No description provided for @sessionBookedDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ll get a notification when it\'s time for your session.'**
+  String get sessionBookedDesc;
+
+  /// No description provided for @selectTimeSlot.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a time slot'**
+  String get selectTimeSlot;
+
+  /// No description provided for @payWithEsewa.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay with eSewa'**
+  String payWithEsewa(String amount);
+
+  /// No description provided for @sessionDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'50 min'**
+  String get sessionDuration;
+
+  /// No description provided for @videoCall.
+  ///
+  /// In en, this message translates to:
+  /// **'Video call'**
+  String get videoCall;
+
+  /// No description provided for @paymentFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment failed. No charge was made. Please try again.'**
+  String get paymentFailed;
+
+  /// No description provided for @paymentSuccessBookingFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment went through (ref: {ref}) but booking failed. Please contact support.'**
+  String paymentSuccessBookingFailed(String ref);
+
+  /// No description provided for @done.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get done;
+
+  /// No description provided for @confirmBooking.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Booking'**
+  String get confirmBooking;
+
+  /// No description provided for @sessionFee.
+  ///
+  /// In en, this message translates to:
+  /// **'NPR {fee}'**
+  String sessionFee(String fee);
+
+  /// No description provided for @bookingSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Session booked successfully!'**
+  String get bookingSuccess;
+
+  /// No description provided for @bookingFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Booking failed. Please try again.'**
+  String get bookingFailed;
+
+  /// No description provided for @slotAlreadyBooked.
+  ///
+  /// In en, this message translates to:
+  /// **'This slot is already booked.'**
+  String get slotAlreadyBooked;
+
+  /// No description provided for @noSlotsAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No slots available'**
+  String get noSlotsAvailable;
+
+  /// No description provided for @explore.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore'**
+  String get explore;
+
+  /// No description provided for @searchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search for content…'**
+  String get searchHint;
+
+  /// No description provided for @all.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get all;
+
+  /// No description provided for @contentType.
+  ///
+  /// In en, this message translates to:
+  /// **'Content Type'**
+  String get contentType;
+
+  /// No description provided for @showOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Only'**
+  String get showOnly;
+
+  /// No description provided for @featuredContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Featured Content'**
+  String get featuredContent;
+
+  /// No description provided for @premiumContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium Content'**
+  String get premiumContent;
+
+  /// No description provided for @sortBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort By'**
+  String get sortBy;
+
+  /// No description provided for @filters.
+  ///
+  /// In en, this message translates to:
+  /// **'Filters'**
+  String get filters;
+
+  /// No description provided for @applyFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply Filters'**
+  String get applyFilters;
+
+  /// No description provided for @clearFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Filters'**
+  String get clearFilters;
+
+  /// No description provided for @noResultsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No results found'**
+  String get noResultsFound;
+
+  /// No description provided for @gamesHub.
+  ///
+  /// In en, this message translates to:
+  /// **'Games & Wellness'**
+  String get gamesHub;
+
+  /// No description provided for @dailyQuest.
+  ///
+  /// In en, this message translates to:
+  /// **'DAILY QUEST'**
+  String get dailyQuest;
+
+  /// No description provided for @bonusXp.
+  ///
+  /// In en, this message translates to:
+  /// **'+50 bonus XP'**
+  String get bonusXp;
+
+  /// No description provided for @go.
+  ///
+  /// In en, this message translates to:
+  /// **'Go'**
+  String get go;
+
+  /// No description provided for @levelNewcomer.
+  ///
+  /// In en, this message translates to:
+  /// **'Newcomer'**
+  String get levelNewcomer;
+
+  /// No description provided for @levelExplorer.
+  ///
+  /// In en, this message translates to:
+  /// **'Explorer'**
+  String get levelExplorer;
+
+  /// No description provided for @levelPractitioner.
+  ///
+  /// In en, this message translates to:
+  /// **'Practitioner'**
+  String get levelPractitioner;
+
+  /// No description provided for @levelAchiever.
+  ///
+  /// In en, this message translates to:
+  /// **'Achiever'**
+  String get levelAchiever;
+
+  /// No description provided for @levelMaster.
+  ///
+  /// In en, this message translates to:
+  /// **'Master'**
+  String get levelMaster;
+
+  /// No description provided for @xpToNextRank.
+  ///
+  /// In en, this message translates to:
+  /// **'{xp} XP to next rank'**
+  String xpToNextRank(Object xp);
+
+  /// No description provided for @maxRankAchieved.
+  ///
+  /// In en, this message translates to:
+  /// **'Maximum rank achieved 🎉'**
+  String get maxRankAchieved;
+
+  /// No description provided for @achievements.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievements'**
+  String get achievements;
+
+  /// No description provided for @leaderboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Leaderboard'**
+  String get leaderboard;
+
+  /// No description provided for @breathingGame.
+  ///
+  /// In en, this message translates to:
+  /// **'Breathing'**
+  String get breathingGame;
+
+  /// No description provided for @storyGame.
+  ///
+  /// In en, this message translates to:
+  /// **'Story'**
+  String get storyGame;
+
+  /// No description provided for @triviaGame.
+  ///
+  /// In en, this message translates to:
+  /// **'Trivia'**
+  String get triviaGame;
+
+  /// No description provided for @affirmationGame.
+  ///
+  /// In en, this message translates to:
+  /// **'Affirmation'**
+  String get affirmationGame;
+
+  /// No description provided for @moodTracker.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood'**
+  String get moodTracker;
+
+  /// No description provided for @goPremium.
+  ///
+  /// In en, this message translates to:
+  /// **'Go Premium'**
+  String get goPremium;
+
+  /// No description provided for @transactionHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction History'**
+  String get transactionHistory;
+
+  /// No description provided for @choosePlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Your Plan'**
+  String get choosePlan;
+
+  /// No description provided for @yourSubscription.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Subscription'**
+  String get yourSubscription;
+
+  /// No description provided for @currentPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Plan'**
+  String get currentPlan;
+
+  /// No description provided for @cancelSubscription.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel Subscription'**
+  String get cancelSubscription;
+
+  /// No description provided for @cancelSubscriptionConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to cancel your subscription?'**
+  String get cancelSubscriptionConfirm;
+
+  /// No description provided for @no.
+  ///
+  /// In en, this message translates to:
+  /// **'No'**
+  String get no;
+
+  /// No description provided for @yes.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes'**
+  String get yes;
+
+  /// No description provided for @subscriptionSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription successful!'**
+  String get subscriptionSuccess;
+
+  /// No description provided for @endsOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Ends on {date}'**
+  String endsOn(String date);
+
+  /// No description provided for @savingsUpgrade.
+  ///
+  /// In en, this message translates to:
+  /// **'Save {percent}% by upgrading!'**
+  String savingsUpgrade(Object percent);
+
+  /// No description provided for @subscribe.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscribe'**
+  String get subscribe;
+
+  /// No description provided for @upgrade.
+  ///
+  /// In en, this message translates to:
+  /// **'Upgrade'**
+  String get upgrade;
+
+  /// No description provided for @currentPlanLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Plan'**
+  String get currentPlanLabel;
+
+  /// No description provided for @noTransactions.
+  ///
+  /// In en, this message translates to:
+  /// **'No transactions yet'**
+  String get noTransactions;
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
+  /// No description provided for @notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notifications;
+
+  /// No description provided for @noNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'No notifications yet'**
+  String get noNotifications;
+
+  /// No description provided for @justNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Just now'**
+  String get justNow;
+
+  /// No description provided for @minutesAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{min}m ago'**
+  String minutesAgo(Object min);
+
+  /// No description provided for @hoursAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{hr}h ago'**
+  String hoursAgo(Object hr);
+
+  /// No description provided for @yesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get yesterday;
+
+  /// No description provided for @daysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{d}d ago'**
+  String daysAgo(Object d);
+
+  /// No description provided for @markAllRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark all read'**
+  String get markAllRead;
+
+  /// No description provided for @favoriteAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio'**
+  String get favoriteAudio;
+
+  /// No description provided for @favoriteVideos.
+  ///
+  /// In en, this message translates to:
+  /// **'Videos'**
+  String get favoriteVideos;
+
+  /// No description provided for @favoriteQuotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Quotes'**
+  String get favoriteQuotes;
+
+  /// No description provided for @favoriteTips.
+  ///
+  /// In en, this message translates to:
+  /// **'Tips'**
+  String get favoriteTips;
+
+  /// No description provided for @favoriteImages.
+  ///
+  /// In en, this message translates to:
+  /// **'Images'**
+  String get favoriteImages;
+
+  /// No description provided for @signInToSaveFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to save favorites'**
+  String get signInToSaveFavorites;
+
+  /// No description provided for @noFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'No favorites yet'**
+  String get noFavorites;
+
+  /// No description provided for @addFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the heart icon to save content here'**
+  String get addFavorites;
+
+  /// No description provided for @editProfileTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Profile'**
+  String get editProfileTitle;
+
+  /// No description provided for @personalInformation.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal Information'**
+  String get personalInformation;
+
+  /// No description provided for @moreAboutYou.
+  ///
+  /// In en, this message translates to:
+  /// **'More About You'**
+  String get moreAboutYou;
+
+  /// No description provided for @saveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Changes'**
+  String get saveChanges;
+
+  /// No description provided for @phoneNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone Number'**
+  String get phoneNumber;
+
+  /// No description provided for @username.
+  ///
+  /// In en, this message translates to:
+  /// **'Username'**
+  String get username;
+
+  /// No description provided for @dateOfBirth.
+  ///
+  /// In en, this message translates to:
+  /// **'Date of Birth'**
+  String get dateOfBirth;
+
+  /// No description provided for @gender.
+  ///
+  /// In en, this message translates to:
+  /// **'Gender'**
+  String get gender;
+
+  /// No description provided for @save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Changes'**
+  String get save;
+
+  /// No description provided for @genderMale.
+  ///
+  /// In en, this message translates to:
+  /// **'Male'**
+  String get genderMale;
+
+  /// No description provided for @genderFemale.
+  ///
+  /// In en, this message translates to:
+  /// **'Female'**
+  String get genderFemale;
+
+  /// No description provided for @genderOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get genderOther;
+
+  /// No description provided for @genderPreferNotToSay.
+  ///
+  /// In en, this message translates to:
+  /// **'Prefer not to say'**
+  String get genderPreferNotToSay;
+
+  /// No description provided for @selectDateOfBirth.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Date of Birth'**
+  String get selectDateOfBirth;
+
+  /// No description provided for @tapToSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to set'**
+  String get tapToSet;
+
+  /// No description provided for @profileUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile updated successfully!'**
+  String get profileUpdated;
+
+  /// No description provided for @inspirationalImages.
+  ///
+  /// In en, this message translates to:
+  /// **'Inspirational Images'**
+  String get inspirationalImages;
+
+  /// No description provided for @beautifulWallpapers.
+  ///
+  /// In en, this message translates to:
+  /// **'Beautiful wallpapers to inspire you'**
+  String get beautifulWallpapers;
+
+  /// No description provided for @share.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get share;
+
+  /// No description provided for @saveImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get saveImage;
+
+  /// No description provided for @fullscreen.
+  ///
+  /// In en, this message translates to:
+  /// **'Fullscreen'**
+  String get fullscreen;
+
+  /// No description provided for @setAsWallpaper.
+  ///
+  /// In en, this message translates to:
+  /// **'Set as Wallpaper'**
+  String get setAsWallpaper;
+
+  /// No description provided for @wallpaperComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Wallpaper feature coming soon!'**
+  String get wallpaperComingSoon;
+
+  /// No description provided for @premiumRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium subscription required to {action} this content.'**
+  String premiumRequired(String action);
+
+  /// No description provided for @failedToSaveImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save image'**
+  String get failedToSaveImage;
+
+  /// No description provided for @allImages.
+  ///
+  /// In en, this message translates to:
+  /// **'All inspirational images'**
+  String get allImages;
+
+  /// No description provided for @therapistList.
+  ///
+  /// In en, this message translates to:
+  /// **'Find a Therapist'**
+  String get therapistList;
+
+  /// No description provided for @therapistDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Therapist Profile'**
+  String get therapistDetail;
+
+  /// No description provided for @bookNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Book Now'**
+  String get bookNow;
+
+  /// No description provided for @experience.
+  ///
+  /// In en, this message translates to:
+  /// **'Experience'**
+  String get experience;
+
+  /// No description provided for @specialties.
+  ///
+  /// In en, this message translates to:
+  /// **'Specialties'**
+  String get specialties;
+
+  /// No description provided for @about.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get about;
+
+  /// No description provided for @reviews.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviews'**
+  String get reviews;
+
+  /// No description provided for @reviewsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'({count} reviews)'**
+  String reviewsCount(int count);
+
+  /// No description provided for @perSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Per Session'**
+  String get perSession;
+
+  /// No description provided for @qualifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Qualifications'**
+  String get qualifications;
+
+  /// No description provided for @sessionInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Session Info'**
+  String get sessionInfo;
+
+  /// No description provided for @sessionType.
+  ///
+  /// In en, this message translates to:
+  /// **'Session Type'**
+  String get sessionType;
+
+  /// No description provided for @videoCallWebRTC.
+  ///
+  /// In en, this message translates to:
+  /// **'Video Call (WebRTC)'**
+  String get videoCallWebRTC;
+
+  /// No description provided for @duration.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration'**
+  String get duration;
+
+  /// No description provided for @fee.
+  ///
+  /// In en, this message translates to:
+  /// **'Fee'**
+  String get fee;
+
+  /// No description provided for @feeViaEsewa.
+  ///
+  /// In en, this message translates to:
+  /// **'NPR {fee} via eSewa'**
+  String feeViaEsewa(String fee);
+
+  /// No description provided for @noTherapistsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No therapists found'**
+  String get noTherapistsFound;
+
+  /// No description provided for @categoriesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Categories'**
+  String get categoriesTitle;
+
+  /// No description provided for @allCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'All Categories'**
+  String get allCategories;
+
+  /// No description provided for @tipsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Wellness Tips'**
+  String get tipsTitle;
+
+  /// No description provided for @allTips.
+  ///
+  /// In en, this message translates to:
+  /// **'All wellness tips'**
+  String get allTips;
+
+  /// No description provided for @audioTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Calming Audio'**
+  String get audioTitle;
+
+  /// No description provided for @allAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'All audio content'**
+  String get allAudio;
+
+  /// No description provided for @allVideos.
+  ///
+  /// In en, this message translates to:
+  /// **'All video content'**
+  String get allVideos;
+
+  /// No description provided for @matchingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Find Your Match'**
+  String get matchingTitle;
+
+  /// No description provided for @matchingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer a few questions to find the right therapist'**
+  String get matchingSubtitle;
+
+  /// No description provided for @next.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get next;
+
+  /// No description provided for @submit.
+  ///
+  /// In en, this message translates to:
+  /// **'Find My Therapist'**
+  String get submit;
+
+  /// No description provided for @questionOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Question {current} of {total}'**
+  String questionOf(Object current, Object total);
+
+  /// No description provided for @questionProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Question {current} of {total}'**
+  String questionProgress(int current, int total);
+
+  /// No description provided for @appointmentChatTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat'**
+  String get appointmentChatTitle;
+
+  /// No description provided for @sendMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Send a message…'**
+  String get sendMessage;
+
+  /// No description provided for @send.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get send;
+
+  /// No description provided for @premiumSubscriptionRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium Subscription Required'**
+  String get premiumSubscriptionRequired;
+
+  /// No description provided for @unlockPremium.
+  ///
+  /// In en, this message translates to:
+  /// **'Upgrade to unlock this content'**
+  String get unlockPremium;
+
+  /// No description provided for @loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading…'**
+  String get loading;
+
+  /// No description provided for @error.
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get error;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
+  /// No description provided for @back.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get back;
+
+  /// No description provided for @continueText.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get continueText;
+
+  /// No description provided for @findMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'Find My Matches'**
+  String get findMatches;
+
+  /// No description provided for @qMoodTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How has your mood been lately?'**
+  String get qMoodTitle;
+
+  /// No description provided for @qMoodSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Over the past 2 weeks'**
+  String get qMoodSubtitle;
+
+  /// No description provided for @qMoodOpt1.
+  ///
+  /// In en, this message translates to:
+  /// **'Mostly positive — I feel okay'**
+  String get qMoodOpt1;
+
+  /// No description provided for @qMoodOpt2.
+  ///
+  /// In en, this message translates to:
+  /// **'Ups and downs, but managing'**
+  String get qMoodOpt2;
+
+  /// No description provided for @qMoodOpt3.
+  ///
+  /// In en, this message translates to:
+  /// **'Frequently sad or empty'**
+  String get qMoodOpt3;
+
+  /// No description provided for @qMoodOpt4.
+  ///
+  /// In en, this message translates to:
+  /// **'Persistently low — hard to function'**
+  String get qMoodOpt4;
+
+  /// No description provided for @qAnxietyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How often do you feel anxious or worried?'**
+  String get qAnxietyTitle;
+
+  /// No description provided for @qAnxietySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nervousness, panic, or sense of dread'**
+  String get qAnxietySubtitle;
+
+  /// No description provided for @qAnxietyOpt1.
+  ///
+  /// In en, this message translates to:
+  /// **'Rarely or never'**
+  String get qAnxietyOpt1;
+
+  /// No description provided for @qAnxietyOpt2.
+  ///
+  /// In en, this message translates to:
+  /// **'Sometimes, but it passes quickly'**
+  String get qAnxietyOpt2;
+
+  /// No description provided for @qAnxietyOpt3.
+  ///
+  /// In en, this message translates to:
+  /// **'Often — it affects my day'**
+  String get qAnxietyOpt3;
+
+  /// No description provided for @qAnxietyOpt4.
+  ///
+  /// In en, this message translates to:
+  /// **'Almost constantly, hard to control'**
+  String get qAnxietyOpt4;
+
+  /// No description provided for @qSleepTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How would you describe your sleep?'**
+  String get qSleepTitle;
+
+  /// No description provided for @qSleepSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sleep quality has a strong impact on mental health'**
+  String get qSleepSubtitle;
+
+  /// No description provided for @qSleepOpt1.
+  ///
+  /// In en, this message translates to:
+  /// **'Generally good'**
+  String get qSleepOpt1;
+
+  /// No description provided for @qSleepOpt2.
+  ///
+  /// In en, this message translates to:
+  /// **'Occasional trouble sleeping'**
+  String get qSleepOpt2;
+
+  /// No description provided for @qSleepOpt3.
+  ///
+  /// In en, this message translates to:
+  /// **'Regularly poor — wake often or can\'t fall asleep'**
+  String get qSleepOpt3;
+
+  /// No description provided for @qSleepOpt4.
+  ///
+  /// In en, this message translates to:
+  /// **'Severely disrupted — exhausted most days'**
+  String get qSleepOpt4;
+
+  /// No description provided for @qConcernTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What is your main reason for seeking therapy?'**
+  String get qConcernTitle;
+
+  /// No description provided for @qConcernSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select all that apply'**
+  String get qConcernSubtitle;
+
+  /// No description provided for @qConcernOpt1.
+  ///
+  /// In en, this message translates to:
+  /// **'Depression / low mood'**
+  String get qConcernOpt1;
+
+  /// No description provided for @qConcernOpt2.
+  ///
+  /// In en, this message translates to:
+  /// **'Anxiety / stress'**
+  String get qConcernOpt2;
+
+  /// No description provided for @qConcernOpt3.
+  ///
+  /// In en, this message translates to:
+  /// **'Relationship challenges'**
+  String get qConcernOpt3;
+
+  /// No description provided for @qConcernOpt4.
+  ///
+  /// In en, this message translates to:
+  /// **'Grief or loss'**
+  String get qConcernOpt4;
+
+  /// No description provided for @qConcernOpt5.
+  ///
+  /// In en, this message translates to:
+  /// **'Trauma or PTSD'**
+  String get qConcernOpt5;
+
+  /// No description provided for @qConcernOpt6.
+  ///
+  /// In en, this message translates to:
+  /// **'Self-esteem or identity'**
+  String get qConcernOpt6;
+
+  /// No description provided for @qConcernOpt7.
+  ///
+  /// In en, this message translates to:
+  /// **'Life transitions'**
+  String get qConcernOpt7;
+
+  /// No description provided for @qConcernOpt8.
+  ///
+  /// In en, this message translates to:
+  /// **'Burnout / work stress'**
+  String get qConcernOpt8;
+
+  /// No description provided for @qTraumaTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Have past difficult experiences affected your wellbeing?'**
+  String get qTraumaTitle;
+
+  /// No description provided for @qTraumaSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This helps us match trauma-informed therapists if needed'**
+  String get qTraumaSubtitle;
+
+  /// No description provided for @qTraumaOpt1.
+  ///
+  /// In en, this message translates to:
+  /// **'No — not significantly'**
+  String get qTraumaOpt1;
+
+  /// No description provided for @qTraumaOpt2.
+  ///
+  /// In en, this message translates to:
+  /// **'Somewhat — I\'d like support around it'**
+  String get qTraumaOpt2;
+
+  /// No description provided for @qTraumaOpt3.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes — it impacts me regularly'**
+  String get qTraumaOpt3;
+
+  /// No description provided for @qTraumaOpt4.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes — it\'s a major focus I need help with'**
+  String get qTraumaOpt4;
+
+  /// No description provided for @qApproachTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What kind of support feels right for you?'**
+  String get qApproachTitle;
+
+  /// No description provided for @qApproachSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Therapists tailor their style to your preference'**
+  String get qApproachSubtitle;
+
+  /// No description provided for @qApproachOpt1.
+  ///
+  /// In en, this message translates to:
+  /// **'Practical tools & strategies (CBT-style)'**
+  String get qApproachOpt1;
+
+  /// No description provided for @qApproachOpt2.
+  ///
+  /// In en, this message translates to:
+  /// **'Exploring emotions & past patterns'**
+  String get qApproachOpt2;
+
+  /// No description provided for @qApproachOpt3.
+  ///
+  /// In en, this message translates to:
+  /// **'Mindfulness & present-moment awareness'**
+  String get qApproachOpt3;
+
+  /// No description provided for @qApproachOpt4.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'m not sure — open to guidance'**
+  String get qApproachOpt4;
+
+  /// No description provided for @qPrefTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you have any therapist preferences?'**
+  String get qPrefTitle;
+
+  /// No description provided for @qPrefSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A comfortable fit improves outcomes'**
+  String get qPrefSubtitle;
+
+  /// No description provided for @qPrefOpt1.
+  ///
+  /// In en, this message translates to:
+  /// **'No preference'**
+  String get qPrefOpt1;
+
+  /// No description provided for @qPrefOpt2.
+  ///
+  /// In en, this message translates to:
+  /// **'Prefer female therapist'**
+  String get qPrefOpt2;
+
+  /// No description provided for @qPrefOpt3.
+  ///
+  /// In en, this message translates to:
+  /// **'Prefer male therapist'**
+  String get qPrefOpt3;
+
+  /// No description provided for @qPrefOpt4.
+  ///
+  /// In en, this message translates to:
+  /// **'Prefer therapist with similar cultural background'**
+  String get qPrefOpt4;
 }
 
 class _AppLocalizationsDelegate

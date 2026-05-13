@@ -10,6 +10,7 @@ import 'package:intl/intl.dart';
 import '../../../../../core/di/injection.dart';
 import '../../../../../core/routing/route_names.dart';
 import '../../../../../core/theme/app_colors.dart';
+import 'package:Resilio/l10n/app_localizations.dart';
 
 // Same credentials as subscription screen (working)
 const _esewaClientId = 'JB0BBQ4aD0UqIThFJwAKBgAXEUkEGQUBBAwdOgABHD4DChwUAB0R';
@@ -166,7 +167,7 @@ class _SessionBookingScreenState extends State<SessionBookingScreen> {
         ),
         esewaPayment: EsewaPayment(
           productId: productId,
-          productName: 'Therapy Session',
+          productName: AppLocalizations.of(context)!.bookSession,
           productPrice: _sessionFee.toStringAsFixed(0),
           callbackUrl: '',
         ),
@@ -177,7 +178,7 @@ class _SessionBookingScreenState extends State<SessionBookingScreen> {
         onPaymentFailure: (_) {
           if (mounted) {
             setState(() {
-              _error = 'Payment failed. No charge was made. Please try again.';
+              _error = AppLocalizations.of(context)!.paymentFailed;
               _bookingInProgress = false;
             });
           }
@@ -214,7 +215,7 @@ class _SessionBookingScreenState extends State<SessionBookingScreen> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = 'Payment went through (ref: ${result.refId}) but booking failed.\nPlease contact support.';
+          _error = AppLocalizations.of(context)!.paymentSuccessBookingFailed(result.refId);
           _bookingInProgress = false;
         });
       }
@@ -245,7 +246,7 @@ class _SessionBookingScreenState extends State<SessionBookingScreen> {
               ),
               SizedBox(height: 20.h),
               Text(
-                'Session Booked!',
+                AppLocalizations.of(context)!.sessionBooked,
                 style: TextStyle(
                     fontFamily: 'Poppins',
                     fontSize: 22.sp,
@@ -275,7 +276,7 @@ class _SessionBookingScreenState extends State<SessionBookingScreen> {
               ),
               SizedBox(height: 14.h),
               Text(
-                "You'll get a notification when it's time for your session.",
+                AppLocalizations.of(context)!.sessionBookedDesc,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     fontFamily: 'Poppins',
@@ -306,7 +307,7 @@ class _SessionBookingScreenState extends State<SessionBookingScreen> {
                         fontSize: 15.sp,
                         fontWeight: FontWeight.w600),
                   ),
-                  child: const Text('Done'),
+                  child: Text(AppLocalizations.of(context)!.done),
                 ),
               ),
             ],
@@ -340,7 +341,7 @@ class _SessionBookingScreenState extends State<SessionBookingScreen> {
                         onPressed: () => context.pop(),
                       ),
                       title: Text(
-                        'Book a Session',
+                        AppLocalizations.of(context)!.bookSession,
                         style: TextStyle(
                             fontFamily: 'Poppins',
                             fontSize: 18.sp,
@@ -361,9 +362,9 @@ class _SessionBookingScreenState extends State<SessionBookingScreen> {
                           // ── Session info row ─────────────────────────────
                           Row(
                             children: [
-                              _InfoChip(icon: Icons.timer_outlined, label: '50 min'),
+                              _InfoChip(icon: Icons.timer_outlined, label: AppLocalizations.of(context)!.sessionDuration),
                               SizedBox(width: 10.w),
-                              _InfoChip(icon: Icons.videocam_outlined, label: 'Video call'),
+                              _InfoChip(icon: Icons.videocam_outlined, label: AppLocalizations.of(context)!.videoCall),
                               SizedBox(width: 10.w),
                               _InfoChip(
                                 icon: Icons.currency_rupee_rounded,
@@ -376,7 +377,7 @@ class _SessionBookingScreenState extends State<SessionBookingScreen> {
 
                           // ── Date selector ────────────────────────────────
                           Text(
-                            'Select Date',
+                            AppLocalizations.of(context)!.selectDate,
                             style: TextStyle(
                                 fontFamily: 'Poppins',
                                 fontSize: 16.sp,
@@ -449,7 +450,7 @@ class _SessionBookingScreenState extends State<SessionBookingScreen> {
 
                           // ── Time slot selector ───────────────────────────
                           Text(
-                            'Select Time',
+                            AppLocalizations.of(context)!.selectTime,
                             style: TextStyle(
                                 fontFamily: 'Poppins',
                                 fontSize: 16.sp,
@@ -458,7 +459,7 @@ class _SessionBookingScreenState extends State<SessionBookingScreen> {
                           ),
                           SizedBox(height: 4.h),
                           Text(
-                            'All times are in your local timezone',
+                            AppLocalizations.of(context)!.allTimesLocal,
                             style: TextStyle(
                                 fontFamily: 'Poppins',
                                 fontSize: 12.sp,
@@ -533,7 +534,7 @@ class _SessionBookingScreenState extends State<SessionBookingScreen> {
                                       if (isBooked) ...[
                                         SizedBox(height: 2.h),
                                         Text(
-                                          'Booked',
+                                          AppLocalizations.of(context)!.statusBooked,
                                           style: TextStyle(
                                             fontFamily: 'Poppins',
                                             fontSize: 9.sp,
@@ -671,8 +672,8 @@ class _SessionBookingScreenState extends State<SessionBookingScreen> {
                                       SizedBox(width: 10.w),
                                       Text(
                                         _selectedSlot != null
-                                            ? 'Pay NPR ${_sessionFee.toStringAsFixed(0)} with eSewa'
-                                            : 'Select a time slot',
+                                            ? AppLocalizations.of(context)!.payWithEsewa(_sessionFee.toStringAsFixed(0))
+                                            : AppLocalizations.of(context)!.selectTimeSlot,
                                         style: TextStyle(
                                             fontFamily: 'Poppins',
                                             fontSize: 15.sp,

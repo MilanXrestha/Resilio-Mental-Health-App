@@ -10,6 +10,7 @@ import '../../../../../core/di/injection.dart';
 import '../../../../../core/routing/route_names.dart';
 import '../../../../../core/services/auth_token_service.dart';
 import '../../../../../core/theme/app_colors.dart';
+import 'package:Resilio/l10n/app_localizations.dart';
 
 class MyAppointmentsScreen extends StatefulWidget {
   const MyAppointmentsScreen({super.key});
@@ -73,8 +74,8 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen>
       final tzReminder = tz.TZDateTime.from(reminderTime, tz.local);
       await _notifPlugin.zonedSchedule(
         id: idHash,
-        title: 'Session in 15 minutes',
-        body: 'Your session with $therapistName starts soon.',
+        title: AppLocalizations.of(context)!.sessionIn15Min,
+        body: AppLocalizations.of(context)!.sessionStartingSoon(therapistName),
         scheduledDate: tzReminder,
         notificationDetails: NotificationDetails(
           android: AndroidNotificationDetails(
@@ -227,7 +228,7 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen>
           onPressed: () => context.pop(),
         ),
         title: Text(
-          'My Therapy',
+          AppLocalizations.of(context)!.myTherapy,
           style: TextStyle(
             fontFamily: 'Poppins',
             fontSize: 20.sp,
@@ -256,7 +257,7 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen>
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('Upcoming'),
+                  Text(AppLocalizations.of(context)!.upcoming),
                   if (_upcoming.isNotEmpty) ...[
                     SizedBox(width: 6.w),
                     Container(
@@ -280,7 +281,7 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen>
                 ],
               ),
             ),
-            const Tab(text: 'Past'),
+            Tab(text: AppLocalizations.of(context)!.past),
           ],
         ),
       ),
@@ -294,9 +295,9 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen>
                     _AppointmentList(
                       appointments: _upcoming,
                       emptyIcon: Icons.event_available_rounded,
-                      emptyTitle: 'No upcoming sessions',
+                      emptyTitle: AppLocalizations.of(context)!.noUpcomingSessions,
                       emptySubtitle:
-                          'Book a session with a therapist to get started.',
+                          AppLocalizations.of(context)!.noUpcomingSessionsDesc,
                       showJoinButton: true,
                       onFindTherapist: () =>
                           context.pushNamed(RouteNames.matching),
@@ -304,9 +305,9 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen>
                     _AppointmentList(
                       appointments: _past,
                       emptyIcon: Icons.history_rounded,
-                      emptyTitle: 'No past sessions',
+                      emptyTitle: AppLocalizations.of(context)!.noPastSessions,
                       emptySubtitle:
-                          'Your completed sessions will appear here.',
+                          AppLocalizations.of(context)!.noPastSessionsDesc,
                       showJoinButton: false,
                       onFindTherapist: null,
                     ),
@@ -337,7 +338,7 @@ class _ErrorView extends StatelessWidget {
                 color: context.textSecondaryColor.withValues(alpha: 0.4)),
             SizedBox(height: 16.h),
             Text(
-              'Could not load appointments',
+              AppLocalizations.of(context)!.errorLoadingAppointments,
               style: TextStyle(
                 fontFamily: 'Poppins',
                 fontSize: 16.sp,
@@ -360,7 +361,7 @@ class _ErrorView extends StatelessWidget {
             ElevatedButton.icon(
               onPressed: onRetry,
               icon: Icon(Icons.refresh_rounded, size: 16.sp),
-              label: const Text('Retry'),
+              label: Text(AppLocalizations.of(context)!.retry),
               style: ElevatedButton.styleFrom(
                 backgroundColor: context.primaryColor,
                 foregroundColor: Colors.white,
@@ -447,7 +448,7 @@ class _AppointmentList extends StatelessWidget {
                         fontFamily: 'Poppins',
                         fontWeight: FontWeight.w600),
                   ),
-                  child: const Text('Find a Therapist'),
+                  child: Text(AppLocalizations.of(context)!.findTherapist),
                 ),
               ],
             ],
@@ -546,7 +547,7 @@ class _AppointmentCard extends StatelessWidget {
     final appointmentId = appointment['id'] as String? ?? '';
 
     final statusColor = _statusColor(status, context);
-    final statusLabel = _statusLabel(status);
+    final statusLabel = _statusLabel(status, context);
 
     final now = DateTime.now();
     final canJoin = showJoinButton &&
@@ -679,7 +680,7 @@ class _AppointmentCard extends StatelessWidget {
                           ],
                         )
                       : Text(
-                          'Date not set',
+                          AppLocalizations.of(context)!.dateNotSet,
                           style: TextStyle(
                             fontFamily: 'Poppins',
                             fontSize: 12.sp,
@@ -719,7 +720,7 @@ class _AppointmentCard extends StatelessWidget {
                     size: 13.sp, color: context.textSecondaryColor),
                 SizedBox(width: 5.w),
                 Text(
-                  'Tap to message your therapist',
+                  AppLocalizations.of(context)!.tapToMessage,
                   style: TextStyle(
                     fontFamily: 'Poppins',
                     fontSize: 11.sp,
@@ -749,7 +750,7 @@ class _AppointmentCard extends StatelessWidget {
                         extra: {'callerName': therapistName});
                   },
                   icon: Icon(Icons.video_call_rounded, size: 18.sp),
-                  label: const Text('Join Session'),
+                  label: Text(AppLocalizations.of(context)!.joinSession),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: context.primaryColor,
                     foregroundColor: Colors.white,
@@ -777,27 +778,44 @@ class _AppointmentCard extends StatelessWidget {
     );
   }
 
+  String _statusLabel(String status, BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (status) {
+      case 'confirmed':
+        return l10n.statusConfirmed;
+      case 'accepted':
+        return l10n.statusAccepted;
+      case 'scheduled':
+        return l10n.statusScheduled;
+      case 'cancelled':
+        return l10n.statusCancelled;
+      case 'rejected':
+        return l10n.statusRejected;
+      case 'completed':
+        return l10n.statusCompleted;
+      case 'pending':
+        return l10n.statusPending;
+      default:
+        return l10n.statusUnknown;
+    }
+  }
+
   Color _statusColor(String status, BuildContext context) {
     switch (status) {
       case 'confirmed':
       case 'accepted':
       case 'scheduled':
-        return context.successColor;
-      case 'cancelled':
-      case 'rejected':
-        return context.errorColor;
+        return const Color(0xFF10B981);
       case 'completed':
-        return context.primaryColor;
+        return const Color(0xFF6366F1);
       case 'pending':
         return const Color(0xFFF59E0B);
+      case 'cancelled':
+      case 'rejected':
+        return const Color(0xFFE11D48);
       default:
-        return context.textSecondaryColor;
+        return const Color(0xFF9E9E9E);
     }
-  }
-
-  String _statusLabel(String status) {
-    if (status.isEmpty) return 'Unknown';
-    return '${status[0].toUpperCase()}${status.substring(1)}';
   }
 }
 

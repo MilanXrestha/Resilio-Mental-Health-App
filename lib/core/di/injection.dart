@@ -1,3 +1,4 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:get_it/get_it.dart';
@@ -24,6 +25,9 @@ abstract class RegisterModule {
 
   @lazySingleton
   FacebookAuth get facebookAuth => FacebookAuth.instance;
+
+  @lazySingleton
+  Connectivity get connectivity => Connectivity();
 }
 
 // dart run build_runner build --delete-conflicting-outputs

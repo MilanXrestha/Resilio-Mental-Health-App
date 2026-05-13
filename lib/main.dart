@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'app/resilio_app.dart';
 import 'core/di/injection.dart';
 import 'core/services/auth_token_service.dart';
+import 'core/services/connectivity_monitor.dart';
 import 'core/services/push_notification_service.dart';
 import 'firebase_options.dart';
 
@@ -20,6 +21,10 @@ void main() async {
   // Initialize auth token service to load persisted tokens
   final authTokenService = getIt<AuthTokenService>();
   await authTokenService.init();
+
+  // Initialize offline support
+  final connectivityMonitor = getIt<ConnectivityMonitor>();
+  connectivityMonitor.startMonitoring();
 
   runApp(const ResilioApp());
 }

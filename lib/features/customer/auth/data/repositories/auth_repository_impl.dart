@@ -13,6 +13,9 @@ import '../datasources/remote/firebase_auth_data_source.dart';
 import '../datasources/remote/supertokens_data_source.dart';
 import '../../../preferences/domain/repositories/preference_repository.dart';
 
+import '../../../../../core/network/network_info.dart';
+import '../../../../../core/services/push_notification_service.dart';
+
 @LazySingleton(as: AuthRepository)
 class AuthRepositoryImpl implements AuthRepository {
   final FirebaseAuthDataSource _firebaseAuthDataSource;
@@ -20,6 +23,7 @@ class AuthRepositoryImpl implements AuthRepository {
   final PreferenceRepository _preferenceRepository;
   final SuperTokensDataSource _superTokensDataSource;
   final AuthTokenService _authTokenService;
+  final NetworkInfo _networkInfo;
 
   AuthRepositoryImpl(
       this._firebaseAuthDataSource,
@@ -27,6 +31,7 @@ class AuthRepositoryImpl implements AuthRepository {
       this._preferenceRepository,
       this._superTokensDataSource,
       this._authTokenService,
+      this._networkInfo,
       );
 
   @override
@@ -284,9 +289,16 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       final user = _firebaseAuthDataSource.currentUser;
       if (user != null) {
-        // Fetch real role from backend; fall back to Firebase-only entity on error
-        final syncedUser = await _syncUserToBackend(user);
-        return Right(syncedUser ?? await _getUserEntity(user));
+        // If connected, try to sync/refresh from backend
+        if (await _networkInfo.isConnected) {
+          final syncedUser = await _syncUserToBackend(user);
+          if (syncedUser != null) {
+            return Right(syncedUser);
+          }
+        }
+        
+        // If offline or sync failed, return local/cached entity
+        return Right(await _getUserEntity(user));
       }
       return const Right(null);
     } catch (e) {

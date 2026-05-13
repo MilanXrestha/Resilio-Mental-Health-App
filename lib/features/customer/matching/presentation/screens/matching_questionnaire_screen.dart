@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../../core/theme/app_colors.dart';
+import 'package:Resilio/l10n/app_localizations.dart';
 
 /// Evidence-based therapist matching questionnaire.
 /// Dimensions: mood (PHQ-9), anxiety (GAD-7), sleep, relationships,
@@ -17,126 +18,129 @@ class _MatchingQuestionnaireScreenState extends State<MatchingQuestionnaireScree
   int _step = 0;
   final Map<int, dynamic> _answers = {};
 
-  static const _questions = [
-    _Question(
-      key: 'mood',
-      title: 'How has your mood been lately?',
-      subtitle: 'Over the past 2 weeks',
-      icon: Icons.sentiment_satisfied_alt_outlined,
-      type: _QType.single,
-      options: [
-        _Option('Mostly positive — I feel okay', 'positive', 0),
-        _Option('Ups and downs, but managing', 'mild', 1),
-        _Option('Frequently sad or empty', 'moderate', 2),
-        _Option('Persistently low — hard to function', 'severe', 3),
-      ],
-    ),
-    _Question(
-      key: 'anxiety',
-      title: 'How often do you feel anxious or worried?',
-      subtitle: 'Nervousness, panic, or sense of dread',
-      icon: Icons.self_improvement_outlined,
-      type: _QType.single,
-      options: [
-        _Option('Rarely or never', 'none', 0),
-        _Option('Sometimes, but it passes quickly', 'mild', 1),
-        _Option('Often — it affects my day', 'moderate', 2),
-        _Option('Almost constantly, hard to control', 'severe', 3),
-      ],
-    ),
-    _Question(
-      key: 'sleep',
-      title: 'How would you describe your sleep?',
-      subtitle: 'Sleep quality has a strong impact on mental health',
-      icon: Icons.bedtime_outlined,
-      type: _QType.single,
-      options: [
-        _Option('Generally good', 'good', 0),
-        _Option('Occasional trouble sleeping', 'mild', 1),
-        _Option('Regularly poor — wake often or can\'t fall asleep', 'moderate', 2),
-        _Option('Severely disrupted — exhausted most days', 'severe', 3),
-      ],
-    ),
-    _Question(
-      key: 'primary_concern',
-      title: 'What is your main reason for seeking therapy?',
-      subtitle: 'Select all that apply',
-      icon: Icons.favorite_border_rounded,
-      type: _QType.multi,
-      options: [
-        _Option('Depression / low mood', 'Depression', 0),
-        _Option('Anxiety / stress', 'Anxiety', 0),
-        _Option('Relationship challenges', 'Relationships', 0),
-        _Option('Grief or loss', 'Grief', 0),
-        _Option('Trauma or PTSD', 'Trauma', 0),
-        _Option('Self-esteem or identity', 'Self-esteem', 0),
-        _Option('Life transitions', 'Life transitions', 0),
-        _Option('Burnout / work stress', 'Burnout', 0),
-      ],
-    ),
-    _Question(
-      key: 'trauma_history',
-      title: 'Have past difficult experiences affected your wellbeing?',
-      subtitle: 'This helps us match trauma-informed therapists if needed',
-      icon: Icons.shield_outlined,
-      type: _QType.single,
-      options: [
-        _Option('No — not significantly', 'none', 0),
-        _Option('Somewhat — I\'d like support around it', 'mild', 1),
-        _Option('Yes — it impacts me regularly', 'moderate', 2),
-        _Option('Yes — it\'s a major focus I need help with', 'severe', 3),
-      ],
-    ),
-    _Question(
-      key: 'therapeutic_approach',
-      title: 'What kind of support feels right for you?',
-      subtitle: 'Therapists tailor their style to your preference',
-      icon: Icons.psychology_outlined,
-      type: _QType.single,
-      options: [
-        _Option('Practical tools & strategies (CBT-style)', 'CBT', 0),
-        _Option('Exploring emotions & past patterns', 'Psychodynamic', 0),
-        _Option('Mindfulness & present-moment awareness', 'Mindfulness', 0),
-        _Option('I\'m not sure — open to guidance', 'General Counseling', 0),
-      ],
-    ),
-    _Question(
-      key: 'therapist_preference',
-      title: 'Do you have any therapist preferences?',
-      subtitle: 'A comfortable fit improves outcomes',
-      icon: Icons.people_outline_rounded,
-      type: _QType.single,
-      options: [
-        _Option('No preference', 'no_preference', 0),
-        _Option('Prefer female therapist', 'female', 0),
-        _Option('Prefer male therapist', 'male', 0),
-        _Option('Prefer therapist with similar cultural background', 'cultural', 0),
-      ],
-    ),
-  ];
+  List<_Question> _getQuestions(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return [
+      _Question(
+        key: 'mood',
+        title: l10n.qMoodTitle,
+        subtitle: l10n.qMoodSubtitle,
+        icon: Icons.sentiment_satisfied_alt_outlined,
+        type: _QType.single,
+        options: [
+          _Option(l10n.qMoodOpt1, 'positive', 0),
+          _Option(l10n.qMoodOpt2, 'mild', 1),
+          _Option(l10n.qMoodOpt3, 'moderate', 2),
+          _Option(l10n.qMoodOpt4, 'severe', 3),
+        ],
+      ),
+      _Question(
+        key: 'anxiety',
+        title: l10n.qAnxietyTitle,
+        subtitle: l10n.qAnxietySubtitle,
+        icon: Icons.self_improvement_outlined,
+        type: _QType.single,
+        options: [
+          _Option(l10n.qAnxietyOpt1, 'none', 0),
+          _Option(l10n.qAnxietyOpt2, 'mild', 1),
+          _Option(l10n.qAnxietyOpt3, 'moderate', 2),
+          _Option(l10n.qAnxietyOpt4, 'severe', 3),
+        ],
+      ),
+      _Question(
+        key: 'sleep',
+        title: l10n.qSleepTitle,
+        subtitle: l10n.qSleepSubtitle,
+        icon: Icons.bedtime_outlined,
+        type: _QType.single,
+        options: [
+          _Option(l10n.qSleepOpt1, 'good', 0),
+          _Option(l10n.qSleepOpt2, 'mild', 1),
+          _Option(l10n.qSleepOpt3, 'moderate', 2),
+          _Option(l10n.qSleepOpt4, 'severe', 3),
+        ],
+      ),
+      _Question(
+        key: 'primary_concern',
+        title: l10n.qConcernTitle,
+        subtitle: l10n.qConcernSubtitle,
+        icon: Icons.favorite_border_rounded,
+        type: _QType.multi,
+        options: [
+          _Option(l10n.qConcernOpt1, 'Depression', 0),
+          _Option(l10n.qConcernOpt2, 'Anxiety', 0),
+          _Option(l10n.qConcernOpt3, 'Relationships', 0),
+          _Option(l10n.qConcernOpt4, 'Grief', 0),
+          _Option(l10n.qConcernOpt5, 'Trauma', 0),
+          _Option(l10n.qConcernOpt6, 'Self-esteem', 0),
+          _Option(l10n.qConcernOpt7, 'Life transitions', 0),
+          _Option(l10n.qConcernOpt8, 'Burnout', 0),
+        ],
+      ),
+      _Question(
+        key: 'trauma_history',
+        title: l10n.qTraumaTitle,
+        subtitle: l10n.qTraumaSubtitle,
+        icon: Icons.shield_outlined,
+        type: _QType.single,
+        options: [
+          _Option(l10n.qTraumaOpt1, 'none', 0),
+          _Option(l10n.qTraumaOpt2, 'mild', 1),
+          _Option(l10n.qTraumaOpt3, 'moderate', 2),
+          _Option(l10n.qTraumaOpt4, 'severe', 3),
+        ],
+      ),
+      _Question(
+        key: 'therapeutic_approach',
+        title: l10n.qApproachTitle,
+        subtitle: l10n.qApproachSubtitle,
+        icon: Icons.psychology_outlined,
+        type: _QType.single,
+        options: [
+          _Option(l10n.qApproachOpt1, 'CBT', 0),
+          _Option(l10n.qApproachOpt2, 'Psychodynamic', 0),
+          _Option(l10n.qApproachOpt3, 'Mindfulness', 0),
+          _Option(l10n.qApproachOpt4, 'General Counseling', 0),
+        ],
+      ),
+      _Question(
+        key: 'therapist_preference',
+        title: l10n.qPrefTitle,
+        subtitle: l10n.qPrefSubtitle,
+        icon: Icons.people_outline_rounded,
+        type: _QType.single,
+        options: [
+          _Option(l10n.qPrefOpt1, 'no_preference', 0),
+          _Option(l10n.qPrefOpt2, 'female', 0),
+          _Option(l10n.qPrefOpt3, 'male', 0),
+          _Option(l10n.qPrefOpt4, 'cultural', 0),
+        ],
+      ),
+    ];
+  }
 
-  bool get _canProceed {
+  bool _canProceed(List<_Question> questions) {
     final a = _answers[_step];
-    if (_questions[_step].type == _QType.multi) {
+    if (questions[_step].type == _QType.multi) {
       return a is List && (a as List).isNotEmpty;
     }
     return a != null;
   }
 
-  void _next() {
-    if (_step < _questions.length - 1) {
+  void _next(List<_Question> questions) {
+    if (_step < questions.length - 1) {
       setState(() => _step++);
     } else {
-      _submit();
+      _submit(questions);
     }
   }
 
-  void _submit() {
+  void _submit(List<_Question> questions) {
     // Build query params for weighted matching
     final primaryConcerns = _answers[3];
     final approach = _answers[5]?.toString() ?? '';
-    final moodScore = (_questions[0].options.indexWhere((o) => o.value == _answers[0]));
-    final anxietyScore = (_questions[1].options.indexWhere((o) => o.value == _answers[1]));
+    final moodScore = (questions[0].options.indexWhere((o) => o.value == _answers[0]));
+    final anxietyScore = (questions[1].options.indexWhere((o) => o.value == _answers[1]));
     final traumaLevel = _answers[4]?.toString() ?? 'none';
 
     // Determine highest-priority specialty from multi-select
@@ -158,8 +162,9 @@ class _MatchingQuestionnaireScreenState extends State<MatchingQuestionnaireScree
 
   @override
   Widget build(BuildContext context) {
-    final q = _questions[_step];
-    final progress = (_step + 1) / _questions.length;
+    final questions = _getQuestions(context);
+    final q = questions[_step];
+    final progress = (_step + 1) / questions.length;
 
     return Scaffold(
       backgroundColor: context.backgroundColor,
@@ -195,11 +200,11 @@ class _MatchingQuestionnaireScreenState extends State<MatchingQuestionnaireScree
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Find Your Therapist',
+                          AppLocalizations.of(context)!.findTherapist,
                           style: TextStyle(fontFamily: 'Poppins', fontSize: 16.sp, fontWeight: FontWeight.w700, color: context.textPrimaryColor),
                         ),
                         Text(
-                          'Question ${_step + 1} of ${_questions.length}',
+                          AppLocalizations.of(context)!.questionProgress(_step + 1, questions.length),
                           style: TextStyle(fontFamily: 'Poppins', fontSize: 12.sp, color: context.textSecondaryColor),
                         ),
                       ],
@@ -346,7 +351,7 @@ class _MatchingQuestionnaireScreenState extends State<MatchingQuestionnaireScree
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _canProceed ? _next : null,
+                  onPressed: _canProceed(questions) ? () => _next(questions) : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: context.primaryColor,
                     foregroundColor: Colors.white,
@@ -356,7 +361,7 @@ class _MatchingQuestionnaireScreenState extends State<MatchingQuestionnaireScree
                     elevation: 0,
                     textStyle: TextStyle(fontFamily: 'Poppins', fontSize: 15.sp, fontWeight: FontWeight.w600),
                   ),
-                  child: Text(_step == _questions.length - 1 ? 'Find My Matches' : 'Continue'),
+                  child: Text(_step == questions.length - 1 ? AppLocalizations.of(context)!.findMatches : AppLocalizations.of(context)!.continueText),
                 ),
               ),
             ),

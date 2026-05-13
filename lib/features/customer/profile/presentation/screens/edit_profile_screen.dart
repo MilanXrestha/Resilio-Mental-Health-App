@@ -9,6 +9,7 @@ import 'package:Resilio/core/theme/app_colors.dart';
 import 'package:Resilio/core/widgets/avatar_crop_screen.dart';
 import 'package:Resilio/features/customer/profile/domain/entities/profile_entity.dart';
 import 'package:Resilio/features/customer/profile/presentation/bloc/profile_bloc.dart';
+import 'package:Resilio/l10n/app_localizations.dart';
 
 class EditProfileScreen extends StatefulWidget {
   final ProfileEntity profile;
@@ -30,7 +31,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   DateTime? _selectedDob;
   String? _selectedGender;
 
-  static const List<String> _genderOptions = ['Male', 'Female', 'Other', 'Prefer not to say'];
+  List<String> _getGenderOptions(AppLocalizations l10n) => [
+    l10n.genderMale,
+    l10n.genderFemale,
+    l10n.genderOther,
+    l10n.genderPreferNotToSay
+  ];
 
   @override
   void initState() {
@@ -82,7 +88,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       initialDate: _selectedDob ?? DateTime(now.year - 25),
       firstDate: DateTime(1900),
       lastDate: DateTime(now.year - 10),
-      helpText: 'Select Date of Birth',
+      helpText: AppLocalizations.of(context)!.selectDateOfBirth,
     );
     if (picked != null) {
       setState(() => _selectedDob = picked);
@@ -137,11 +143,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         if (state is ProfileUpdateSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Row(
+              content: Row(
                 children: [
-                  Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
+                   Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
                   SizedBox(width: 8),
-                  Text('Profile updated successfully'),
+                  Text(AppLocalizations.of(context)!.profileUpdated),
                 ],
               ),
               backgroundColor: Colors.green.shade600,
@@ -163,7 +169,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         final isUploading = state is ProfileAvatarUploading || state is ProfileUpdating;
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Edit Profile'),
+            title: Text(AppLocalizations.of(context)!.editProfileTitle),
             leading: IconButton(
               icon: Icon(
                 Icons.arrow_back_ios_new_rounded,
@@ -185,7 +191,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               else
                 TextButton(
                   onPressed: _onSave,
-                  child: Text('Save', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.sp)),
+                  child: Text(AppLocalizations.of(context)!.save, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.sp)),
                 ),
             ],
           ),
@@ -229,26 +235,26 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
 
               SizedBox(height: 32.h),
-              _sectionLabel('Personal Information'),
+              _sectionLabel(AppLocalizations.of(context)!.personalInformation),
               SizedBox(height: 12.h),
 
               _buildField(
                 controller: _nameController,
-                label: 'Full Name',
+                label: AppLocalizations.of(context)!.fullName,
                 icon: Icons.person_outline_rounded,
                 isDark: isDark,
               ),
               SizedBox(height: 14.h),
               _buildField(
                 controller: _usernameController,
-                label: 'Username',
+                label: AppLocalizations.of(context)!.username,
                 icon: Icons.alternate_email_rounded,
                 isDark: isDark,
               ),
               SizedBox(height: 14.h),
               _buildField(
                 controller: _emailController,
-                label: 'Email',
+                label: AppLocalizations.of(context)!.email,
                 icon: Icons.email_outlined,
                 isDark: isDark,
                 enabled: false,
@@ -257,24 +263,24 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               SizedBox(height: 14.h),
               _buildField(
                 controller: _phoneController,
-                label: 'Phone Number',
+                label: AppLocalizations.of(context)!.phoneNumber,
                 icon: Icons.phone_android_outlined,
                 isDark: isDark,
                 keyboardType: TextInputType.phone,
               ),
 
               SizedBox(height: 24.h),
-              _sectionLabel('More About You'),
+              _sectionLabel(AppLocalizations.of(context)!.moreAboutYou),
               SizedBox(height: 12.h),
 
               // Date of Birth picker
               GestureDetector(
                 onTap: _pickDateOfBirth,
                 child: _buildReadOnlyField(
-                  label: 'Date of Birth',
+                  label: AppLocalizations.of(context)!.dateOfBirth,
                   value: _selectedDob != null
-                      ? DateFormat('MMMM dd, yyyy').format(_selectedDob!)
-                      : 'Tap to set',
+                      ? DateFormat('MMMM dd, yyyy', Localizations.localeOf(context).toString()).format(_selectedDob!)
+                      : AppLocalizations.of(context)!.tapToSet,
                   icon: Icons.cake_outlined,
                   isDark: isDark,
                   placeholder: _selectedDob == null,
@@ -284,10 +290,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
               // Gender dropdown
               _buildDropdownField(
-                label: 'Gender',
+                label: AppLocalizations.of(context)!.gender,
                 icon: Icons.wc_outlined,
                 value: _selectedGender,
-                items: _genderOptions,
+                items: _getGenderOptions(AppLocalizations.of(context)!),
                 isDark: isDark,
                 onChanged: (val) => setState(() => _selectedGender = val),
               ),
@@ -307,7 +313,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           width: 18.h,
                           child: const CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                         )
-                      : Text('Save Changes', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
+                      : Text(AppLocalizations.of(context)!.saveChanges, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
                 ),
               ),
             ],

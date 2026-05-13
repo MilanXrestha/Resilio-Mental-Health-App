@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:dio/dio.dart';
 import '../../../../../core/di/injection.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../l10n/app_localizations.dart';
 
 class TherapistDetailScreen extends StatefulWidget {
   final String therapistId;
@@ -54,7 +55,7 @@ class _TherapistDetailScreenState extends State<TherapistDetailScreen> {
     return Scaffold(
       appBar: AppBar(),
       body: Center(
-        child: Text('Therapist not found',
+        child: Text(AppLocalizations.of(context)!.noTherapistsFound,
             style: TextStyle(
                 fontFamily: 'Poppins',
                 fontSize: 16.sp,
@@ -219,7 +220,7 @@ class _TherapistDetailScreenState extends State<TherapistDetailScreen> {
                                 ),
                                 SizedBox(width: 4.w),
                                 Text(
-                                  '($reviews reviews)',
+                                  AppLocalizations.of(context)!.reviewsCount(reviews),
                                   style: TextStyle(
                                       fontFamily: 'Poppins',
                                       fontSize: 11.sp,
@@ -247,20 +248,20 @@ class _TherapistDetailScreenState extends State<TherapistDetailScreen> {
               Row(
                 children: [
                   _StatChip(Icons.work_outline_rounded,
-                      '$yearsExp yrs', 'Experience'),
+                      '$yearsExp yrs', AppLocalizations.of(context)!.experience),
                   SizedBox(width: 12.w),
                   _StatChip(Icons.payments_outlined,
-                      'NPR ${(fee as num).toStringAsFixed(0)}', 'Per Session'),
+                      'NPR ${(fee as num).toStringAsFixed(0)}', AppLocalizations.of(context)!.perSession),
                   SizedBox(width: 12.w),
                   _StatChip(Icons.people_outline_rounded,
-                      reviews.toString(), 'Reviews'),
+                      reviews.toString(), AppLocalizations.of(context)!.reviews),
                 ],
               ),
               SizedBox(height: 24.h),
 
               // About
               if (bio.isNotEmpty) ...[
-                _SectionTitle('About'),
+                _SectionTitle(AppLocalizations.of(context)!.about),
                 SizedBox(height: 10.h),
                 Text(
                   bio,
@@ -275,7 +276,7 @@ class _TherapistDetailScreenState extends State<TherapistDetailScreen> {
 
               // Qualifications
               if (qualifications.isNotEmpty) ...[
-                _SectionTitle('Qualifications'),
+                _SectionTitle(AppLocalizations.of(context)!.qualifications),
                 SizedBox(height: 10.h),
                 ...qualifications.map((q) => Padding(
                       padding: EdgeInsets.only(bottom: 8.h),
@@ -299,7 +300,7 @@ class _TherapistDetailScreenState extends State<TherapistDetailScreen> {
               ],
 
               // Session Info
-              _SectionTitle('Session Info'),
+              _SectionTitle(AppLocalizations.of(context)!.sessionInfo),
               SizedBox(height: 10.h),
               Container(
                 padding: EdgeInsets.all(16.w),
@@ -312,13 +313,13 @@ class _TherapistDetailScreenState extends State<TherapistDetailScreen> {
                 child: Column(
                   children: [
                     _InfoRow(context, Icons.video_call_rounded,
-                        'Session Type', 'Video Call (WebRTC)'),
+                        AppLocalizations.of(context)!.sessionType, AppLocalizations.of(context)!.videoCallWebRTC),
                     SizedBox(height: 12.h),
-                    _InfoRow(context, Icons.timer_outlined, 'Duration',
-                        '50 minutes'),
+                    _InfoRow(context, Icons.timer_outlined, AppLocalizations.of(context)!.duration,
+                        AppLocalizations.of(context)!.sessionDuration),
                     SizedBox(height: 12.h),
-                    _InfoRow(context, Icons.payments_rounded, 'Fee',
-                        'NPR ${(fee as num).toStringAsFixed(0)} via eSewa'),
+                    _InfoRow(context, Icons.payments_rounded, AppLocalizations.of(context)!.fee,
+                        AppLocalizations.of(context)!.feeViaEsewa((fee as num).toStringAsFixed(0))),
                   ],
                 ),
               ),
@@ -373,7 +374,7 @@ class TherapistDetailScreenWrapper extends StatelessWidget {
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w700),
               ),
-              child: const Text('Book a Session'),
+              child: Text(AppLocalizations.of(context)!.bookSession),
             ),
           ),
         ),

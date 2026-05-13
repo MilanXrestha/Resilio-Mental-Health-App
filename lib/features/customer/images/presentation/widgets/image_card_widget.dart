@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:ui' as ui;
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -20,9 +21,7 @@ class ImageCardWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16.r),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
       child: InkWell(
         onTap: () => _showImageDetail(context),
         borderRadius: BorderRadius.circular(16.r),
@@ -34,28 +33,28 @@ class ImageCardWidget extends StatelessWidget {
               child: RepaintBoundary(
                 key: _imageKey,
                 child: ClipRRect(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
-                  child: Image.network(
-                    image.thumbnailUrl.isNotEmpty ? image.thumbnailUrl : image.imageUrl,
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(16.r),
+                  ),
+                  child: CachedNetworkImage(
+                    imageUrl: image.thumbnailUrl.isNotEmpty
+                        ? image.thumbnailUrl
+                        : image.imageUrl,
                     fit: BoxFit.cover,
                     width: double.infinity,
                     height: double.infinity,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
+                    progressIndicatorBuilder: (context, url, progress) {
                       return Container(
                         color: Colors.grey.shade200,
                         child: Center(
                           child: CircularProgressIndicator(
-                            value: loadingProgress.expectedTotalBytes != null
-                                ? loadingProgress.cumulativeBytesLoaded /
-                                    loadingProgress.expectedTotalBytes!
-                                : null,
+                            value: progress.progress,
                             strokeWidth: 2,
                           ),
                         ),
                       );
                     },
-                    errorBuilder: (context, error, stackTrace) {
+                    errorWidget: (context, url, error) {
                       return Container(
                         color: Colors.grey.shade200,
                         child: Icon(
@@ -69,13 +68,15 @@ class ImageCardWidget extends StatelessWidget {
                 ),
               ),
             ),
-            
+
             // Info section
             Container(
               padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.vertical(bottom: Radius.circular(16.r)),
+                borderRadius: BorderRadius.vertical(
+                  bottom: Radius.circular(16.r),
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -86,7 +87,9 @@ class ImageCardWidget extends StatelessWidget {
                       fontFamily: 'Poppins',
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w600,
-                      color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black,
+                      color:
+                          Theme.of(context).textTheme.bodyLarge?.color ??
+                          Colors.black,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -95,7 +98,10 @@ class ImageCardWidget extends StatelessWidget {
                   Row(
                     children: [
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 8.w,
+                          vertical: 2.h,
+                        ),
                         decoration: BoxDecoration(
                           color: _getTypeColor(context).withOpacity(0.2),
                           borderRadius: BorderRadius.circular(12.r),
@@ -163,7 +169,8 @@ class ImageCardWidget extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _ImageDetailSheet(image: image, imageKey: _imageKey),
+      builder: (context) =>
+          _ImageDetailSheet(image: image, imageKey: _imageKey),
     );
   }
 }
@@ -172,10 +179,7 @@ class _ImageDetailSheet extends StatelessWidget {
   final ImageEntity image;
   final GlobalKey imageKey;
 
-  const _ImageDetailSheet({
-    required this.image,
-    required this.imageKey,
-  });
+  const _ImageDetailSheet({required this.image, required this.imageKey});
 
   @override
   Widget build(BuildContext context) {
@@ -201,7 +205,7 @@ class _ImageDetailSheet extends StatelessWidget {
                   borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
-              
+
               // Action buttons
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
@@ -222,9 +226,9 @@ class _ImageDetailSheet extends StatelessWidget {
                   ],
                 ),
               ),
-              
+
               Divider(height: 1.h),
-              
+
               // Image and details
               Expanded(
                 child: ListView(
@@ -234,30 +238,35 @@ class _ImageDetailSheet extends StatelessWidget {
                     // Full image
                     ClipRRect(
                       borderRadius: BorderRadius.circular(16.r),
-                      child: Image.network(
-                        image.imageUrl,
+                      child: CachedNetworkImage(
+                        imageUrl: image.imageUrl,
                         fit: BoxFit.cover,
                         width: double.infinity,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
+                        progressIndicatorBuilder: (context, url, progress) {
                           return Container(
                             color: Colors.grey.shade200,
                             height: 300.h,
                             child: Center(
                               child: CircularProgressIndicator(
-                                value: loadingProgress.expectedTotalBytes != null
-                                    ? loadingProgress.cumulativeBytesLoaded /
-                                        loadingProgress.expectedTotalBytes!
-                                    : null,
+                                value: progress.progress,
                               ),
                             ),
                           );
                         },
+                        errorWidget: (context, url, error) => Container(
+                          color: Colors.grey.shade200,
+                          height: 300.h,
+                          child: Icon(
+                            Icons.image_not_supported_outlined,
+                            size: 48.r,
+                            color: Colors.grey.shade400,
+                          ),
+                        ),
                       ),
                     ),
-                    
+
                     SizedBox(height: 24.h),
-                    
+
                     // Title
                     Text(
                       image.title,
@@ -265,15 +274,20 @@ class _ImageDetailSheet extends StatelessWidget {
                         fontFamily: 'PlayfairDisplay',
                         fontSize: 24.sp,
                         fontWeight: FontWeight.bold,
-                        color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black,
+                        color:
+                            Theme.of(context).textTheme.bodyLarge?.color ??
+                            Colors.black,
                       ),
                     ),
-                    
+
                     SizedBox(height: 12.h),
-                    
+
                     // Type badge
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12.w,
+                        vertical: 6.h,
+                      ),
                       decoration: BoxDecoration(
                         color: _getTypeColor(context).withOpacity(0.2),
                         borderRadius: BorderRadius.circular(20.r),
@@ -288,7 +302,7 @@ class _ImageDetailSheet extends StatelessWidget {
                         ),
                       ),
                     ),
-                    
+
                     if (image.description.isNotEmpty) ...[
                       SizedBox(height: 16.h),
                       Text(
@@ -301,7 +315,7 @@ class _ImageDetailSheet extends StatelessWidget {
                         ),
                       ),
                     ],
-                    
+
                     if (image.author.isNotEmpty) ...[
                       SizedBox(height: 24.h),
                       Divider(),
@@ -311,7 +325,9 @@ class _ImageDetailSheet extends StatelessWidget {
                           if (image.authorIconUrl.isNotEmpty) ...[
                             CircleAvatar(
                               radius: 20.r,
-                              backgroundImage: NetworkImage(image.authorIconUrl),
+                              backgroundImage: NetworkImage(
+                                image.authorIconUrl,
+                              ),
                             ),
                             SizedBox(width: 12.w),
                           ],
@@ -325,7 +341,11 @@ class _ImageDetailSheet extends StatelessWidget {
                                     fontFamily: 'Poppins',
                                     fontSize: 14.sp,
                                     fontWeight: FontWeight.w600,
-                                    color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black,
+                                    color:
+                                        Theme.of(
+                                          context,
+                                        ).textTheme.bodyLarge?.color ??
+                                        Colors.black,
                                   ),
                                 ),
                                 Text(
@@ -342,7 +362,7 @@ class _ImageDetailSheet extends StatelessWidget {
                         ],
                       ),
                     ],
-                    
+
                     SizedBox(height: 24.h),
                   ],
                 ),
@@ -380,14 +400,14 @@ class _ImageDetailSheet extends StatelessWidget {
           duration: Duration(seconds: 2),
         ),
       );
-      
+
       // TODO: Implement native gallery save using platform channels or find AGP-compatible package
       // For now, users can screenshot or use the image URL directly
     } catch (e) {
       print('Error saving image: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to save image')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Failed to save image')));
     }
   }
 }

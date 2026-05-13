@@ -18,6 +18,7 @@ import '../bloc/settings_event.dart';
 import '../bloc/settings_state.dart';
 import '../widgets/settings_theme_selector.dart';
 import '../widgets/settings_language_selector.dart';
+import 'package:Resilio/l10n/app_localizations.dart';
 import 'package:Resilio/core/theme/app_colors.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -65,20 +66,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _clearCache() async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Clear Cache'),
+        title: Text(l10n.clearCache),
         content:
-            Text('Current cache size: $_cacheSize\nAre you sure you want to clear it?'),
+            Text('${l10n.currentCacheSize(_cacheSize)}\n${l10n.clearCacheConfirm}'),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel')),
+              child: Text(l10n.cancel)),
           TextButton(
               onPressed: () => Navigator.pop(ctx, true),
               child:
-                  const Text('Clear', style: TextStyle(color: Colors.red))),
+                  Text(l10n.clear, style: const TextStyle(color: Colors.red))),
         ],
       ),
     );
@@ -95,7 +97,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await _calculateCacheSize();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Cache cleared successfully')),
+          SnackBar(content: Text(l10n.cacheCleared)),
         );
       }
     } catch (e) {
@@ -110,6 +112,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _showAboutDialog() {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
@@ -137,15 +140,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               SizedBox(height: 16.h),
               Text('Resilio',
                   style: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.bold)),
-              Text('Version $_appVersion',
+              Text(l10n.versionLearnMore(_appVersion),
                   style: TextStyle(fontSize: 13.sp, color: Colors.grey)),
               SizedBox(height: 16.h),
               Divider(color: isDark ? Colors.white12 : Colors.grey.shade200),
               SizedBox(height: 12.h),
               Text(
-                'Your mental wellness companion for a healthier, more balanced life. '
-                'Resilio brings you guided meditations, expert tips, breathing exercises, '
-                'and personalised wellness journeys — all in one place.',
+                l10n.aboutResilioDesc,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 13.sp,
@@ -159,17 +160,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 runSpacing: 8.h,
                 alignment: WrapAlignment.center,
                 children: [
-                  _chip(Icons.headphones_rounded, 'Audio', theme),
-                  _chip(Icons.videocam_rounded, 'Videos', theme),
-                  _chip(Icons.tips_and_updates_rounded, 'Tips', theme),
-                  _chip(Icons.games_rounded, 'Games', theme),
+                  _chip(Icons.headphones_rounded, l10n.favoriteAudio, theme),
+                  _chip(Icons.videocam_rounded, l10n.favoriteVideos, theme),
+                  _chip(Icons.tips_and_updates_rounded, l10n.favoriteTips, theme),
+                  _chip(Icons.games_rounded, l10n.gamesHub, theme),
                   _chip(Icons.favorite_rounded, 'Wellness', theme),
                 ],
               ),
               SizedBox(height: 16.h),
               Divider(color: isDark ? Colors.white12 : Colors.grey.shade200),
               SizedBox(height: 8.h),
-              Text('© 2026 Resilio Team · Made with ❤️ in Nepal',
+              Text(l10n.madeWithLove,
                   style: TextStyle(fontSize: 11.sp, color: Colors.grey),
                   textAlign: TextAlign.center),
               SizedBox(height: 16.h),
@@ -182,7 +183,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         borderRadius: BorderRadius.circular(12.r)),
                     padding: EdgeInsets.symmetric(vertical: 12.h),
                   ),
-                  child: const Text('Close'),
+                  child: Text(l10n.close),
                 ),
               ),
             ],
@@ -222,7 +223,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
-          title: const Text('App Settings'),
+          title: Text(AppLocalizations.of(context)!.appSettings),
           centerTitle: true,
           elevation: 0,
           backgroundColor: Colors.transparent,
@@ -252,7 +253,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     SizedBox(height: 16.h),
                     Text(
-                      'Error loading settings',
+                      AppLocalizations.of(context)!.errorLoadingSettings,
                       style: TextStyle(
                         fontSize: 18.sp,
                         fontWeight: FontWeight.bold,
@@ -281,7 +282,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       onPressed: () {
                         context.read<SettingsBloc>().add(const LoadSettings());
                       },
-                      child: const Text('Retry'),
+                      child: Text(AppLocalizations.of(context)!.retry),
                     ),
                   ],
                 ),
@@ -326,14 +327,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     },
                   ),
 
-                  _SettingsSectionHeader(title: 'Profile', isFirst: true),
+                  _SettingsSectionHeader(title: AppLocalizations.of(context)!.profileSection, isFirst: true),
                   ProfileMenuItem(
                     icon: Icons.person_outline_rounded,
-                    title: 'Your Profile',
-                    description: 'Manage account, subscription, and preferences',
+                    title: AppLocalizations.of(context)!.yourProfile,
+                    description: AppLocalizations.of(context)!.manageAccountPrefs,
                     onTap: () => context.pushNamed(RouteNames.profile),
                   ),
-                  _SettingsSectionHeader(title: 'Appearance'),
+                  _SettingsSectionHeader(title: AppLocalizations.of(context)!.appearanceSection),
                   _settingsPanel(
                     isDarkMode: isDarkMode,
                     child: SettingsThemeSelector(
@@ -354,17 +355,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       },
                     ),
                   ),
-                  _SettingsSectionHeader(title: 'General'),
+                  _SettingsSectionHeader(title: AppLocalizations.of(context)!.generalSection),
                   ProfileMenuItem(
                     icon: Icons.refresh_rounded,
-                    title: 'Reset to Defaults',
-                    description: 'Restore theme and language to defaults',
+                    title: AppLocalizations.of(context)!.resetToDefaults,
+                    description: AppLocalizations.of(context)!.restoreThemeLanguage,
                     iconColor: Colors.orange,
                     onTap: () {
                       context.read<SettingsBloc>().add(const ResetSettings());
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: const Text('Settings reset to defaults'),
+                          content: Text(AppLocalizations.of(context)!.settingsReset),
                           behavior: SnackBarBehavior.floating,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10.r),
@@ -375,14 +376,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   ProfileMenuItem(
                     icon: Icons.cleaning_services_outlined,
-                    title: 'Clear Cache',
-                    description: 'Free up space · $_cacheSize',
+                    title: AppLocalizations.of(context)!.clearCache,
+                    description: AppLocalizations.of(context)!.freeUpSpaceSize(_cacheSize),
                     onTap: _clearCache,
                   ),
                   ProfileMenuItem(
                     icon: Icons.info_outline_rounded,
-                    title: 'About Resilio',
-                    description: 'Version $_appVersion · Learn more',
+                    title: AppLocalizations.of(context)!.aboutResilio,
+                    description: AppLocalizations.of(context)!.versionLearnMore(_appVersion),
                     onTap: _showAboutDialog,
                   ),
                   SizedBox(height: 40.h),

@@ -26,6 +26,7 @@ import '../../domain/entities/category_card_entity.dart';
 /// Full-page category detail screen — shown when user taps "See All" on a category.
 class CategoryDetailScreen extends StatefulWidget {
   final CategoryCardEntity category;
+
   /// When set and category.id is empty, loads only this content type.
   final ExploreItemType? contentType;
 
@@ -85,19 +86,22 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
             }
 
             final filtered = _filtered(items);
-            final isLoading = state is ExploreLoading || state is ExploreInitial;
+            final isLoading =
+                state is ExploreLoading || state is ExploreInitial;
 
             List<dynamic> groupedItems = [];
             for (int i = 0; i < filtered.length; i++) {
               final item = filtered[i];
-              if (item.type == ExploreItemType.shortVideo || item.type == ExploreItemType.image) {
-                if (groupedItems.isNotEmpty && groupedItems.last is List<ExploreItemEntity>) {
-                   List<ExploreItemEntity> group = groupedItems.last;
-                   if (group.length == 1 && group.first.type == item.type) {
-                     group.add(item);
-                   } else {
-                     groupedItems.add([item]);
-                   }
+              if (item.type == ExploreItemType.shortVideo ||
+                  item.type == ExploreItemType.image) {
+                if (groupedItems.isNotEmpty &&
+                    groupedItems.last is List<ExploreItemEntity>) {
+                  List<ExploreItemEntity> group = groupedItems.last;
+                  if (group.length == 1 && group.first.type == item.type) {
+                    group.add(item);
+                  } else {
+                    groupedItems.add([item]);
+                  }
                 } else {
                   groupedItems.add([item]);
                 }
@@ -142,7 +146,9 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
                                   ),
                                 ),
                                 Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 48.w),
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 48.w,
+                                  ),
                                   child: Text(
                                     widget.category.name,
                                     style: TextStyle(
@@ -179,9 +185,11 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.search_off_rounded,
-                              size: 64.sp,
-                              color: context.textSecondaryColor),
+                          Icon(
+                            Icons.search_off_rounded,
+                            size: 64.sp,
+                            color: context.textSecondaryColor,
+                          ),
                           SizedBox(height: 12.h),
                           Text(
                             'No content found',
@@ -199,41 +207,58 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
                   SliverPadding(
                     padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 100.h),
                     sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          final itemOrGroup = groupedItems[index];
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        final itemOrGroup = groupedItems[index];
 
-                          if (itemOrGroup is List<ExploreItemEntity>) {
-                            return Padding(
-                              padding: EdgeInsets.only(bottom: 16.h),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: itemOrGroup[0].type == ExploreItemType.shortVideo 
-                                        ? _buildShortVideoWithGridStyle(itemOrGroup[0], filtered)
-                                        : _buildImageWithGridStyle(itemOrGroup[0], filtered),
-                                  ),
-                                  SizedBox(width: 12.w),
-                                  if (itemOrGroup.length > 1)
-                                    Expanded(
-                                      child: itemOrGroup[1].type == ExploreItemType.shortVideo
-                                          ? _buildShortVideoWithGridStyle(itemOrGroup[1], filtered)
-                                          : _buildImageWithGridStyle(itemOrGroup[1], filtered),
-                                    )
-                                  else
-                                    Expanded(child: const SizedBox()),
-                                ],
-                              ),
-                            );
-                          }
-
+                        if (itemOrGroup is List<ExploreItemEntity>) {
                           return Padding(
                             padding: EdgeInsets.only(bottom: 16.h),
-                            child: _buildCard(itemOrGroup as ExploreItemEntity, filtered.indexOf(itemOrGroup), filtered),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child:
+                                      itemOrGroup[0].type ==
+                                          ExploreItemType.shortVideo
+                                      ? _buildShortVideoWithGridStyle(
+                                          itemOrGroup[0],
+                                          filtered,
+                                        )
+                                      : _buildImageWithGridStyle(
+                                          itemOrGroup[0],
+                                          filtered,
+                                        ),
+                                ),
+                                SizedBox(width: 12.w),
+                                if (itemOrGroup.length > 1)
+                                  Expanded(
+                                    child:
+                                        itemOrGroup[1].type ==
+                                            ExploreItemType.shortVideo
+                                        ? _buildShortVideoWithGridStyle(
+                                            itemOrGroup[1],
+                                            filtered,
+                                          )
+                                        : _buildImageWithGridStyle(
+                                            itemOrGroup[1],
+                                            filtered,
+                                          ),
+                                  )
+                                else
+                                  Expanded(child: const SizedBox()),
+                              ],
+                            ),
                           );
-                        },
-                        childCount: groupedItems.length,
-                      ),
+                        }
+
+                        return Padding(
+                          padding: EdgeInsets.only(bottom: 16.h),
+                          child: _buildCard(
+                            itemOrGroup as ExploreItemEntity,
+                            filtered.indexOf(itemOrGroup),
+                            filtered,
+                          ),
+                        );
+                      }, childCount: groupedItems.length),
                     ),
                   ),
               ],
@@ -248,39 +273,36 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
     return Container(
       height: 48.h,
       decoration: BoxDecoration(
-        color: isDarkMode ? const Color(0xFF2C2C2E) : Colors.white,
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(isDarkMode ? 0.3 : 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
         border: Border.all(
           color: isDarkMode
-              ? Colors.white.withOpacity(0.05)
-              : Colors.black.withOpacity(0.05),
+              ? Colors.white.withOpacity(0.12)
+              : Colors.black.withOpacity(0.12),
           width: 1.w,
         ),
       ),
       padding: EdgeInsets.symmetric(horizontal: 16.w),
       child: Row(
         children: [
-          Icon(Icons.search_rounded,
-              size: 22.sp, color: context.textSecondaryColor),
+          Icon(
+            Icons.search_rounded,
+            size: 22.sp,
+            color: context.textSecondaryColor,
+          ),
           SizedBox(width: 8.w),
           Expanded(
             child: TextField(
               controller: _searchController,
-              onChanged: (v) =>
-                  setState(() => _searchQuery = v.toLowerCase()),
+              onChanged: (v) => setState(() => _searchQuery = v.toLowerCase()),
               style: TextStyle(
                 fontFamily: 'Poppins',
                 fontSize: 15.sp,
                 color: context.textPrimaryColor,
               ),
               decoration: InputDecoration(
+                filled: false,
+                fillColor: Colors.transparent,
                 hintText: 'Search ${widget.category.name}...',
                 hintStyle: TextStyle(
                   fontFamily: 'Poppins',
@@ -310,8 +332,11 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
                       : Colors.black.withOpacity(0.05),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.close_rounded,
-                    size: 14.sp, color: context.textSecondaryColor),
+                child: Icon(
+                  Icons.close_rounded,
+                  size: 14.sp,
+                  color: context.textSecondaryColor,
+                ),
               ),
             ),
         ],
@@ -319,8 +344,14 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
     );
   }
 
-  Widget _buildShortVideoWithGridStyle(ExploreItemEntity item, List<ExploreItemEntity> all) {
-    final shorts = all.where((e) => e.type == ExploreItemType.shortVideo).map(_toVideo).toList();
+  Widget _buildShortVideoWithGridStyle(
+    ExploreItemEntity item,
+    List<ExploreItemEntity> all,
+  ) {
+    final shorts = all
+        .where((e) => e.type == ExploreItemType.shortVideo)
+        .map(_toVideo)
+        .toList();
     final shortIdx = shorts.indexWhere((v) => v.id == item.id);
     return ShortVideoCardWidget(
       video: _toVideo(item),
@@ -329,53 +360,79 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
       margin: EdgeInsets.zero,
       onTap: () => context.pushNamed(
         RouteNames.shortsPlayer,
-        extra: shorts, 
-        queryParameters: {'index': '${shortIdx < 0 ? 0 : shortIdx}'}
+        extra: shorts,
+        queryParameters: {'index': '${shortIdx < 0 ? 0 : shortIdx}'},
       ),
     );
   }
 
-  Widget _buildCard(ExploreItemEntity item, int index, List<ExploreItemEntity> all) {
+  Widget _buildCard(
+    ExploreItemEntity item,
+    int index,
+    List<ExploreItemEntity> all,
+  ) {
     switch (item.type) {
       case ExploreItemType.audio:
         return AudioCardWidget(
           track: _toAudio(item),
-          onTap: () => context.pushNamed(RouteNames.mediaPlayer, extra: _toAudio(item)),
+          onTap: () =>
+              context.pushNamed(RouteNames.mediaPlayer, extra: _toAudio(item)),
         );
       case ExploreItemType.shortVideo:
-        final shorts = all.where((e) => e.type == ExploreItemType.shortVideo).map(_toVideo).toList();
+        final shorts = all
+            .where((e) => e.type == ExploreItemType.shortVideo)
+            .map(_toVideo)
+            .toList();
         final shortIdx = shorts.indexWhere((v) => v.id == item.id);
         return ShortVideoCardWidget(
           video: _toVideo(item),
-          onTap: () => context.pushNamed(RouteNames.shortsPlayer,
-              extra: shorts, queryParameters: {'index': '${shortIdx < 0 ? 0 : shortIdx}'}),
+          onTap: () => context.pushNamed(
+            RouteNames.shortsPlayer,
+            extra: shorts,
+            queryParameters: {'index': '${shortIdx < 0 ? 0 : shortIdx}'},
+          ),
         );
       case ExploreItemType.longVideo:
         return LongVideoCardWidget(
           video: _toVideo(item),
-          onTap: () => context.pushNamed(RouteNames.longVideoPlayer, extra: _toVideo(item)),
+          onTap: () => context.pushNamed(
+            RouteNames.longVideoPlayer,
+            extra: _toVideo(item),
+          ),
         );
       case ExploreItemType.quote:
-        final quotes = all.where((e) => e.type == ExploreItemType.quote).map(_toQuote).toList();
+        final quotes = all
+            .where((e) => e.type == ExploreItemType.quote)
+            .map(_toQuote)
+            .toList();
         final quoteIdx = quotes.indexWhere((q) => q.id == item.id);
         return GestureDetector(
-          onTap: () => context.pushNamed(RouteNames.contentViewer, extra: {
-            'quotes': quotes,
-            'initialIndex': quoteIdx < 0 ? 0 : quoteIdx,
-            'title': widget.category.name,
-          }),
+          onTap: () => context.pushNamed(
+            RouteNames.contentViewer,
+            extra: {
+              'quotes': quotes,
+              'initialIndex': quoteIdx < 0 ? 0 : quoteIdx,
+              'title': widget.category.name,
+            },
+          ),
           child: _buildQuoteListItem(_toQuote(item)),
         );
       case ExploreItemType.tip:
-        final tips = all.where((e) => e.type == ExploreItemType.tip).map(_toTip).toList();
+        final tips = all
+            .where((e) => e.type == ExploreItemType.tip)
+            .map(_toTip)
+            .toList();
         final tipIdx = tips.indexWhere((t) => t.id == item.id);
         return TipCardWidget(
           tip: _toTip(item),
-          onTap: () => context.pushNamed(RouteNames.contentViewer, extra: {
-            'tips': tips,
-            'initialIndex': tipIdx < 0 ? 0 : tipIdx,
-            'title': widget.category.name,
-          }),
+          onTap: () => context.pushNamed(
+            RouteNames.contentViewer,
+            extra: {
+              'tips': tips,
+              'initialIndex': tipIdx < 0 ? 0 : tipIdx,
+              'title': widget.category.name,
+            },
+          ),
         );
       case ExploreItemType.image:
         return _buildImageItem(item, all);
@@ -384,17 +441,25 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
     }
   }
 
-  Widget _buildImageItem(ExploreItemEntity item, List<ExploreItemEntity> all, {bool isGrid = false}) {
+  Widget _buildImageItem(
+    ExploreItemEntity item,
+    List<ExploreItemEntity> all, {
+    bool isGrid = false,
+  }) {
     final images = all.where((e) => e.type == ExploreItemType.image).toList();
     final imgIdx = images.indexWhere((i) => i.id == item.id);
     return GestureDetector(
-      onTap: () => context.pushNamed(RouteNames.imageViewer, extra: {
-        'images': images, // passing full ExploreItemEntity to preserve isPremium
-        'titles': images.map((e) => e.title).toList(),
-        'subtitles': images.map((e) => e.subtitle ?? '').toList(),
-        'initialIndex': imgIdx < 0 ? 0 : imgIdx,
-        'categoryName': widget.category.name,
-      }),
+      onTap: () => context.pushNamed(
+        RouteNames.imageViewer,
+        extra: {
+          'images':
+              images, // passing full ExploreItemEntity to preserve isPremium
+          'titles': images.map((e) => e.title).toList(),
+          'subtitles': images.map((e) => e.subtitle ?? '').toList(),
+          'initialIndex': imgIdx < 0 ? 0 : imgIdx,
+          'categoryName': widget.category.name,
+        },
+      ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16.r),
         child: AspectRatio(
@@ -407,8 +472,11 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
               else
                 Container(
                   color: Colors.grey.shade800,
-                  child: Icon(Icons.image_not_supported_rounded,
-                      size: 40.sp, color: Colors.white30),
+                  child: Icon(
+                    Icons.image_not_supported_rounded,
+                    size: 40.sp,
+                    color: Colors.white30,
+                  ),
                 ),
               Positioned(
                 bottom: 0,
@@ -422,7 +490,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
                       end: Alignment.topCenter,
                       colors: [
                         Colors.black.withOpacity(0.7),
-                        Colors.transparent
+                        Colors.transparent,
                       ],
                     ),
                   ),
@@ -438,11 +506,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
                 ),
               ),
 
-              PremiumTagWidget(
-                isPremium: item.isPremium,
-                top: 8,
-                left: 8,
-              ),
+              PremiumTagWidget(isPremium: item.isPremium, top: 8, left: 8),
             ],
           ),
         ),
@@ -450,7 +514,10 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
     );
   }
 
-  Widget _buildImageWithGridStyle(ExploreItemEntity item, List<ExploreItemEntity> all) {
+  Widget _buildImageWithGridStyle(
+    ExploreItemEntity item,
+    List<ExploreItemEntity> all,
+  ) {
     return _buildImageItem(item, all, isGrid: true);
   }
 
@@ -565,69 +632,71 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
 
   // ── Entity adapters ────────────────────────────────────────────────────
   AudioEntity _toAudio(ExploreItemEntity e) => AudioEntity(
-        id: e.id,
-        title: e.title,
-        description: e.description ?? '',
-        artistName: e.subtitle ?? '',
-        audioUrl: e.metadata?['audioUrl'] as String? ?? '',
-        coverImageUrl: e.imageUrl ?? '',
-        thumbnailUrl: e.thumbnailUrl ?? e.imageUrl ?? '',
-        durationSeconds: e.durationSeconds ?? 0,
-        categoryId: e.categoryIds.firstOrNull ?? '',
-        moodTags: e.tags,
-        isFeatured: e.isFeatured,
-        isPremium: e.isPremium,
-        sortOrder: 0,
-        createdAt: e.createdAt,
-        updatedAt: e.createdAt,
-      );
+    id: e.id,
+    title: e.title,
+    description: e.description ?? '',
+    artistName: e.subtitle ?? '',
+    audioUrl: e.metadata?['audioUrl'] as String? ?? '',
+    coverImageUrl: e.imageUrl ?? '',
+    thumbnailUrl: e.thumbnailUrl ?? e.imageUrl ?? '',
+    durationSeconds: e.durationSeconds ?? 0,
+    categoryId: e.categoryIds.firstOrNull ?? '',
+    moodTags: e.tags,
+    isFeatured: e.isFeatured,
+    isPremium: e.isPremium,
+    sortOrder: 0,
+    createdAt: e.createdAt,
+    updatedAt: e.createdAt,
+  );
 
   VideoEntity _toVideo(ExploreItemEntity e) => VideoEntity(
-        id: e.id,
-        title: e.title,
-        description: e.description ?? '',
-        artistName: e.subtitle ?? '',
-        videoUrl: e.metadata?['videoUrl'] as String? ?? '',
-        thumbnailUrl: e.thumbnailUrl ?? e.imageUrl ?? '',
-        coverImageUrl: e.imageUrl ?? '',
-        durationSeconds: e.durationSeconds ?? 0,
-        categoryId: e.categoryIds.firstOrNull ?? '',
-        moodTags: e.tags,
-        videoType: e.type == ExploreItemType.shortVideo
-            ? VideoType.shortForm
-            : VideoType.longForm,
-        aspectRatio: e.type == ExploreItemType.shortVideo ? 9 / 16 : 16 / 9,
-        isFeatured: e.isFeatured,
-        isPremium: e.isPremium,
-        isActive: true,
-        sortOrder: 0,
-        createdAt: e.createdAt,
-        updatedAt: e.createdAt,
-      );
+    id: e.id,
+    title: e.title,
+    description: e.description ?? '',
+    artistName: e.subtitle ?? '',
+    videoUrl: e.metadata?['videoUrl'] as String? ?? '',
+    thumbnailUrl: e.thumbnailUrl ?? e.imageUrl ?? '',
+    coverImageUrl: e.imageUrl ?? '',
+    durationSeconds: e.durationSeconds ?? 0,
+    categoryId: e.categoryIds.firstOrNull ?? '',
+    moodTags: e.tags,
+    videoType: e.type == ExploreItemType.shortVideo
+        ? VideoType.shortForm
+        : VideoType.longForm,
+    aspectRatio: e.type == ExploreItemType.shortVideo ? 9 / 16 : 16 / 9,
+    isFeatured: e.isFeatured,
+    isPremium: e.isPremium,
+    isActive: true,
+    sortOrder: 0,
+    createdAt: e.createdAt,
+    updatedAt: e.createdAt,
+  );
 
   QuoteEntity _toQuote(ExploreItemEntity e) => QuoteEntity(
-        id: e.id,
-        quoteText: e.title,
-        author: e.subtitle ?? '',
-        authorIconUrl: e.imageUrl,
-        categoryId: e.categoryIds.firstOrNull,
-        preferenceIds: const [],
-        isFeatured: e.isFeatured,
-        isPremium: e.isPremium,
-        quoteType: 'quote',
-        createdAt: e.createdAt,
-        updatedAt: e.createdAt,
-      );
+    id: e.id,
+    quoteText: e.title,
+    author: e.subtitle ?? '',
+    authorIconUrl: e.imageUrl,
+    categoryId: e.categoryIds.firstOrNull,
+    preferenceIds: const [],
+    isFeatured: e.isFeatured,
+    isPremium: e.isPremium,
+    quoteType: 'quote',
+    createdAt: e.createdAt,
+    updatedAt: e.createdAt,
+  );
 
   TipType _parseTipType(ExploreItemEntity e) {
     String typeStr = e.metadata?['tipType']?.toString() ?? '';
     if (typeStr.isEmpty && e.tags.isNotEmpty) {
       typeStr = e.tags.first;
     }
-    
-    if (typeStr == TipType.relationshipBooster.toString()) return TipType.relationshipBooster;
+
+    if (typeStr == TipType.relationshipBooster.toString())
+      return TipType.relationshipBooster;
     if (typeStr == TipType.lettingGo.toString()) return TipType.lettingGo;
-    if (typeStr == TipType.communication.toString()) return TipType.communication;
+    if (typeStr == TipType.communication.toString())
+      return TipType.communication;
     if (typeStr == TipType.selfCare.toString()) return TipType.selfCare;
     if (typeStr == TipType.mindfulness.toString()) return TipType.mindfulness;
     if (typeStr == TipType.general.toString()) return TipType.general;
@@ -636,26 +705,29 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
     if (lower.contains('relationship')) return TipType.relationshipBooster;
     if (lower.contains('letting')) return TipType.lettingGo;
     if (lower.contains('communication')) return TipType.communication;
-    if (lower.contains('self_care') || lower.contains('self-care') || lower.contains('self care')) return TipType.selfCare;
+    if (lower.contains('self_care') ||
+        lower.contains('self-care') ||
+        lower.contains('self care'))
+      return TipType.selfCare;
     if (lower.contains('mindful')) return TipType.mindfulness;
-    
+
     return TipType.general;
   }
 
   TipEntity _toTip(ExploreItemEntity e) => TipEntity(
-        id: e.id,
-        title: e.title,
-        tipText: e.description ?? e.subtitle ?? '',
-        author: e.subtitle ?? '',
-        authorIconUrl: e.metadata?['authorIconUrl'] as String? ?? '',
-        categoryId: e.categoryIds.firstOrNull ?? '',
-        preferenceIds: const [],
-        tipType: _parseTipType(e),
-        isFeatured: e.isFeatured,
-        isPremium: e.isPremium,
-        sortOrder: 0,
-        metadata: '',
-        createdAt: e.createdAt,
-        updatedAt: e.createdAt,
-      );
+    id: e.id,
+    title: e.title,
+    tipText: e.description ?? e.subtitle ?? '',
+    author: e.subtitle ?? '',
+    authorIconUrl: e.metadata?['authorIconUrl'] as String? ?? '',
+    categoryId: e.categoryIds.firstOrNull ?? '',
+    preferenceIds: const [],
+    tipType: _parseTipType(e),
+    isFeatured: e.isFeatured,
+    isPremium: e.isPremium,
+    sortOrder: 0,
+    metadata: '',
+    createdAt: e.createdAt,
+    updatedAt: e.createdAt,
+  );
 }

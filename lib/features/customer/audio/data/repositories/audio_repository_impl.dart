@@ -7,11 +7,20 @@ import '../../domain/entities/audio_entity.dart';
 import '../../domain/repositories/audio_repository.dart';
 import '../datasources/audio_remote_datasource.dart';
 
+import '../../../../../core/network/network_info.dart';
+import '../datasources/audio_local_datasource.dart';
+
 @LazySingleton(as: AudioRepository)
 class AudioRepositoryImpl implements AudioRepository {
   final AudioRemoteDataSource _remoteDataSource;
+  final AudioLocalDataSource _localDataSource;
+  final NetworkInfo _networkInfo;
 
-  AudioRepositoryImpl(this._remoteDataSource);
+  AudioRepositoryImpl(
+    this._remoteDataSource,
+    this._localDataSource,
+    this._networkInfo,
+  );
 
   @override
   Future<Either<Failure, List<AudioEntity>>> getFeaturedAudio({
@@ -19,14 +28,29 @@ class AudioRepositoryImpl implements AudioRepository {
     List<String>? moodFilters,
   }) async {
     try {
-      final tracks = await _remoteDataSource.getFeaturedAudio(
-        limit: limit,
-        moodFilters: moodFilters,
-      );
-
-      return Right(tracks.map(_mapToEntity).toList());
-    } on ServerFailure catch (e) {
-      return Left(e);
+      if (await _networkInfo.isConnected) {
+        try {
+          final tracks = await _remoteDataSource.getFeaturedAudio(
+            limit: limit,
+            moodFilters: moodFilters,
+          );
+          final entities = tracks.map(_mapToEntity).toList();
+          await _localDataSource.cacheAudioTracks(entities);
+          return Right(entities);
+        } catch (e) {
+          final cached = await _localDataSource.getCachedAudioTracks();
+          if (cached.isNotEmpty) {
+            return Right(cached.where((t) => t.isFeatured).toList());
+          }
+          return Left(ServerFailure('Failed to fetch featured audio: $e'));
+        }
+      } else {
+        final cached = await _localDataSource.getCachedAudioTracks();
+        if (cached.isNotEmpty) {
+          return Right(cached.where((t) => t.isFeatured).toList());
+        }
+        return const Left(NetworkFailure('No internet connection and no cached audio available'));
+      }
     } catch (e) {
       return Left(ServerFailure('Unexpected error: $e'));
     }
@@ -35,10 +59,26 @@ class AudioRepositoryImpl implements AudioRepository {
   @override
   Future<Either<Failure, List<AudioEntity>>> getAllAudio({int limit = 100}) async {
     try {
-      final tracks = await _remoteDataSource.getAllAudio(limit: limit);
-      return Right(tracks.map(_mapToEntity).toList());
-    } on ServerFailure catch (e) {
-      return Left(e);
+      if (await _networkInfo.isConnected) {
+        try {
+          final tracks = await _remoteDataSource.getAllAudio(limit: limit);
+          final entities = tracks.map(_mapToEntity).toList();
+          await _localDataSource.cacheAudioTracks(entities);
+          return Right(entities);
+        } catch (e) {
+          final cached = await _localDataSource.getCachedAudioTracks();
+          if (cached.isNotEmpty) {
+            return Right(cached);
+          }
+          return Left(ServerFailure('Failed to fetch all audio: $e'));
+        }
+      } else {
+        final cached = await _localDataSource.getCachedAudioTracks();
+        if (cached.isNotEmpty) {
+          return Right(cached);
+        }
+        return const Left(NetworkFailure('No internet connection and no cached audio available'));
+      }
     } catch (e) {
       return Left(ServerFailure('Unexpected error: $e'));
     }
@@ -51,18 +91,35 @@ class AudioRepositoryImpl implements AudioRepository {
     int offset = 0,
   }) async {
     try {
-      final result = await _remoteDataSource.getAudioByCategory(
-        categoryId: categoryId,
-        limit: limit,
-        offset: offset,
-      );
-
-      return Right(AudioListResult(
-        tracks: result.tracks.map(_mapToEntity).toList(),
-        total: result.total,
-      ));
-    } on ServerFailure catch (e) {
-      return Left(e);
+      if (await _networkInfo.isConnected) {
+        try {
+          final result = await _remoteDataSource.getAudioByCategory(
+            categoryId: categoryId,
+            limit: limit,
+            offset: offset,
+          );
+          final entities = result.tracks.map(_mapToEntity).toList();
+          await _localDataSource.cacheAudioTracks(entities);
+          return Right(AudioListResult(
+            tracks: entities,
+            total: result.total,
+          ));
+        } catch (e) {
+          final cached = await _localDataSource.getCachedAudioTracks();
+          final filtered = cached.where((t) => t.categoryId == categoryId).toList();
+          if (filtered.isNotEmpty) {
+            return Right(AudioListResult(tracks: filtered, total: filtered.length));
+          }
+          return Left(ServerFailure('Failed to fetch audio by category: $e'));
+        }
+      } else {
+        final cached = await _localDataSource.getCachedAudioTracks();
+        final filtered = cached.where((t) => t.categoryId == categoryId).toList();
+        if (filtered.isNotEmpty) {
+          return Right(AudioListResult(tracks: filtered, total: filtered.length));
+        }
+        return const Left(NetworkFailure('No internet connection and no cached audio available'));
+      }
     } catch (e) {
       return Left(ServerFailure('Unexpected error: $e'));
     }
@@ -71,10 +128,14 @@ class AudioRepositoryImpl implements AudioRepository {
   @override
   Future<Either<Failure, AudioEntity>> getAudioTrackById(String audioId) async {
     try {
-      final track = await _remoteDataSource.getAudioTrackById(audioId);
-      return Right(_mapToEntity(track));
-    } on ServerFailure catch (e) {
-      return Left(e);
+      if (await _networkInfo.isConnected) {
+        final track = await _remoteDataSource.getAudioTrackById(audioId);
+        return Right(_mapToEntity(track));
+      } else {
+        final cached = await _localDataSource.getCachedAudioTracks();
+        final track = cached.firstWhere((t) => t.id == audioId);
+        return Right(track);
+      }
     } catch (e) {
       return Left(ServerFailure('Unexpected error: $e'));
     }
@@ -83,10 +144,11 @@ class AudioRepositoryImpl implements AudioRepository {
   @override
   Future<Either<Failure, PlayCountResult>> incrementPlayCount(String audioId) async {
     try {
-      await _remoteDataSource.incrementPlayCount(audioId);
+      if (await _networkInfo.isConnected) {
+        await _remoteDataSource.incrementPlayCount(audioId);
+      }
+      // Silently fail if offline, play count isn't critical for offline use
       return Right(PlayCountResult(success: true, newCount: 0));
-    } on ServerFailure catch (e) {
-      return Left(e);
     } catch (e) {
       return Left(ServerFailure('Unexpected error: $e'));
     }

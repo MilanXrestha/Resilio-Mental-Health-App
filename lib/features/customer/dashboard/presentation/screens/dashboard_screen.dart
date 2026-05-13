@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
+import 'package:Resilio/l10n/app_localizations.dart';
 
 import '../../../../../core/di/injection.dart';
 import '../../../../../core/routing/route_names.dart';
@@ -77,11 +78,10 @@ class DashboardScreen extends StatelessWidget {
           create: (_) => getIt<CategoryBloc>()..add(LoadCategoriesEvent()),
         ),
         BlocProvider(
-          create: (_) => getIt<AudioBloc>(),
+          create: (_) =>
+              getIt<AudioBloc>()..add(const LoadFeaturedAudio(limit: 10)),
         ),
-        BlocProvider(
-          create: (_) => getIt<ExploreBloc>(),
-        ),
+        BlocProvider(create: (_) => getIt<ExploreBloc>()),
         // Short videos bloc — featured only on dashboard
         BlocProvider(
           create: (_) =>
@@ -142,9 +142,7 @@ class _DashboardView extends StatelessWidget {
         if (categoryState is CategoryLoaded) {
           final catId = _findAudioCategoryId(categoryState.categories);
           if (catId.isNotEmpty) {
-            context.read<ExploreBloc>().add(
-              LoadExploreItemsForCategory(catId),
-            );
+            context.read<ExploreBloc>().add(LoadExploreItemsForCategory(catId));
           }
         }
       },
@@ -152,134 +150,138 @@ class _DashboardView extends StatelessWidget {
         builder: (context, state) {
           // ── Loading ────────────────────────────────────────────────────
           if (state is DashboardLoading) {
+            return Scaffold(
+              backgroundColor: context.backgroundColor,
+              body: const SafeArea(child: DashboardShimmerLoading()),
+            );
+          }
+
+          // ── Error ─────────────────────────────────────────────────────
+          if (state is DashboardError) {
+            return Scaffold(
+              backgroundColor: context.backgroundColor,
+              body: _ErrorBody(message: state.message),
+            );
+          }
+
+          // ── Loaded ────────────────────────────────────────────────────
+          UserProfile? profile;
+          String greeting = '';
+
+          if (state is DashboardLoaded) {
+            profile = state.userProfile;
+            greeting = state.greeting;
+          }
+
           return Scaffold(
             backgroundColor: context.backgroundColor,
-            body: const SafeArea(child: DashboardShimmerLoading()),
-          );
-        }
+            floatingActionButton: const CustomGamingFab(),
+            floatingActionButtonLocation: CustomFabLocation(),
+            body: SafeArea(
+              child: Stack(
+                children: [
+                  // Main scrollable content
+                  RefreshIndicator(
+                    onRefresh: () async {
+                      context.read<DashboardBloc>().add(
+                        const RefreshDashboard(),
+                      );
+                      context.read<QuoteBloc>().add(
+                        const LoadFeaturedQuotes(limit: 6),
+                      );
+                      context.read<CategoryBloc>().add(LoadCategoriesEvent());
+                      context.read<CategoryBloc>().add(LoadCategoriesEvent());
+                      context.read<ShortVideoBloc>().add(
+                        const LoadShortVideos(limit: 10, isFeatured: true),
+                      );
+                      context.read<LongVideoBloc>().add(
+                        const LoadLongVideos(limit: 10, isFeatured: true),
+                      );
+                      context.read<TipBloc>().add(
+                        const LoadFeaturedTips(limit: 10),
+                      );
+                      context.read<ImageBloc>().add(
+                        const LoadFeaturedImages(limit: 10),
+                      );
 
-        // ── Error ─────────────────────────────────────────────────────
-        if (state is DashboardError) {
-          return Scaffold(
-            backgroundColor: context.backgroundColor,
-            body: _ErrorBody(message: state.message),
-          );
-        }
+                      context.read<AudioBloc>().add(
+                        const LoadFeaturedAudio(limit: 10),
+                      );
+                    },
+                    color: context.primaryColor,
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(
+                        parent: BouncingScrollPhysics(),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(height: 12.h),
 
-        // ── Loaded ────────────────────────────────────────────────────
-        UserProfile? profile;
-        String greeting = '';
+                          // 1 ─ Header
+                          _Header(profile: profile, greeting: greeting),
 
-        if (state is DashboardLoaded) {
-          profile = state.userProfile;
-          greeting = state.greeting;
-        }
+                          SizedBox(height: 24.h),
 
-        return Scaffold(
-          backgroundColor: context.backgroundColor,
-          floatingActionButton: const CustomGamingFab(),
-          floatingActionButtonLocation: CustomFabLocation(),
-          body: SafeArea(
-            child: Stack(
-              children: [
-                // Main scrollable content
-                RefreshIndicator(
-                  onRefresh: () async {
-                    context.read<DashboardBloc>().add(const RefreshDashboard());
-                    context.read<QuoteBloc>().add(
-                      const LoadFeaturedQuotes(limit: 6),
-                    );
-                    context.read<CategoryBloc>().add(LoadCategoriesEvent());
-                    context.read<CategoryBloc>().add(LoadCategoriesEvent());
-                    context.read<ShortVideoBloc>().add(
-                      const LoadShortVideos(limit: 10, isFeatured: true),
-                    );
-                    context.read<LongVideoBloc>().add(
-                      const LoadLongVideos(limit: 10, isFeatured: true),
-                    );
-                    context.read<TipBloc>().add(
-                      const LoadFeaturedTips(limit: 10),
-                    );
-                    context.read<ImageBloc>().add(
-                      const LoadFeaturedImages(limit: 10),
-                    );
+                          // 2 ─ Featured Slider (Quotes & Tips)
+                          _FeaturedSection(),
 
-                    context.read<AudioBloc>().add(const LoadFeaturedAudio(limit: 10));
-                  },
-                  color: context.primaryColor,
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(
-                      parent: BouncingScrollPhysics(),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(height: 12.h),
+                          SizedBox(height: 36.h),
 
-                        // 1 ─ Header
-                        _Header(profile: profile, greeting: greeting),
+                          // 3 ─ Categories
+                          _CategoriesSection(onViewAll: onViewAllCategories),
 
-                        SizedBox(height: 24.h),
+                          SizedBox(height: 36.h),
 
-                        // 2 ─ Featured Slider (Quotes & Tips)
-                        _FeaturedSection(),
+                          // 3.5 ─ Therapy / Matching Hook
+                          const _TherapySection(),
 
-                        SizedBox(height: 36.h),
+                          SizedBox(height: 36.h),
 
-                        // 3 ─ Categories
-                        _CategoriesSection(onViewAll: onViewAllCategories),
+                          // 4 ─ Reminders Card (below categories)
+                          const _RemindersCardSection(),
 
-                        SizedBox(height: 36.h),
+                          SizedBox(height: 40.h),
 
-                        // 3.5 ─ Therapy / Matching Hook
-                        const _TherapySection(),
+                          // 5 ─ Featured Audio
+                          const _FeaturedAudioSection(),
 
-                        SizedBox(height: 36.h),
+                          SizedBox(height: 36.h),
 
-                        // 4 ─ Reminders Card (below categories)
-                        const _RemindersCardSection(),
+                          // 4 ─ Short Videos (9:16 horizontal scroll)
+                          const _ShortVideosSection(),
 
-                        SizedBox(height: 40.h),
+                          SizedBox(height: 36.h),
 
-                        // 5 ─ Featured Audio
-                        const _FeaturedAudioSection(),
+                          // 5.5 ─ Tips Section
+                          const _TipsSection(),
 
-                        SizedBox(height: 36.h),
+                          SizedBox(height: 36.h),
 
-                        // 4 ─ Short Videos (9:16 horizontal scroll)
-                        const _ShortVideosSection(),
+                          // 5.6 ─ Images Section
+                          const ImagesSection(),
 
-                        SizedBox(height: 36.h),
+                          SizedBox(height: 36.h),
 
-                        // 5.5 ─ Tips Section
-                        const _TipsSection(),
+                          // 5.8 ─ Quotes List Section
+                          const _QuotesListSection(),
 
-                        SizedBox(height: 36.h),
+                          SizedBox(height: 36.h),
 
-                        // 5.6 ─ Images Section
-                        const ImagesSection(),
+                          // 5 ─ Long Videos (16:9 vertical list)
+                          const _LongVideosSection(),
 
-                        SizedBox(height: 36.h),
-
-                        // 5.8 ─ Quotes List Section
-                        const _QuotesListSection(),
-
-                        SizedBox(height: 36.h),
-
-                        // 5 ─ Long Videos (16:9 vertical list)
-                        const _LongVideosSection(),
-
-                        SizedBox(height: 36.h),
-                      ],
+                          SizedBox(height: 36.h),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        );
-      },
-    ),
+          );
+        },
+      ),
     );
   }
 }
@@ -382,7 +384,9 @@ class _Header extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Hello, ${profile?.firstName ?? 'User'}',
+                  AppLocalizations.of(
+                    context,
+                  )!.hello(profile?.firstName ?? 'User'),
                   style: TextStyle(
                     fontFamily: 'Poppins',
                     fontSize: 24.sp,
@@ -394,7 +398,7 @@ class _Header extends StatelessWidget {
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  'Time to unwind',
+                  AppLocalizations.of(context)!.timeToUnwind,
                   style: TextStyle(
                     fontFamily: 'Poppins',
                     fontSize: 13.sp,
@@ -446,11 +450,13 @@ class _NotificationButtonState extends State<_NotificationButton> {
         queryParameters: {'limit': 50},
       );
       final raw = res.data;
-      final rawList = (raw is Map
-          ? (raw['notifications'] ?? raw['data'] ?? raw['items'] ?? [])
-          : raw is List
-              ? raw
-              : []) as List<dynamic>;
+      final rawList =
+          (raw is Map
+                  ? (raw['notifications'] ?? raw['data'] ?? raw['items'] ?? [])
+                  : raw is List
+                  ? raw
+                  : [])
+              as List<dynamic>;
       final list = rawList.cast<Map<String, dynamic>>();
       final unread = list.where((n) => n['is_read'] == false).length;
       if (mounted) setState(() => _unreadCount = unread);
@@ -628,7 +634,7 @@ class _RemindersCardSectionState extends State<_RemindersCardSection>
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                'Set Reminder',
+                                AppLocalizations.of(context)!.setReminder,
                                 style: TextStyle(
                                   fontFamily: 'Poppins',
                                   fontWeight: FontWeight.w700,
@@ -640,7 +646,7 @@ class _RemindersCardSectionState extends State<_RemindersCardSection>
                               ),
                               SizedBox(height: 6.h),
                               Text(
-                                'Never miss your favorite quotes',
+                                AppLocalizations.of(context)!.neverMissQuotes,
                                 style: TextStyle(
                                   fontFamily: 'Poppins',
                                   fontSize: 13.sp,
@@ -684,9 +690,9 @@ class _FeaturedSection extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SectionHeaderWidget(
-              title: 'Daily Inspiration',
-              subtitle: 'Swipe through today\'s featured quotes',
+            SectionHeaderWidget(
+              title: AppLocalizations.of(context)!.dailyInspiration,
+              subtitle: AppLocalizations.of(context)!.swipeFeaturedQuotes,
             ),
             SizedBox(height: 16.h),
             FeaturedQuotesWidget(
@@ -708,47 +714,25 @@ class _FeaturedSection extends StatelessWidget {
 class _FeaturedAudioSection extends StatelessWidget {
   const _FeaturedAudioSection();
 
-  AudioEntity _toAudio(ExploreItemEntity item) => AudioEntity(
-        id: item.id,
-        title: item.title,
-        description: item.description ?? '',
-        artistName: item.subtitle ?? '',
-        audioUrl: item.metadata?['audioUrl'] ?? '',
-        coverImageUrl: item.imageUrl ?? '',
-        thumbnailUrl: item.thumbnailUrl ?? '',
-        durationSeconds: item.durationSeconds ?? 0,
-        categoryId: item.categoryIds.isNotEmpty ? item.categoryIds.first : '',
-        moodTags: item.tags,
-        isFeatured: item.isFeatured,
-        isPremium: item.isPremium,
-        sortOrder: 0,
-        createdAt: item.createdAt,
-        updatedAt: item.createdAt,
-      );
-
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ExploreBloc, ExploreState>(
+    return BlocBuilder<AudioBloc, AudioState>(
       builder: (context, state) {
-        if (state is ExploreLoading) {
+        if (state is AudioLoading) {
           return const SectionShimmerLoading(height: 190, width: 160);
         }
-        if (state is! ExploreLoaded) return const SizedBox.shrink();
 
-        final audioItems = state.allItems
-            .where((item) => item.type == ExploreItemType.audio)
-            .toList();
-
-        if (audioItems.isEmpty) return const SizedBox.shrink();
-
-        final tracks = audioItems.map(_toAudio).toList();
+        final tracks = state is AudioLoaded
+            ? state.featuredTracks
+            : <AudioEntity>[];
+        if (tracks.isEmpty) return const SizedBox.shrink();
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SectionHeaderWidget(
-              title: 'Calming Audio',
-              subtitle: 'Meditation & wellness sessions',
+              title: AppLocalizations.of(context)!.calmingAudio,
+              subtitle: AppLocalizations.of(context)!.meditationSessions,
               onSeeAll: () {
                 CategoryCardEntity extra = const CategoryCardEntity(
                   id: '',
@@ -812,7 +796,6 @@ class _FeaturedAudioSection extends StatelessWidget {
     );
   }
 }
-
 
 class _ShortVideosSection extends StatelessWidget {
   const _ShortVideosSection();
@@ -891,8 +874,8 @@ class _ShortVideosSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SectionHeaderWidget(
-              title: 'Short Videos',
-              subtitle: 'Quick mindfulness moments',
+              title: AppLocalizations.of(context)!.shortVideos,
+              subtitle: AppLocalizations.of(context)!.quickMindfulness,
               onSeeAll: shortVideos.isEmpty
                   ? null
                   : () {
@@ -1011,8 +994,8 @@ class _LongVideosSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SectionHeaderWidget(
-              title: 'Featured Videos',
-              subtitle: 'In-depth wellness content',
+              title: AppLocalizations.of(context)!.featuredVideos,
+              subtitle: AppLocalizations.of(context)!.inDepthContent,
               onSeeAll: longVideos.isEmpty
                   ? null
                   : () {
@@ -1123,8 +1106,8 @@ class _TipsSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SectionHeaderWidget(
-              title: 'Wellness Tips',
-              subtitle: 'Quick advice for daily wellness',
+              title: AppLocalizations.of(context)!.wellnessTips,
+              subtitle: AppLocalizations.of(context)!.quickAdvice,
               onSeeAll: () {
                 context.pushNamed(
                   RouteNames.categoryDetail,
@@ -1159,7 +1142,9 @@ class _TipsSection extends StatelessWidget {
                             extra: {
                               'tips': tips,
                               'initialIndex': index,
-                              'title': 'Wellness Tips',
+                              'title': AppLocalizations.of(
+                                context,
+                              )!.wellnessTips,
                             },
                           );
                         },
@@ -1204,8 +1189,8 @@ class _QuotesListSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SectionHeaderWidget(
-              title: 'More Quotes',
-              subtitle: 'Discover words to lift your spirit',
+              title: AppLocalizations.of(context)!.moreQuotes,
+              subtitle: AppLocalizations.of(context)!.discoverWords,
               onSeeAll: () {
                 context.pushNamed(
                   RouteNames.categoryDetail,
@@ -1238,7 +1223,9 @@ class _QuotesListSection extends StatelessWidget {
                         extra: {
                           'quotes': quotes,
                           'initialIndex': index,
-                          'title': 'Daily Quotes',
+                          'title': AppLocalizations.of(
+                            context,
+                          )!.dailyInspiration,
                         },
                       );
                     },
@@ -1353,7 +1340,7 @@ class _TipDetailSheet extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        'Wellness Expert',
+                        AppLocalizations.of(context)!.wellnessExpert,
                         style: TextStyle(
                           fontFamily: 'Poppins',
                           fontSize: 12.sp,
@@ -1416,8 +1403,8 @@ class _CategoriesSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SectionHeaderWidget(
-              title: 'Explore Categories',
-              subtitle: 'Find quotes that resonate with you',
+              title: AppLocalizations.of(context)!.exploreCategories,
+              subtitle: AppLocalizations.of(context)!.findQuotes,
               onSeeAll: onViewAll,
             ),
             SizedBox(height: 16.h),
@@ -1476,7 +1463,7 @@ class _SeeAllButton extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'See All',
+                AppLocalizations.of(context)!.seeAll,
                 style: TextStyle(
                   fontFamily: 'Poppins',
                   fontSize: 13.sp,
@@ -1527,7 +1514,7 @@ class _ErrorBody extends StatelessWidget {
             ),
             SizedBox(height: 20.h),
             Text(
-              'Something went wrong',
+              AppLocalizations.of(context)!.somethingWentWrong,
               style: TextStyle(
                 fontFamily: 'Poppins',
                 fontSize: 18.sp,
@@ -1550,7 +1537,7 @@ class _ErrorBody extends StatelessWidget {
               onPressed: () =>
                   context.read<DashboardBloc>().add(const RefreshDashboard()),
               icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Try Again'),
+              label: Text(AppLocalizations.of(context)!.tryAgain),
               style: FilledButton.styleFrom(
                 backgroundColor: context.primaryColor,
                 foregroundColor: Colors.white,
@@ -1751,8 +1738,8 @@ class _TherapySectionState extends State<_TherapySection> {
               children: [
                 Text(
                   hasBooking
-                      ? 'Your Therapy Sessions'
-                      : 'Talk to a Professional',
+                      ? AppLocalizations.of(context)!.yourTherapySessions
+                      : AppLocalizations.of(context)!.talkToProfessional,
                   style: TextStyle(
                     fontFamily: 'Poppins',
                     fontWeight: FontWeight.bold,
@@ -1763,8 +1750,8 @@ class _TherapySectionState extends State<_TherapySection> {
                 SizedBox(height: 8.h),
                 Text(
                   hasBooking
-                      ? 'View your upcoming and past sessions with your therapist.'
-                      : 'Find the right therapist for your mental wellness journey.',
+                      ? AppLocalizations.of(context)!.viewUpcomingSessions
+                      : AppLocalizations.of(context)!.findRightTherapist,
                   style: TextStyle(
                     fontFamily: 'Poppins',
                     fontSize: 13.sp,
@@ -1805,7 +1792,11 @@ class _TherapySectionState extends State<_TherapySection> {
                             fontSize: 13.sp,
                           ),
                         ),
-                        child: Text(hasBooking ? 'My Sessions' : 'Get Matched'),
+                        child: Text(
+                          hasBooking
+                              ? AppLocalizations.of(context)!.mySessions
+                              : AppLocalizations.of(context)!.getMatched,
+                        ),
                       ),
                       if (hasBooking) ...[
                         SizedBox(width: 10.w),
@@ -1831,7 +1822,7 @@ class _TherapySectionState extends State<_TherapySection> {
                               fontSize: 13.sp,
                             ),
                           ),
-                          child: const Text('Find New'),
+                          child: Text(AppLocalizations.of(context)!.findNew),
                         ),
                       ],
                     ],

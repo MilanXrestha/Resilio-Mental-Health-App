@@ -6,7 +6,6 @@ import '../../../../../../core/errors/failures.dart';
 import '../../../../../../core/proto_generated/video.pb.dart';
 import '../../../domain/entities/video_entity.dart';
 import '../../../domain/entities/video_comment_entity.dart';
-import '../../../domain/repositories/video_repository.dart';
 
 abstract class VideoRemoteDataSource {
   Future<List<VideoEntity>> getShortVideos({

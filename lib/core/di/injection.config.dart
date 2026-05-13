@@ -9,6 +9,7 @@
 // coverage:ignore-file
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'package:connectivity_plus/connectivity_plus.dart' as _i895;
 import 'package:dio/dio.dart' as _i361;
 import 'package:firebase_auth/firebase_auth.dart' as _i59;
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart' as _i806;
@@ -25,6 +26,8 @@ import 'package:Resilio/core/network/network_module.dart' as _i266;
 import 'package:Resilio/core/routing/navigation_service.dart' as _i39;
 import 'package:Resilio/core/services/auth_token_service.dart' as _i80;
 import 'package:Resilio/core/services/cloudinary_service.dart' as _i399;
+import 'package:Resilio/core/services/connectivity_monitor.dart' as _i360;
+import 'package:Resilio/core/services/offline_sync_manager.dart' as _i758;
 import 'package:Resilio/core/theme/cubit/theme_cubit.dart' as _i4;
 import 'package:Resilio/features/admin/dashboard/data/repositories/admin_repository_impl.dart'
     as _i624;
@@ -40,6 +43,8 @@ import 'package:Resilio/features/admin/dashboard/presentation/bloc/admin_prefere
     as _i5;
 import 'package:Resilio/features/admin/dashboard/presentation/bloc/admin_revenue_cubit.dart'
     as _i926;
+import 'package:Resilio/features/customer/audio/data/datasources/audio_local_datasource.dart'
+    as _i80;
 import 'package:Resilio/features/customer/audio/data/datasources/audio_remote_datasource.dart'
     as _i343;
 import 'package:Resilio/features/customer/audio/data/repositories/audio_repository_impl.dart'
@@ -80,6 +85,8 @@ import 'package:Resilio/features/customer/auth/domain/usecases/verify_otp_usecas
     as _i613;
 import 'package:Resilio/features/customer/auth/presentation/bloc/auth_bloc.dart'
     as _i829;
+import 'package:Resilio/features/customer/categories/data/datasources/local/category_local_data_source.dart'
+    as _i742;
 import 'package:Resilio/features/customer/categories/data/datasources/remote/category_remote_data_source.dart'
     as _i748;
 import 'package:Resilio/features/customer/categories/data/repositories/category_repository_impl.dart'
@@ -90,6 +97,10 @@ import 'package:Resilio/features/customer/categories/domain/usecases/get_categor
     as _i1053;
 import 'package:Resilio/features/customer/categories/presentation/bloc/category_bloc.dart'
     as _i542;
+import 'package:Resilio/features/customer/dashboard/data/datasources/local/dashboard_local_data_source.dart'
+    as _i198;
+import 'package:Resilio/features/customer/dashboard/data/datasources/local/quote_local_data_source.dart'
+    as _i237;
 import 'package:Resilio/features/customer/dashboard/data/datasources/remote/dashboard_remote_data_source.dart'
     as _i774;
 import 'package:Resilio/features/customer/dashboard/data/datasources/remote/quote_remote_data_source.dart'
@@ -128,6 +139,8 @@ import 'package:Resilio/features/customer/favorites/domain/repositories/favorite
     as _i618;
 import 'package:Resilio/features/customer/favorites/presentation/bloc/favorite_bloc.dart'
     as _i99;
+import 'package:Resilio/features/customer/games/affirmation_builder/data/datasources/local/affirmation_local_data_source.dart'
+    as _i671;
 import 'package:Resilio/features/customer/games/game_hub/data/datasources/games_remote_data_source.dart'
     as _i118;
 import 'package:Resilio/features/customer/games/game_hub/data/repositories/games_repository_impl.dart'
@@ -136,6 +149,8 @@ import 'package:Resilio/features/customer/games/game_hub/domain/repositories/gam
     as _i185;
 import 'package:Resilio/features/customer/games/game_hub/presentation/bloc/games_hub_cubit.dart'
     as _i514;
+import 'package:Resilio/features/customer/images/data/datasources/local/image_local_data_source.dart'
+    as _i864;
 import 'package:Resilio/features/customer/images/data/datasources/remote/image_remote_data_source.dart'
     as _i739;
 import 'package:Resilio/features/customer/images/data/repositories/image_repository_impl.dart'
@@ -204,6 +219,8 @@ import 'package:Resilio/features/customer/subscription/presentation/bloc/premium
     as _i348;
 import 'package:Resilio/features/customer/subscription/presentation/bloc/subscription_bloc.dart'
     as _i738;
+import 'package:Resilio/features/customer/tips/data/datasources/local/tips_local_data_source.dart'
+    as _i812;
 import 'package:Resilio/features/customer/tips/data/datasources/remote/tip_remote_data_source.dart'
     as _i482;
 import 'package:Resilio/features/customer/tips/data/repositories/tip_repository_impl.dart'
@@ -212,6 +229,8 @@ import 'package:Resilio/features/customer/tips/domain/repositories/tip_repositor
     as _i871;
 import 'package:Resilio/features/customer/tips/presentation/bloc/tip_bloc.dart'
     as _i1035;
+import 'package:Resilio/features/customer/video/data/datasources/local/video_local_data_source.dart'
+    as _i308;
 import 'package:Resilio/features/customer/video/data/datasources/remote/video_remote_data_source.dart'
     as _i1067;
 import 'package:Resilio/features/customer/video/data/repositories/video_repository_impl.dart'
@@ -287,6 +306,7 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i59.FirebaseAuth>(() => registerModule.firebaseAuth);
     gh.lazySingleton<_i116.GoogleSignIn>(() => registerModule.googleSignIn);
     gh.lazySingleton<_i806.FacebookAuth>(() => registerModule.facebookAuth);
+    gh.lazySingleton<_i895.Connectivity>(() => registerModule.connectivity);
     gh.lazySingleton<_i973.InternetConnectionChecker>(
       () => externalModule.connectionChecker,
     );
@@ -299,6 +319,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i361.Dio>(
       () => networkModule.dio(gh<_i80.AuthTokenService>()),
     );
+    gh.lazySingleton<_i742.CategoryLocalDataSource>(
+      () => _i742.CategoryLocalDataSourceImpl(gh<_i865.DatabaseHelper>()),
+    );
     gh.lazySingleton<_i159.ProfileRemoteDataSource>(
       () => _i159.ProfileRemoteDataSourceImpl(gh<_i361.Dio>()),
     );
@@ -308,8 +331,14 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i118.GamesRemoteDataSource>(
       () => _i118.GamesRemoteDataSourceImpl(gh<_i361.Dio>()),
     );
+    gh.lazySingleton<_i308.VideoLocalDataSource>(
+      () => _i308.VideoLocalDataSourceImpl(gh<_i865.DatabaseHelper>()),
+    );
     gh.lazySingleton<_i22.AdminRepository>(
       () => _i624.AdminRepositoryImpl(gh<_i361.Dio>()),
+    );
+    gh.lazySingleton<_i671.AffirmationLocalDataSource>(
+      () => _i671.AffirmationLocalDataSourceImpl(gh<_i865.DatabaseHelper>()),
     );
     gh.lazySingleton<_i518.TherapistDashboardRemoteDataSource>(
       () => _i518.TherapistDashboardRemoteDataSourceImpl(gh<_i361.Dio>()),
@@ -327,6 +356,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i316.ProfileRemoteDataSource>(
       () => _i316.ProfileRemoteDataSourceImpl(gh<_i361.Dio>()),
+    );
+    gh.lazySingleton<_i812.TipsLocalDataSource>(
+      () => _i812.TipsLocalDataSourceImpl(gh<_i865.DatabaseHelper>()),
     );
     gh.lazySingleton<_i748.CategoryRemoteDataSource>(
       () => _i748.CategoryRemoteDataSourceImpl(gh<_i361.Dio>()),
@@ -363,9 +395,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i196.TherapistCubit>(
       () => _i196.TherapistCubit(gh<_i120.TherapistRepository>()),
     );
-    gh.lazySingleton<_i871.TipRepository>(
-      () => _i543.TipRepositoryImpl(gh<_i482.TipRemoteDataSource>()),
-    );
     gh.lazySingleton<_i882.AuthLocalDataSource>(
       () => _i882.AuthLocalDataSourceImpl(gh<_i865.DatabaseHelper>()),
     );
@@ -375,11 +404,21 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i759.NetworkInfo>(
       () => _i759.NetworkInfoImpl(gh<_i973.InternetConnectionChecker>()),
     );
+    gh.lazySingleton<_i80.AudioLocalDataSource>(
+      () => _i80.AudioLocalDataSourceImpl(gh<_i865.DatabaseHelper>()),
+    );
     gh.lazySingleton<_i223.ExploreLocalDataSource>(
       () => _i223.ExploreLocalDataSourceImpl(gh<_i460.SharedPreferences>()),
     );
     gh.lazySingleton<_i4.ThemeCubit>(
       () => _i4.ThemeCubit(gh<_i460.SharedPreferences>()),
+    );
+    gh.lazySingleton<_i871.TipRepository>(
+      () => _i543.TipRepositoryImpl(
+        gh<_i482.TipRemoteDataSource>(),
+        gh<_i812.TipsLocalDataSource>(),
+        gh<_i759.NetworkInfo>(),
+      ),
     );
     gh.lazySingleton<_i519.FirebaseAuthDataSource>(
       () => _i519.FirebaseAuthDataSource(
@@ -390,6 +429,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i189.PreferenceLocalDataSource>(
       () => _i189.PreferenceLocalDataSourceImpl(gh<_i865.DatabaseHelper>()),
+    );
+    gh.lazySingleton<_i198.DashboardLocalDataSource>(
+      () => _i198.DashboardLocalDataSourceImpl(gh<_i865.DatabaseHelper>()),
     );
     gh.lazySingleton<_i185.GamesRepository>(
       () => _i427.GamesRepositoryImpl(
@@ -404,14 +446,24 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i618.FavoriteRepository>(
       () => _i1055.FavoriteRepositoryImpl(gh<_i267.FavoriteRemoteDataSource>()),
     );
-    gh.lazySingleton<_i429.CategoryRepository>(
-      () => _i626.CategoryRepositoryImpl(gh<_i748.CategoryRemoteDataSource>()),
-    );
     gh.lazySingleton<_i696.TherapistProfileRepository>(
       () => _i176.ProfileRepositoryImpl(gh<_i316.ProfileRemoteDataSource>()),
     );
+    gh.lazySingleton<_i237.QuoteLocalDataSource>(
+      () => _i237.QuoteLocalDataSourceImpl(gh<_i865.DatabaseHelper>()),
+    );
+    gh.lazySingleton<_i429.CategoryRepository>(
+      () => _i626.CategoryRepositoryImpl(
+        gh<_i748.CategoryRemoteDataSource>(),
+        gh<_i742.CategoryLocalDataSource>(),
+        gh<_i759.NetworkInfo>(),
+      ),
+    );
     gh.lazySingleton<_i1053.GetCategoriesUseCase>(
       () => _i1053.GetCategoriesUseCase(gh<_i429.CategoryRepository>()),
+    );
+    gh.lazySingleton<_i864.ImageLocalDataSource>(
+      () => _i864.ImageLocalDataSourceImpl(gh<_i865.DatabaseHelper>()),
     );
     gh.lazySingleton<_i103.OnboardingLocalDataSource>(
       () => _i103.OnboardingLocalDataSourceImpl(gh<_i460.SharedPreferences>()),
@@ -455,9 +507,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i637.PatientsRepository>(
       () => _i122.PatientsRepositoryImpl(gh<_i1031.PatientsRemoteDataSource>()),
     );
-    gh.lazySingleton<_i610.QuoteRepository>(
-      () => _i1025.QuoteRepositoryImpl(gh<_i927.QuoteRemoteDataSource>()),
-    );
     gh.lazySingleton<_i324.EarningsRemoteDataSource>(
       () => _i324.EarningsRemoteDataSourceImpl(gh<_i361.Dio>()),
     );
@@ -491,8 +540,12 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i99.FavoriteBloc>(
       () => _i99.FavoriteBloc(gh<_i618.FavoriteRepository>()),
     );
-    gh.lazySingleton<_i81.VideoRepository>(
-      () => _i503.VideoRepositoryImpl(gh<_i1067.VideoRemoteDataSource>()),
+    gh.lazySingleton<_i164.AudioRepository>(
+      () => _i591.AudioRepositoryImpl(
+        gh<_i343.AudioRemoteDataSource>(),
+        gh<_i80.AudioLocalDataSource>(),
+        gh<_i759.NetworkInfo>(),
+      ),
     );
     gh.factory<_i420.CheckPreferencesCompletionUseCase>(
       () => _i420.CheckPreferencesCompletionUseCase(
@@ -508,31 +561,30 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i599.SaveUserPreferencesUseCase>(
       () => _i599.SaveUserPreferencesUseCase(gh<_i337.PreferenceRepository>()),
     );
-    gh.lazySingleton<_i164.AudioRepository>(
-      () => _i591.AudioRepositoryImpl(gh<_i343.AudioRemoteDataSource>()),
-    );
-    gh.factory<_i599.LongVideoBloc>(
-      () => _i599.LongVideoBloc(gh<_i81.VideoRepository>()),
-    );
-    gh.factory<_i329.ShortVideoBloc>(
-      () => _i329.ShortVideoBloc(gh<_i81.VideoRepository>()),
+    gh.lazySingleton<_i674.ImageRepository>(
+      () => _i76.ImageRepositoryImpl(
+        gh<_i739.ImageRemoteDataSource>(),
+        gh<_i864.ImageLocalDataSource>(),
+        gh<_i759.NetworkInfo>(),
+      ),
     );
     gh.lazySingleton<_i687.OnboardingRepository>(
       () =>
           _i318.OnboardingRepositoryImpl(gh<_i103.OnboardingLocalDataSource>()),
     );
-    gh.lazySingleton<_i970.GetFeaturedQuotes>(
-      () => _i970.GetFeaturedQuotes(gh<_i610.QuoteRepository>()),
-    );
-    gh.lazySingleton<_i970.GetQuoteById>(
-      () => _i970.GetQuoteById(gh<_i610.QuoteRepository>()),
-    );
-    gh.lazySingleton<_i970.ListQuotes>(
-      () => _i970.ListQuotes(gh<_i610.QuoteRepository>()),
+    gh.lazySingleton<_i81.VideoRepository>(
+      () => _i503.VideoRepositoryImpl(
+        gh<_i1067.VideoRemoteDataSource>(),
+        gh<_i308.VideoLocalDataSource>(),
+        gh<_i759.NetworkInfo>(),
+      ),
     );
     gh.lazySingleton<_i637.DashboardRepository>(
-      () =>
-          _i920.DashboardRepositoryImpl(gh<_i774.DashboardRemoteDataSource>()),
+      () => _i920.DashboardRepositoryImpl(
+        gh<_i774.DashboardRemoteDataSource>(),
+        gh<_i198.DashboardLocalDataSource>(),
+        gh<_i759.NetworkInfo>(),
+      ),
     );
     gh.factory<_i542.CategoryBloc>(
       () => _i542.CategoryBloc(gh<_i1053.GetCategoriesUseCase>()),
@@ -542,6 +594,23 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i1064.ContentRepository>(
       () => _i309.ContentRepositoryImpl(gh<_i48.ContentRemoteDataSource>()),
+    );
+    gh.lazySingleton<_i610.QuoteRepository>(
+      () => _i1025.QuoteRepositoryImpl(
+        gh<_i927.QuoteRemoteDataSource>(),
+        gh<_i237.QuoteLocalDataSource>(),
+        gh<_i759.NetworkInfo>(),
+      ),
+    );
+    gh.lazySingleton<_i184.AuthRepository>(
+      () => _i474.AuthRepositoryImpl(
+        gh<_i519.FirebaseAuthDataSource>(),
+        gh<_i852.BackendAuthDataSource>(),
+        gh<_i337.PreferenceRepository>(),
+        gh<_i667.SuperTokensDataSource>(),
+        gh<_i80.AuthTokenService>(),
+        gh<_i759.NetworkInfo>(),
+      ),
     );
     gh.lazySingleton<_i694.ExploreRepository>(
       () => _i923.ExploreRepositoryImpl(
@@ -565,18 +634,6 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i407.SubscriptionRepositoryImpl(
         gh<_i122.SubscriptionRemoteDataSource>(),
         gh<_i759.NetworkInfo>(),
-      ),
-    );
-    gh.lazySingleton<_i674.ImageRepository>(
-      () => _i76.ImageRepositoryImpl(gh<_i739.ImageRemoteDataSource>()),
-    );
-    gh.lazySingleton<_i184.AuthRepository>(
-      () => _i474.AuthRepositoryImpl(
-        gh<_i519.FirebaseAuthDataSource>(),
-        gh<_i852.BackendAuthDataSource>(),
-        gh<_i337.PreferenceRepository>(),
-        gh<_i667.SuperTokensDataSource>(),
-        gh<_i80.AuthTokenService>(),
       ),
     );
     gh.lazySingleton<_i171.AudioBloc>(
@@ -609,6 +666,14 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i420.CheckPreferencesCompletionUseCase>(),
       ),
     );
+    gh.lazySingleton<_i758.OfflineSyncManager>(
+      () => _i758.OfflineSyncManager(
+        gh<_i759.NetworkInfo>(),
+        gh<_i429.CategoryRepository>(),
+        gh<_i81.VideoRepository>(),
+        gh<_i871.TipRepository>(),
+      ),
+    );
     gh.factory<_i738.SubscriptionBloc>(
       () => _i738.SubscriptionBloc(gh<_i841.SubscriptionRepository>()),
     );
@@ -634,11 +699,29 @@ extension GetItInjectableX on _i174.GetIt {
       () =>
           _i426.GetDashboardUserProfileUseCase(gh<_i637.DashboardRepository>()),
     );
+    gh.factory<_i599.LongVideoBloc>(
+      () => _i599.LongVideoBloc(gh<_i81.VideoRepository>()),
+    );
+    gh.factory<_i329.ShortVideoBloc>(
+      () => _i329.ShortVideoBloc(gh<_i81.VideoRepository>()),
+    );
     gh.factory<_i348.PremiumCubit>(
       () => _i348.PremiumCubit(gh<_i738.SubscriptionBloc>()),
     );
-    gh.factory<_i505.QuoteBloc>(
-      () => _i505.QuoteBloc(gh<_i970.GetFeaturedQuotes>()),
+    gh.lazySingleton<_i970.GetFeaturedQuotes>(
+      () => _i970.GetFeaturedQuotes(gh<_i610.QuoteRepository>()),
+    );
+    gh.lazySingleton<_i970.GetQuoteById>(
+      () => _i970.GetQuoteById(gh<_i610.QuoteRepository>()),
+    );
+    gh.lazySingleton<_i970.ListQuotes>(
+      () => _i970.ListQuotes(gh<_i610.QuoteRepository>()),
+    );
+    gh.lazySingleton<_i360.ConnectivityMonitor>(
+      () => _i360.ConnectivityMonitor(
+        gh<_i895.Connectivity>(),
+        gh<_i758.OfflineSyncManager>(),
+      ),
     );
     gh.lazySingleton<_i64.FacebookSignInUseCase>(
       () => _i64.FacebookSignInUseCase(gh<_i184.AuthRepository>()),
@@ -673,6 +756,9 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i772.ManageRecentSearches>(),
         gh<_i694.ExploreRepository>(),
       ),
+    );
+    gh.factory<_i505.QuoteBloc>(
+      () => _i505.QuoteBloc(gh<_i970.GetFeaturedQuotes>()),
     );
     return this;
   }

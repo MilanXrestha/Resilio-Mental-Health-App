@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -129,25 +130,23 @@ class ImagesSection extends StatelessWidget {
           fit: StackFit.expand,
           children: [
             // Image
-            Image.network(
-              image.thumbnailUrl.isNotEmpty ? image.thumbnailUrl : image.imageUrl,
+            CachedNetworkImage(
+              imageUrl: image.thumbnailUrl.isNotEmpty
+                  ? image.thumbnailUrl
+                  : image.imageUrl,
               fit: BoxFit.cover,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
+              progressIndicatorBuilder: (context, url, progress) {
                 return Container(
                   color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
                   child: Center(
                     child: CircularProgressIndicator(
-                      value: loadingProgress.expectedTotalBytes != null
-                          ? loadingProgress.cumulativeBytesLoaded /
-                              loadingProgress.expectedTotalBytes!
-                          : null,
+                      value: progress.progress,
                       strokeWidth: 2,
                     ),
                   ),
                 );
               },
-              errorBuilder: (_, __, ___) => Container(
+              errorWidget: (_, __, ___) => Container(
                 color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
                 child: Icon(
                   Icons.image_not_supported_outlined,
@@ -194,9 +193,15 @@ class ImagesSection extends StatelessWidget {
                   ),
                   SizedBox(height: 6.h),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 8.w,
+                      vertical: 3.h,
+                    ),
                     decoration: BoxDecoration(
-                      color: _getTypeColor(context, image.imageType).withOpacity(0.9),
+                      color: _getTypeColor(
+                        context,
+                        image.imageType,
+                      ).withOpacity(0.9),
                       borderRadius: BorderRadius.circular(6.r),
                     ),
                     child: Text(
@@ -214,11 +219,7 @@ class ImagesSection extends StatelessWidget {
             ),
 
             // Premium Tag
-            PremiumTagWidget(
-              isPremium: image.isPremium,
-              top: 8,
-              left: 8,
-            ),
+            PremiumTagWidget(isPremium: image.isPremium, top: 8, left: 8),
 
             // Subtle border highlight
             Positioned.fill(
@@ -227,7 +228,9 @@ class ImagesSection extends StatelessWidget {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16.r),
                     border: Border.all(
-                      color: isDarkMode ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
+                      color: isDarkMode
+                          ? Colors.white.withValues(alpha: 0.1)
+                          : Colors.black.withValues(alpha: 0.05),
                       width: 1.w,
                     ),
                   ),
@@ -346,25 +349,25 @@ class _ImageDetailSheet extends StatelessWidget {
                   borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
-              
+
               // Full image
               ClipRRect(
                 borderRadius: BorderRadius.circular(16.r),
-                child: Image.network(
-                  image.imageUrl,
+                child: CachedNetworkImage(
+                  imageUrl: image.imageUrl,
                   fit: BoxFit.cover,
                   width: double.infinity,
                   height: 400.h,
-                  errorBuilder: (_, __, ___) => Container(
+                  errorWidget: (_, __, ___) => Container(
                     height: 400.h,
                     color: Colors.grey.shade200,
                     child: const Icon(Icons.broken_image_rounded),
                   ),
                 ),
               ),
-              
+
               SizedBox(height: 24.h),
-              
+
               // Title
               Text(
                 image.title,
@@ -372,17 +375,22 @@ class _ImageDetailSheet extends StatelessWidget {
                   fontFamily: 'PlayfairDisplay',
                   fontSize: 24.sp,
                   fontWeight: FontWeight.bold,
-                  color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black,
+                  color:
+                      Theme.of(context).textTheme.bodyLarge?.color ??
+                      Colors.black,
                 ),
               ),
-              
+
               SizedBox(height: 12.h),
-              
+
               // Type badge
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                 decoration: BoxDecoration(
-                  color: _getTypeColor(context, image.imageType).withOpacity(0.2),
+                  color: _getTypeColor(
+                    context,
+                    image.imageType,
+                  ).withOpacity(0.2),
                   borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Text(
@@ -395,7 +403,7 @@ class _ImageDetailSheet extends StatelessWidget {
                   ),
                 ),
               ),
-              
+
               if (image.description.isNotEmpty) ...[
                 SizedBox(height: 16.h),
                 Text(
@@ -403,21 +411,25 @@ class _ImageDetailSheet extends StatelessWidget {
                   style: TextStyle(
                     fontFamily: 'Poppins',
                     fontSize: 14.sp,
-                    color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
+                    color:
+                        Theme.of(context).textTheme.bodyMedium?.color ??
+                        Colors.grey,
                     height: 1.6,
                   ),
                 ),
               ],
-              
+
               SizedBox(height: 24.h),
-              
+
               // Action button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Wallpaper feature coming soon!')),
+                      const SnackBar(
+                        content: Text('Wallpaper feature coming soon!'),
+                      ),
                     );
                   },
                   icon: const Icon(Icons.download_outlined),
@@ -432,7 +444,7 @@ class _ImageDetailSheet extends StatelessWidget {
                   ),
                 ),
               ),
-              
+
               SizedBox(height: 24.h),
             ],
           ),

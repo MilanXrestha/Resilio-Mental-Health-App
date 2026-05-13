@@ -116,23 +116,24 @@ class PreferenceRepositoryImpl implements PreferenceRepository {
   @override
   Future<Either<Failure, bool>> hasCompletedPreferences() async {
     try {
+      // 1. Check local cache first to avoid shimmer/delay on app start
+      final cachedStatus = await _localDataSource.getCachedCompletionStatus();
+      if (cachedStatus == true) {
+        return const Right(true);
+      }
+
       final idToken = _getIdToken();
       if (idToken == null || idToken.isEmpty) {
-        // Fall back to cached status for ST users on first load
-        final cachedStatus = await _localDataSource.getCachedCompletionStatus();
         return Right(cachedStatus ?? false);
       }
 
+      // 2. If not cached as true, check remote
       if (await _networkInfo.isConnected) {
         final completed = await _remoteDataSource.hasCompletedPreferences(idToken: idToken);
         await _localDataSource.cacheCompletionStatus(completed);
         return Right(completed);
       } else {
-        final cachedStatus = await _localDataSource.getCachedCompletionStatus();
-        if (cachedStatus != null) {
-          return Right(cachedStatus);
-        }
-        return const Left(ServerFailure('No internet connection and no cached status available.'));
+        return Right(cachedStatus ?? false);
       }
     } on ServerFailure catch (e) {
       final cachedStatus = await _localDataSource.getCachedCompletionStatus();

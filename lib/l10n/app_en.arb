@@ -29,9 +29,15 @@
   "enterOtpTitle": "Enter Verification Code",
   "otpSentTo": "We sent a 6-digit code to",
   "verifyOtp": "Verify & Sign In",
+  "enter6DigitCode": "Enter 6-digit code",
   "didNotReceiveOtp": "Didn't receive the code?",
   "resendOtp": "Resend",
   "resendOtpIn": "Resend in {seconds}s",
+  "@resendOtpIn": {
+    "placeholders": {
+      "seconds": { "type": "Object" }
+    }
+  },
   "otpResent": "A new code has been sent to your email.",
   "newCodeSent": "New code sent! Check your inbox.",
   "securedBy": "Secured by SuperTokens",
@@ -59,9 +65,416 @@
   "languageNepali": "नेपाली",
   "signInToContinue": "Sign in to continue your wellness journey",
   "alertDialogTitle": "Confirm",
-  "cancel": "Cancel",
   "confirm": "Confirm",
   "exitAppTitle": "Exit App",
   "exitAppMessage": "Do you really want to exit the app?",
-  "exitButton": "Exit"
+  "exitButton": "Exit",
+
+  "hello": "Hello, {name}",
+  "@hello": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "timeToUnwind": "Time to unwind",
+  "setReminder": "Set Reminder",
+  "neverMissQuotes": "Never miss your favorite quotes",
+  "dailyInspiration": "Daily Inspiration",
+  "swipeFeaturedQuotes": "Swipe through today's featured quotes",
+  "calmingAudio": "Calming Audio",
+  "meditationSessions": "Meditation & wellness sessions",
+  "shortVideos": "Short Videos",
+  "quickMindfulness": "Quick mindfulness moments",
+  "featuredVideos": "Featured Videos",
+  "inDepthContent": "In-depth wellness content",
+  "wellnessTips": "Wellness Tips",
+  "quickAdvice": "Quick advice for daily wellness",
+  "moreQuotes": "More Quotes",
+  "discoverWords": "Discover words to lift your spirit",
+  "exploreCategories": "Explore Categories",
+  "findQuotes": "Find quotes that resonate with you",
+  "seeAll": "See All",
+  "somethingWentWrong": "Something went wrong",
+  "tryAgain": "Try Again",
+  "wellnessExpert": "Wellness Expert",
+  "yourTherapySessions": "Your Therapy Sessions",
+  "talkToProfessional": "Talk to a Professional",
+  "viewUpcomingSessions": "View your upcoming and past sessions with your therapist.",
+  "findRightTherapist": "Find the right therapist for your mental wellness journey.",
+  "mySessions": "My Sessions",
+  "getMatched": "Get Matched",
+  "findNew": "Find New",
+
+  "editProfile": "Edit Profile",
+  "changeNameEmailPhoto": "Change your name, email, and photo",
+  "subscription": "Subscription",
+  "managePremiumPlan": "Manage your premium plan",
+  "transactions": "Transactions",
+  "viewBillingHistory": "View your billing history",
+  "logout": "Logout",
+  "logoutConfirm": "Are you sure you want to logout?",
+  "signOutAccount": "Sign out of your account",
+  "free": "Free",
+
+  "profileSection": "Profile",
+  "yourProfile": "Your Profile",
+  "manageAccountPrefs": "Manage account, subscription, and preferences",
+  "appearanceSection": "Appearance",
+  "generalSection": "General",
+  "resetToDefaults": "Reset to Defaults",
+  "restoreThemeLanguage": "Restore theme and language to defaults",
+  "settingsReset": "Settings reset to defaults",
+  "appSettings": "App Settings",
+  "errorLoadingSettings": "Error loading settings",
+  "cacheCleared": "Cache cleared successfully",
+  "clearCacheConfirm": "Are you sure you want to clear cache?",
+  "currentCacheSize": "Current cache size: {size}",
+  "@currentCacheSize": {
+    "placeholders": {
+      "size": { "type": "String" }
+    }
+  },
+  "clear": "Clear",
+  "clearCache": "Clear Cache",
+  "freeUpSpace": "Free up space",
+  "freeUpSpaceSize": "Free up space · {size}",
+  "@freeUpSpaceSize": {
+    "placeholders": {
+      "size": { "type": "String" }
+    }
+  },
+  "aboutResilio": "About Resilio",
+  "aboutResilioDesc": "Your mental wellness companion for a healthier, more balanced life. Resilio brings you guided meditations, expert tips, breathing exercises, and personalised wellness journeys — all in one place.",
+  "madeWithLove": "© 2026 Resilio Team · Made with ❤️ in Nepal",
+  "versionLearnMore": "Version {version} · Learn more",
+  "@versionLearnMore": {
+    "placeholders": {
+      "version": { "type": "String" }
+    }
+  },
+  "@versionLearnMore": {
+    "placeholders": {
+      "version": { "type": "String" }
+    }
+  },
+
+  "myAppointments": "My Appointments",
+  "upcoming": "Upcoming",
+  "past": "Past",
+  "dateNotSet": "Date not set",
+  "tapToMessage": "Tap to message your therapist",
+  "joinSession": "Join Session",
+  "sessionIn15Min": "Session in 15 minutes",
+  "sessionStartingSoon": "Your session with {name} starts soon.",
+  "@sessionStartingSoon": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "noUpcomingAppointments": "No upcoming appointments",
+  "noPastAppointments": "No past appointments",
+  "myTherapy": "My Therapy",
+  "errorLoadingAppointments": "Could not load appointments",
+  "noUpcomingSessions": "No upcoming sessions",
+  "noUpcomingSessionsDesc": "Book a session with a therapist to get started.",
+  "noPastSessions": "No past sessions",
+  "noPastSessionsDesc": "Your completed sessions will appear here.",
+  "findTherapist": "Find a Therapist",
+  "statusConfirmed": "Confirmed",
+  "statusPending": "Pending",
+  "statusCancelled": "Cancelled",
+  "statusCompleted": "Completed",
+  "statusRejected": "Rejected",
+  "statusScheduled": "Scheduled",
+  "statusAccepted": "Accepted",
+  "statusUnknown": "Unknown",
+
+  "bookSession": "Book Session",
+  "selectDate": "Select Date",
+  "selectTime": "Select Time",
+  "allTimesLocal": "All times are in your local timezone",
+  "statusBooked": "Booked",
+  "sessionBooked": "Session Booked!",
+  "sessionBookedDesc": "You'll get a notification when it's time for your session.",
+  "selectTimeSlot": "Select a time slot",
+  "payWithEsewa": "Pay NPR {amount} with eSewa",
+  "@payWithEsewa": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "sessionDuration": "50 min",
+  "videoCall": "Video call",
+  "paymentFailed": "Payment failed. No charge was made. Please try again.",
+  "paymentSuccessBookingFailed": "Payment went through (ref: {ref}) but booking failed. Please contact support.",
+  "@paymentSuccessBookingFailed": {
+    "placeholders": {
+      "ref": { "type": "String" }
+    }
+  },
+  "sessionDuration": "50 min",
+  "videoCall": "Video call",
+  "done": "Done",
+  "selectDate": "Select Date",
+  "selectTime": "Select Time",
+  "confirmBooking": "Confirm Booking",
+  "payWithEsewa": "Pay with eSewa",
+  "sessionFee": "NPR {fee}",
+  "@sessionFee": {
+    "placeholders": {
+      "fee": { "type": "String" }
+    }
+  },
+  "bookingSuccess": "Session booked successfully!",
+  "bookingFailed": "Booking failed. Please try again.",
+  "slotAlreadyBooked": "This slot is already booked.",
+  "noSlotsAvailable": "No slots available",
+
+  "explore": "Explore",
+  "searchHint": "Search for content…",
+  "all": "All",
+  "contentType": "Content Type",
+  "showOnly": "Show Only",
+  "featuredContent": "Featured Content",
+  "premiumContent": "Premium Content",
+  "sortBy": "Sort By",
+  "filters": "Filters",
+  "applyFilters": "Apply Filters",
+  "clearFilters": "Clear Filters",
+  "noResultsFound": "No results found",
+
+  "gamesHub": "Games & Wellness",
+  "dailyQuest": "DAILY QUEST",
+  "bonusXp": "+50 bonus XP",
+  "go": "Go",
+  "levelNewcomer": "Newcomer",
+  "levelExplorer": "Explorer",
+  "levelPractitioner": "Practitioner",
+  "levelAchiever": "Achiever",
+  "levelMaster": "Master",
+  "xpToNextRank": "{xp} XP to next rank",
+  "@xpToNextRank": {
+    "placeholders": {
+      "xp": { "type": "Object" }
+    }
+  },
+  "maxRankAchieved": "Maximum rank achieved 🎉",
+  "achievements": "Achievements",
+  "leaderboard": "Leaderboard",
+  "breathingGame": "Breathing",
+  "storyGame": "Story",
+  "triviaGame": "Trivia",
+  "affirmationGame": "Affirmation",
+  "moodTracker": "Mood",
+
+  "goPremium": "Go Premium",
+  "transactionHistory": "Transaction History",
+  "choosePlan": "Choose Your Plan",
+  "yourSubscription": "Your Subscription",
+  "currentPlan": "Current Plan",
+  "cancelSubscription": "Cancel Subscription",
+  "cancelSubscriptionConfirm": "Are you sure you want to cancel your subscription?",
+  "no": "No",
+  "yes": "Yes",
+  "subscriptionSuccess": "Subscription successful!",
+  "endsOn": "Ends on {date}",
+  "@endsOn": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "savingsUpgrade": "Save {percent}% by upgrading!",
+  "@savingsUpgrade": {
+    "placeholders": {
+      "percent": { "type": "Object" }
+    }
+  },
+  "subscribe": "Subscribe",
+  "upgrade": "Upgrade",
+  "currentPlanLabel": "Current Plan",
+  "noTransactions": "No transactions yet",
+  "retry": "Retry",
+
+  "notifications": "Notifications",
+  "noNotifications": "No notifications yet",
+  "justNow": "Just now",
+  "minutesAgo": "{min}m ago",
+  "@minutesAgo": {
+    "placeholders": {
+      "min": { "type": "Object" }
+    }
+  },
+  "hoursAgo": "{hr}h ago",
+  "@hoursAgo": {
+    "placeholders": {
+      "hr": { "type": "Object" }
+    }
+  },
+  "yesterday": "Yesterday",
+  "daysAgo": "{d}d ago",
+  "@daysAgo": {
+    "placeholders": {
+      "d": { "type": "Object" }
+    }
+  },
+  "markAllRead": "Mark all read",
+
+  "favoriteAudio": "Audio",
+  "favoriteVideos": "Videos",
+  "favoriteQuotes": "Quotes",
+  "favoriteTips": "Tips",
+  "favoriteImages": "Images",
+  "signInToSaveFavorites": "Sign in to save favorites",
+  "noFavorites": "No favorites yet",
+  "addFavorites": "Tap the heart icon to save content here",
+
+  "editProfileTitle": "Edit Profile",
+  "personalInformation": "Personal Information",
+  "moreAboutYou": "More About You",
+  "saveChanges": "Save Changes",
+  "phoneNumber": "Phone Number",
+  "username": "Username",
+  "dateOfBirth": "Date of Birth",
+  "gender": "Gender",
+  "save": "Save Changes",
+  "genderMale": "Male",
+  "genderFemale": "Female",
+  "genderOther": "Other",
+  "genderPreferNotToSay": "Prefer not to say",
+  "selectDateOfBirth": "Select Date of Birth",
+  "tapToSet": "Tap to set",
+  "profileUpdated": "Profile updated successfully!",
+
+  "inspirationalImages": "Inspirational Images",
+  "beautifulWallpapers": "Beautiful wallpapers to inspire you",
+  "share": "Share",
+  "saveImage": "Save",
+  "fullscreen": "Fullscreen",
+  "setAsWallpaper": "Set as Wallpaper",
+  "wallpaperComingSoon": "Wallpaper feature coming soon!",
+  "premiumRequired": "Premium subscription required to {action} this content.",
+  "@premiumRequired": {
+    "placeholders": {
+      "action": { "type": "String" }
+    }
+  },
+  "failedToSaveImage": "Failed to save image",
+  "allImages": "All inspirational images",
+
+  "therapistList": "Find a Therapist",
+  "therapistDetail": "Therapist Profile",
+  "bookNow": "Book Now",
+  "experience": "Experience",
+  "specialties": "Specialties",
+  "about": "About",
+  "reviews": "Reviews",
+  "reviewsCount": "({count} reviews)",
+  "@reviewsCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "perSession": "Per Session",
+  "qualifications": "Qualifications",
+  "sessionInfo": "Session Info",
+  "sessionType": "Session Type",
+  "videoCallWebRTC": "Video Call (WebRTC)",
+  "duration": "Duration",
+  "fee": "Fee",
+  "feeViaEsewa": "NPR {fee} via eSewa",
+  "@feeViaEsewa": {
+    "placeholders": {
+      "fee": { "type": "String" }
+    }
+  },
+  "noTherapistsFound": "No therapists found",
+
+  "categoriesTitle": "Categories",
+  "allCategories": "All Categories",
+
+  "tipsTitle": "Wellness Tips",
+  "allTips": "All wellness tips",
+
+  "audioTitle": "Calming Audio",
+  "allAudio": "All audio content",
+
+  "allVideos": "All video content",
+
+  "matchingTitle": "Find Your Match",
+  "matchingSubtitle": "Answer a few questions to find the right therapist",
+  "next": "Next",
+  "submit": "Find My Therapist",
+  "questionOf": "Question {current} of {total}",
+  "questionProgress": "Question {current} of {total}",
+  "@questionProgress": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "@questionOf": {
+    "placeholders": {
+      "current": { "type": "Object" },
+      "total": { "type": "Object" }
+    }
+  },
+
+  "appointmentChatTitle": "Chat",
+  "sendMessage": "Send a message…",
+  "send": "Send",
+
+  "premiumSubscriptionRequired": "Premium Subscription Required",
+  "unlockPremium": "Upgrade to unlock this content",
+  "loading": "Loading…",
+  "error": "Error",
+  "close": "Close",
+  "back": "Back",
+  "continueText": "Continue",
+  "findMatches": "Find My Matches",
+  "qMoodTitle": "How has your mood been lately?",
+  "qMoodSubtitle": "Over the past 2 weeks",
+  "qMoodOpt1": "Mostly positive — I feel okay",
+  "qMoodOpt2": "Ups and downs, but managing",
+  "qMoodOpt3": "Frequently sad or empty",
+  "qMoodOpt4": "Persistently low — hard to function",
+  "qAnxietyTitle": "How often do you feel anxious or worried?",
+  "qAnxietySubtitle": "Nervousness, panic, or sense of dread",
+  "qAnxietyOpt1": "Rarely or never",
+  "qAnxietyOpt2": "Sometimes, but it passes quickly",
+  "qAnxietyOpt3": "Often — it affects my day",
+  "qAnxietyOpt4": "Almost constantly, hard to control",
+  "qSleepTitle": "How would you describe your sleep?",
+  "qSleepSubtitle": "Sleep quality has a strong impact on mental health",
+  "qSleepOpt1": "Generally good",
+  "qSleepOpt2": "Occasional trouble sleeping",
+  "qSleepOpt3": "Regularly poor — wake often or can't fall asleep",
+  "qSleepOpt4": "Severely disrupted — exhausted most days",
+  "qConcernTitle": "What is your main reason for seeking therapy?",
+  "qConcernSubtitle": "Select all that apply",
+  "qConcernOpt1": "Depression / low mood",
+  "qConcernOpt2": "Anxiety / stress",
+  "qConcernOpt3": "Relationship challenges",
+  "qConcernOpt4": "Grief or loss",
+  "qConcernOpt5": "Trauma or PTSD",
+  "qConcernOpt6": "Self-esteem or identity",
+  "qConcernOpt7": "Life transitions",
+  "qConcernOpt8": "Burnout / work stress",
+  "qTraumaTitle": "Have past difficult experiences affected your wellbeing?",
+  "qTraumaSubtitle": "This helps us match trauma-informed therapists if needed",
+  "qTraumaOpt1": "No — not significantly",
+  "qTraumaOpt2": "Somewhat — I'd like support around it",
+  "qTraumaOpt3": "Yes — it impacts me regularly",
+  "qTraumaOpt4": "Yes — it's a major focus I need help with",
+  "qApproachTitle": "What kind of support feels right for you?",
+  "qApproachSubtitle": "Therapists tailor their style to your preference",
+  "qApproachOpt1": "Practical tools & strategies (CBT-style)",
+  "qApproachOpt2": "Exploring emotions & past patterns",
+  "qApproachOpt3": "Mindfulness & present-moment awareness",
+  "qApproachOpt4": "I'm not sure — open to guidance",
+  "qPrefTitle": "Do you have any therapist preferences?",
+  "qPrefSubtitle": "A comfortable fit improves outcomes",
+  "qPrefOpt1": "No preference",
+  "qPrefOpt2": "Prefer female therapist",
+  "qPrefOpt3": "Prefer male therapist",
+  "qPrefOpt4": "Prefer therapist with similar cultural background"
 }
