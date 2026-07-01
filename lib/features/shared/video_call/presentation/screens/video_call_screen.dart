@@ -6,6 +6,7 @@ import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:go_router/go_router.dart';
 import '../../services/webrtc_signaling_service.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:Resilio/l10n/app_localizations.dart';
 
 class VideoCallScreen extends StatefulWidget {
   final String appointmentId;
@@ -206,7 +207,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
       debugPrint('[Call] enableCamera error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Camera unavailable: $e'),
+          content: Text(AppLocalizations.of(context)!.accCameraUnavailable(e.toString())),
           backgroundColor: _kRed,
         ));
       }
@@ -511,7 +512,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
                           ],
                         )
                       : Text(
-                          'Connecting…',
+                          AppLocalizations.of(context)!.accConnecting,
                           key: const ValueKey('connecting'),
                           style: TextStyle(
                             fontFamily: 'Poppins',
@@ -534,7 +535,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
   /// The "Turn on Camera" button is only shown when camera is off.
   Widget _buildAudioCenter() {
     final name =
-        widget.callerName.isNotEmpty ? widget.callerName : 'Voice Call';
+        widget.callerName.isNotEmpty ? widget.callerName : AppLocalizations.of(context)!.accVoiceCall;
     final initial = name[0].toUpperCase();
 
     return Column(
@@ -625,7 +626,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
                   ),
                 )
               : Text(
-                  'Calling…',
+                  AppLocalizations.of(context)!.accCalling,
                   key: const ValueKey('c'),
                   style: TextStyle(
                     fontFamily: 'Poppins',
@@ -708,7 +709,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
                   icon: _micMuted
                       ? Icons.mic_off_rounded
                       : Icons.mic_rounded,
-                  label: _micMuted ? 'Unmute' : 'Mute',
+                  label: _micMuted ? AppLocalizations.of(context)!.accUnmute : AppLocalizations.of(context)!.accMute,
                   active: !_micMuted,
                   onTap: _toggleMic,
                 ),
@@ -716,7 +717,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
                   icon: _cameraOn
                       ? Icons.videocam_rounded
                       : Icons.videocam_off_rounded,
-                  label: _cameraOn ? 'Camera' : 'No Video',
+                  label: _cameraOn ? AppLocalizations.of(context)!.accCamera : AppLocalizations.of(context)!.accNoVideo,
                   active: _cameraOn,
                   onTap: _cameraOn ? _disableCamera : _enableCamera,
                 ),
@@ -744,7 +745,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
                             color: Colors.white, size: 26.sp),
                       ),
                       SizedBox(height: 6.h),
-                      Text('End',
+                      Text(AppLocalizations.of(context)!.accEnd,
                           style: TextStyle(
                               fontFamily: 'Poppins',
                               fontSize: 10.sp,
@@ -756,7 +757,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
                 if (showLocalVideo)
                   _CtrlBtn(
                     icon: Icons.flip_camera_ios_rounded,
-                    label: 'Flip',
+                    label: AppLocalizations.of(context)!.accFlip,
                     active: true,
                     onTap: _switchCamera,
                   ),
@@ -764,7 +765,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
                   icon: _speakerOn
                       ? Icons.volume_up_rounded
                       : Icons.volume_off_rounded,
-                  label: _speakerOn ? 'Speaker' : 'Ear',
+                  label: _speakerOn ? AppLocalizations.of(context)!.accSpeaker : AppLocalizations.of(context)!.accEar,
                   active: _speakerOn,
                   onTap: _toggleSpeaker,
                 ),

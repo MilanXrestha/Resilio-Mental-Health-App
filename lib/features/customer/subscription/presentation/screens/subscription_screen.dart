@@ -13,6 +13,7 @@ import 'package:intl/intl.dart';
 
 import 'package:Resilio/core/routing/route_names.dart';
 import 'package:Resilio/core/theme/app_colors.dart';
+import 'package:Resilio/l10n/app_localizations.dart';
 import 'package:Resilio/features/customer/subscription/presentation/bloc/subscription_bloc.dart';
 import 'package:Resilio/features/customer/subscription/presentation/bloc/subscription_event.dart';
 import 'package:Resilio/features/customer/subscription/presentation/bloc/subscription_state.dart';
@@ -127,10 +128,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           ));
         },
         onPaymentFailure: (result) {
-          _showFeedback('Payment failed', isSuccess: false);
+          _showFeedback(AppLocalizations.of(context)!.bizPaymentFailed, isSuccess: false);
         },
         onPaymentCancellation: (result) {
-          _showFeedback('Payment cancelled', isSuccess: false);
+          _showFeedback(AppLocalizations.of(context)!.bizPaymentCancelled, isSuccess: false);
         },
       );
     } catch (e) {
@@ -143,13 +144,13 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Cancel Subscription', style: theme.textTheme.titleLarge),
-        content: const Text('Are you sure you want to cancel your subscription?'),
+        title: Text(AppLocalizations.of(context)!.bizCancelSubscription, style: theme.textTheme.titleLarge),
+        content: Text(AppLocalizations.of(context)!.bizCancelSubscriptionConfirm),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('No')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(AppLocalizations.of(context)!.bizNo)),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Yes', style: TextStyle(color: Colors.red)),
+            child: Text(AppLocalizations.of(context)!.bizYes, style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -209,7 +210,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         Icon(Icons.auto_awesome, size: 12.sp, color: Colors.amber),
                         SizedBox(width: 4.w),
                         Text(
-                          'PREMIUM MEMBERSHIP',
+                          AppLocalizations.of(context)!.bizPremiumMembership,
                           style: TextStyle(
                             fontSize: 10.sp,
                             fontWeight: FontWeight.bold,
@@ -222,7 +223,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   ),
                   SizedBox(height: 12.h),
                   Text(
-                    'Elevate Your\nWellness Journey',
+                    AppLocalizations.of(context)!.bizElevateWellnessJourney,
                     style: TextStyle(
                       fontSize: 22.sp,
                       fontWeight: FontWeight.bold,
@@ -232,7 +233,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   ),
                   SizedBox(height: 8.h),
                   Text(
-                    'Unlock premium content, guided sessions,\nand exclusive wellness tools.',
+                    AppLocalizations.of(context)!.bizUnlockPremiumContent,
                     style: TextStyle(
                       fontSize: 12.sp,
                       color: Colors.white.withValues(alpha: 0.8),
@@ -244,9 +245,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     spacing: 8.w,
                     runSpacing: 6.h,
                     children: [
-                      _benefitChip('Unlimited Content'),
-                      _benefitChip('Expert Tips'),
-                      _benefitChip('Ad-Free'),
+                      _benefitChip(AppLocalizations.of(context)!.bizUnlimitedContent),
+                      _benefitChip(AppLocalizations.of(context)!.bizExpertTips),
+                      _benefitChip(AppLocalizations.of(context)!.bizAdFree),
                     ],
                   ),
                 ],
@@ -294,7 +295,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     final isCurrentPlan = isSubscriptionActive && plan['planId'] == currentPlanId;
     final isUpgrade = currentPlanId != null && isSubscriptionActive && _getPlanTier(plan['planId']) > _getPlanTier(currentPlanId);
     final savings = isUpgrade ? _getUpgradeSavings(currentPlanId, plan['planId']) : 0.0;
-    final buttonText = isCurrentPlan ? 'Current Plan' : (isUpgrade ? 'Upgrade Now' : 'Subscribe Now');
+    final l10n = AppLocalizations.of(context)!;
+    final buttonText = isCurrentPlan ? l10n.bizCurrentPlan : (isUpgrade ? l10n.bizUpgradeNow : l10n.bizSubscribeNow);
     final buttonEnabled = !isCurrentPlan;
 
     final theme = Theme.of(context);

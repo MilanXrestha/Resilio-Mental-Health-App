@@ -184,7 +184,7 @@ class _CommentSheetWidgetState extends State<CommentSheetWidget> {
                     controller: _scrollController,
                     padding: EdgeInsets.all(16.w),
                     itemCount: _comments.length,
-                    separatorBuilder: (_, __) => SizedBox(height: 20.h),
+                    separatorBuilder: (_, _) => SizedBox(height: 20.h),
                     itemBuilder: (context, index) =>
                         _CommentItem(
                           comment: _comments[index],

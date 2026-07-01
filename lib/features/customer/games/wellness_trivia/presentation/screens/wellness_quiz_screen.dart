@@ -9,6 +9,7 @@ import 'package:audioplayers/audioplayers.dart';
 
 import 'package:Resilio/features/customer/games/game_hub/data/services/game_service.dart';
 import 'package:Resilio/features/customer/games/wellness_trivia/data/models/quiz_question_model.dart';
+import 'package:Resilio/l10n/app_localizations.dart';
 
 class WellnessQuizScreen extends StatefulWidget {
   final String userId;
@@ -16,11 +17,11 @@ class WellnessQuizScreen extends StatefulWidget {
   final Map<String, dynamic> gameConfig;
 
   const WellnessQuizScreen({
-    Key? key,
+    super.key,
     required this.userId,
     required this.gameId,
     required this.gameConfig,
-  }) : super(key: key);
+  });
 
   @override
   _WellnessQuizScreenState createState() => _WellnessQuizScreenState();
@@ -371,7 +372,7 @@ class _WellnessQuizScreenState extends State<WellnessQuizScreen>
               color: Colors.white,
             ),
             onPressed: _toggleSoundEffects,
-            tooltip: 'Toggle Sound Effects',
+            tooltip: AppLocalizations.of(context)!.gmToggleSoundEffects,
           ),
           // Background music toggle button
           IconButton(
@@ -380,7 +381,7 @@ class _WellnessQuizScreenState extends State<WellnessQuizScreen>
               color: Colors.white,
             ),
             onPressed: _toggleBackgroundMusic,
-            tooltip: 'Toggle Background Music',
+            tooltip: AppLocalizations.of(context)!.gmToggleBackgroundMusic,
           ),
         ],
       ),
@@ -411,21 +412,21 @@ class _WellnessQuizScreenState extends State<WellnessQuizScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Exit Quiz?'),
+        title: Text(AppLocalizations.of(context)!.gmExitQuizTitle),
         content: Text(
-          'Your progress will be lost. Are you sure you want to exit?',
+          AppLocalizations.of(context)!.gmExitProgressLost,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.gmCancel),
           ),
           TextButton(
             onPressed: () {
               Navigator.of(context).pop(); // Close dialog
               Navigator.of(context).pop(); // Exit quiz screen
             },
-            child: Text('Exit', style: TextStyle(color: Colors.red)),
+            child: Text(AppLocalizations.of(context)!.gmExit, style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -442,7 +443,7 @@ class _WellnessQuizScreenState extends State<WellnessQuizScreen>
           ),
           SizedBox(height: 20.h),
           Text(
-            'Loading Questions...',
+            AppLocalizations.of(context)!.gmLoadingQuestions,
             style: TextStyle(
               fontFamily: 'Poppins',
               fontSize: 18.sp,
@@ -469,7 +470,7 @@ class _WellnessQuizScreenState extends State<WellnessQuizScreen>
             ),
             SizedBox(height: 24.h),
             Text(
-              'Wellness Trivia',
+              AppLocalizations.of(context)!.gmWellnessTrivia,
               style: TextStyle(
                 fontFamily: 'Poppins',
                 fontSize: 32.sp,
@@ -480,7 +481,7 @@ class _WellnessQuizScreenState extends State<WellnessQuizScreen>
             ),
             SizedBox(height: 8.h),
             Text(
-              'Test your wellness knowledge',
+              AppLocalizations.of(context)!.gmTestWellnessKnowledge,
               style: TextStyle(
                 fontFamily: 'Poppins',
                 fontSize: 18.sp,
@@ -504,20 +505,20 @@ class _WellnessQuizScreenState extends State<WellnessQuizScreen>
                 children: [
                   _buildInstructionItem(
                     Icons.timer,
-                    'Time Limit',
-                    'You have $_defaultTimePerQuestion seconds for each question',
+                    AppLocalizations.of(context)!.gmTimeLimit,
+                    AppLocalizations.of(context)!.gmTimeLimitDesc(_defaultTimePerQuestion),
                   ),
                   SizedBox(height: 16.h),
                   _buildInstructionItem(
                     Icons.star,
-                    'Scoring',
-                    'Answer faster for more points. Build streaks for bonuses!',
+                    AppLocalizations.of(context)!.gmScoring,
+                    AppLocalizations.of(context)!.gmScoringDesc,
                   ),
                   SizedBox(height: 16.h),
                   _buildInstructionItem(
                     Icons.lightbulb,
-                    'Learn',
-                    'Explanations will help you understand each answer',
+                    AppLocalizations.of(context)!.gmLearn,
+                    AppLocalizations.of(context)!.gmLearnDesc,
                   ),
                 ],
               ),
@@ -525,7 +526,7 @@ class _WellnessQuizScreenState extends State<WellnessQuizScreen>
             SizedBox(height: 48.h),
             if (_questions.isEmpty)
               Text(
-                'No questions available. Please try again later.',
+                AppLocalizations.of(context)!.gmNoQuestionsAvailable,
                 style: TextStyle(
                   fontFamily: 'Poppins',
                   fontSize: 16.sp,
@@ -552,7 +553,7 @@ class _WellnessQuizScreenState extends State<WellnessQuizScreen>
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'Start Quiz',
+                      AppLocalizations.of(context)!.gmStartQuiz,
                       style: TextStyle(
                         fontFamily: 'Poppins',
                         fontSize: 18.sp,
@@ -836,7 +837,7 @@ class _WellnessQuizScreenState extends State<WellnessQuizScreen>
                               ),
                               SizedBox(width: 8.w),
                               Text(
-                                'Explanation',
+                                AppLocalizations.of(context)!.gmExplanation,
                                 style: TextStyle(
                                   fontFamily: 'Poppins',
                                   fontSize: 16.sp,
@@ -963,7 +964,7 @@ class _WellnessQuizScreenState extends State<WellnessQuizScreen>
               ),
               SizedBox(width: 8.w),
               Text(
-                '$_timeLeft seconds',
+                AppLocalizations.of(context)!.gmSecondsCount(_timeLeft),
                 style: TextStyle(
                   fontFamily: 'Poppins',
                   fontSize: 16.sp,
@@ -1024,7 +1025,7 @@ class _WellnessQuizScreenState extends State<WellnessQuizScreen>
             ),
             SizedBox(height: 16.h),
             Text(
-              'Your final score',
+              AppLocalizations.of(context)!.gmYourFinalScore,
               style: TextStyle(
                 fontFamily: 'Poppins',
                 fontSize: 16.sp,
@@ -1071,7 +1072,7 @@ class _WellnessQuizScreenState extends State<WellnessQuizScreen>
                     children: [
                       Expanded(
                         child: _buildStatCard(
-                          'Questions',
+                          AppLocalizations.of(context)!.gmQuestions,
                           '${_questions.length}',
                           Icons.quiz,
                         ),
@@ -1079,7 +1080,7 @@ class _WellnessQuizScreenState extends State<WellnessQuizScreen>
                       SizedBox(width: 16.w),
                       Expanded(
                         child: _buildStatCard(
-                          'Correct',
+                          AppLocalizations.of(context)!.gmCorrect,
                           '$_correctAnswers',
                           Icons.check_circle,
                         ),
@@ -1091,7 +1092,7 @@ class _WellnessQuizScreenState extends State<WellnessQuizScreen>
                     children: [
                       Expanded(
                         child: _buildStatCard(
-                          'Accuracy',
+                          AppLocalizations.of(context)!.gmAccuracy,
                           '${_questions.isNotEmpty ? (_correctAnswers / _questions.length * 100).round() : 0}%',
                           Icons.analytics,
                         ),
@@ -1099,7 +1100,7 @@ class _WellnessQuizScreenState extends State<WellnessQuizScreen>
                       SizedBox(width: 16.w),
                       Expanded(
                         child: _buildStatCard(
-                          'Best Streak',
+                          AppLocalizations.of(context)!.gmBestStreak,
                           '$_highestStreak',
                           Icons.local_fire_department,
                         ),
@@ -1136,7 +1137,7 @@ class _WellnessQuizScreenState extends State<WellnessQuizScreen>
                         Icon(Icons.replay),
                         SizedBox(width: 8.w),
                         Text(
-                          'Play Again',
+                          AppLocalizations.of(context)!.gmPlayAgain,
                           style: TextStyle(
                             fontFamily: 'Poppins',
                             fontSize: 16.sp,
@@ -1162,7 +1163,7 @@ class _WellnessQuizScreenState extends State<WellnessQuizScreen>
                       ),
                     ),
                     child: Text(
-                      'Exit',
+                      AppLocalizations.of(context)!.gmExit,
                       style: TextStyle(
                         fontFamily: 'Poppins',
                         fontSize: 16.sp,

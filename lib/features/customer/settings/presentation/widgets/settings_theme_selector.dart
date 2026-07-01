@@ -45,7 +45,7 @@ class SettingsThemeSelector extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Theme',
+                      l10n.accTheme,
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
@@ -54,7 +54,7 @@ class SettingsThemeSelector extends StatelessWidget {
                     ),
                     SizedBox(height: 4.h),
                     Text(
-                      'Customize your app interface',
+                      l10n.accCustomizeAppInterface,
                       style: TextStyle(
                         fontSize: 13.sp,
                         color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
@@ -70,7 +70,7 @@ class SettingsThemeSelector extends StatelessWidget {
             children: [
               Expanded(
                 child: _ThemeOptionCard(
-                  title: 'System',
+                  title: l10n.accThemeSystem,
                   icon: Icons.brightness_auto_rounded,
                   isSelected: currentTheme == AppTheme.system,
                   onTap: () {
@@ -84,7 +84,7 @@ class SettingsThemeSelector extends StatelessWidget {
               SizedBox(width: 8.w),
               Expanded(
                 child: _ThemeOptionCard(
-                  title: 'Light',
+                  title: l10n.accThemeLight,
                   icon: Icons.light_mode_rounded,
                   isSelected: currentTheme == AppTheme.light,
                   onTap: () {
@@ -97,7 +97,7 @@ class SettingsThemeSelector extends StatelessWidget {
               SizedBox(width: 8.w),
               Expanded(
                 child: _ThemeOptionCard(
-                  title: 'Dark',
+                  title: l10n.accThemeDark,
                   icon: Icons.dark_mode_rounded,
                   isSelected: currentTheme == AppTheme.dark,
                   onTap: () {

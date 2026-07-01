@@ -258,7 +258,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 icon: Icons.email_outlined,
                 isDark: isDark,
                 enabled: false,
-                hint: 'Email cannot be changed',
+                hint: AppLocalizations.of(context)!.accEmailCannotBeChanged,
               ),
               SizedBox(height: 14.h),
               _buildField(

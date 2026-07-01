@@ -1,4 +1,5 @@
 import '../../widgets/shimmer_therapist_widgets.dart';
+import 'package:Resilio/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -60,7 +61,7 @@ class _TherapistAppointmentsTabState extends State<TherapistAppointmentsTab> {
             Padding(
               padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 0),
               child: Text(
-                'Sessions',
+                AppLocalizations.of(context)!.thrSessions,
                 style: TextStyle(
                   fontFamily: 'Poppins',
                   fontSize: 26.sp,
@@ -76,7 +77,7 @@ class _TherapistAppointmentsTabState extends State<TherapistAppointmentsTab> {
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
-                separatorBuilder: (_, __) => SizedBox(width: 8.w),
+                separatorBuilder: (_, _) => SizedBox(width: 8.w),
                 itemCount: _filters.length,
                 itemBuilder: (context, i) {
                   final f = _filters[i];
@@ -136,7 +137,7 @@ class _TherapistAppointmentsTabState extends State<TherapistAppointmentsTab> {
                           ),
                           SizedBox(height: 12.h),
                           Text(
-                            'Could not load sessions',
+                            AppLocalizations.of(context)!.thrCouldNotLoadSessions,
                             style: TextStyle(
                               fontFamily: 'Poppins',
                               fontSize: 14.sp,
@@ -146,7 +147,7 @@ class _TherapistAppointmentsTabState extends State<TherapistAppointmentsTab> {
                           SizedBox(height: 8.h),
                           TextButton(
                             onPressed: () => _setFilter(_activeFilter),
-                            child: const Text('Retry'),
+                            child: Text(AppLocalizations.of(context)!.thrRetry),
                           ),
                         ],
                       ),
@@ -167,7 +168,7 @@ class _TherapistAppointmentsTabState extends State<TherapistAppointmentsTab> {
                         parent: BouncingScrollPhysics(),
                       ),
                       itemCount: state.appointments!.length,
-                      separatorBuilder: (_, __) => SizedBox(height: 12.h),
+                      separatorBuilder: (_, _) => SizedBox(height: 12.h),
                       itemBuilder: (context, index) {
                         final appt = state.appointments![index];
                         final id = appt['id'] as String? ?? '';
@@ -242,7 +243,7 @@ class _TherapistAppointmentsTabState extends State<TherapistAppointmentsTab> {
           ),
           SizedBox(height: 16.h),
           Text(
-            'No sessions found',
+            AppLocalizations.of(context)!.thrNoSessionsFound,
             style: TextStyle(
               fontFamily: 'Poppins',
               fontSize: 16.sp,
@@ -252,7 +253,7 @@ class _TherapistAppointmentsTabState extends State<TherapistAppointmentsTab> {
           ),
           SizedBox(height: 6.h),
           Text(
-            'Sessions for "$_activeFilter" will appear here',
+            AppLocalizations.of(context)!.thrSessionsForFilterAppearHere(_activeFilter),
             style: TextStyle(
               fontFamily: 'Poppins',
               fontSize: 13.sp,
@@ -407,7 +408,7 @@ class _SessionCard extends StatelessWidget {
                         child: OutlinedButton.icon(
                           onPressed: onDecline,
                           icon: Icon(Icons.close_rounded, size: 16.sp),
-                          label: const Text('Decline'),
+                          label: Text(AppLocalizations.of(context)!.thrDecline),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: context.errorColor,
                             side: BorderSide(
@@ -430,7 +431,7 @@ class _SessionCard extends StatelessWidget {
                         child: ElevatedButton.icon(
                           onPressed: onAccept,
                           icon: Icon(Icons.check_rounded, size: 16.sp),
-                          label: const Text('Accept'),
+                          label: Text(AppLocalizations.of(context)!.thrAccept),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: context.primaryColor,
                             foregroundColor: Colors.white,
@@ -458,7 +459,7 @@ class _SessionCard extends StatelessWidget {
                         Icons.chat_bubble_outline_rounded,
                         size: 16.sp,
                       ),
-                      label: const Text('Message Patient'),
+                      label: Text(AppLocalizations.of(context)!.thrMessagePatient),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: context.primaryColor,
                         side: BorderSide(
@@ -491,7 +492,9 @@ class _SessionCard extends StatelessWidget {
                       onPressed: onJoin,
                       icon: Icon(Icons.video_call_rounded, size: 18.sp),
                       label: Text(
-                        canJoin ? 'Join Session' : 'Not Session Time',
+                        canJoin
+                            ? AppLocalizations.of(context)!.thrJoinSession
+                            : AppLocalizations.of(context)!.thrNotSessionTime,
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: canJoin
@@ -516,7 +519,7 @@ class _SessionCard extends StatelessWidget {
                   if (!canJoin) ...[
                     SizedBox(height: 4.h),
                     Text(
-                      'Join button activates 15 min before session',
+                      AppLocalizations.of(context)!.thrJoinButtonActivatesHint,
                       style: TextStyle(
                         fontFamily: 'Poppins',
                         fontSize: 10.sp,
@@ -534,7 +537,7 @@ class _SessionCard extends StatelessWidget {
                         Icons.chat_bubble_outline_rounded,
                         size: 16.sp,
                       ),
-                      label: const Text('Message Patient'),
+                      label: Text(AppLocalizations.of(context)!.thrMessagePatient),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: context.primaryColor,
                         side: BorderSide(

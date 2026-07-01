@@ -1,18 +1,19 @@
 // screens/mood_calendar_screen.dart
 import 'package:flutter/material.dart';
+import 'package:Resilio/l10n/app_localizations.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 
-import 'package:Resilio/core/theme/app_colors.dart';
 import 'package:Resilio/features/customer/games/game_hub/data/services/game_service.dart';
 import 'package:Resilio/features/customer/games/mood_tracker/data/models/mood_entry_model.dart';
+import 'package:Resilio/features/customer/games/mood_tracker/presentation/widgets/mood_share_sheet.dart';
 
 class MoodCalendarScreen extends StatefulWidget {
   final String userId;
 
-  const MoodCalendarScreen({Key? key, required this.userId}) : super(key: key);
+  const MoodCalendarScreen({super.key, required this.userId});
 
   @override
   _MoodCalendarScreenState createState() => _MoodCalendarScreenState();
@@ -84,7 +85,7 @@ class _MoodCalendarScreenState extends State<MoodCalendarScreen> with SingleTick
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to load mood entries'),
+          content: Text(AppLocalizations.of(context)!.gmFailedLoadMoods),
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
@@ -114,7 +115,7 @@ class _MoodCalendarScreenState extends State<MoodCalendarScreen> with SingleTick
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Journal updated'),
+            content: Text(AppLocalizations.of(context)!.gmJournalUpdated),
             backgroundColor: Theme.of(context).primaryColor,
           ),
         );
@@ -133,7 +134,7 @@ class _MoodCalendarScreenState extends State<MoodCalendarScreen> with SingleTick
 
   // Show dialog to edit note
   void _showEditNoteDialog(MoodEntryModel entry) {
-    final TextEditingController _noteController = TextEditingController(text: entry.note);
+    final TextEditingController noteController = TextEditingController(text: entry.note);
     final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     showDialog(
@@ -150,10 +151,10 @@ class _MoodCalendarScreenState extends State<MoodCalendarScreen> with SingleTick
           ),
         ),
         content: TextField(
-          controller: _noteController,
+          controller: noteController,
           maxLines: 5,
           decoration: InputDecoration(
-            hintText: 'Enter your thoughts...',
+            hintText: AppLocalizations.of(context)!.gmEnterThoughts,
             hintStyle: TextStyle(
               fontFamily: 'Poppins',
               fontSize: 14.sp,
@@ -193,7 +194,7 @@ class _MoodCalendarScreenState extends State<MoodCalendarScreen> with SingleTick
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              _saveNote(_noteController.text, entry);
+              _saveNote(noteController.text, entry);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).primaryColor,
@@ -223,8 +224,8 @@ class _MoodCalendarScreenState extends State<MoodCalendarScreen> with SingleTick
 
     return Scaffold(
       backgroundColor: isDarkMode
-          ? Theme.of(context).colorScheme.background
-          : Theme.of(context).colorScheme.background,
+          ? Theme.of(context).colorScheme.surface
+          : Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -248,6 +249,26 @@ class _MoodCalendarScreenState extends State<MoodCalendarScreen> with SingleTick
           ),
           onPressed: () => Navigator.of(context).pop(),
         ),
+        actions: [
+          IconButton(
+            tooltip: 'Share with therapist',
+            icon: Icon(
+              Icons.ios_share_rounded,
+              color: Theme.of(context).colorScheme.onSurface,
+              size: 22.sp,
+            ),
+            onPressed: () => showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Theme.of(context).colorScheme.surface,
+              shape: RoundedRectangleBorder(
+                borderRadius:
+                    BorderRadius.vertical(top: Radius.circular(24.r)),
+              ),
+              builder: (_) => const MoodShareSheet(),
+            ),
+          ),
+        ],
       ),
       body: SafeArea(
         child: _isLoading

@@ -1,12 +1,8 @@
-import 'dart:io';
-import 'dart:ui' as ui;
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:Resilio/l10n/app_localizations.dart';
 
 import '../../../../../core/theme/app_colors.dart';
 import '../../domain/entities/image_entity.dart';
@@ -214,13 +210,13 @@ class _ImageDetailSheet extends StatelessWidget {
                   children: [
                     _ActionButton(
                       icon: Icons.download_outlined,
-                      label: 'Set Wallpaper',
+                      label: AppLocalizations.of(context)!.medSetWallpaper,
                       onTap: () => _captureAndSave(context),
                     ),
                     SizedBox(width: 12.w),
                     _ActionButton(
                       icon: Icons.info_outline,
-                      label: 'Info',
+                      label: AppLocalizations.of(context)!.medInfo,
                       onTap: () {},
                     ),
                   ],
@@ -349,7 +345,7 @@ class _ImageDetailSheet extends StatelessWidget {
                                   ),
                                 ),
                                 Text(
-                                  'Creator',
+                                  AppLocalizations.of(context)!.medCreator,
                                   style: TextStyle(
                                     fontFamily: 'Poppins',
                                     fontSize: 12.sp,
@@ -395,9 +391,9 @@ class _ImageDetailSheet extends StatelessWidget {
     try {
       // Show message - gallery save to be implemented with native code or compatible package
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Wallpaper download feature coming soon!'),
-          duration: Duration(seconds: 2),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.medWallpaperDownloadComingSoon),
+          duration: const Duration(seconds: 2),
         ),
       );
 
@@ -407,7 +403,7 @@ class _ImageDetailSheet extends StatelessWidget {
       print('Error saving image: $e');
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Failed to save image')));
+      ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.medFailedToSaveImage)));
     }
   }
 }

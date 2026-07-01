@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:Resilio/core/theme/app_colors.dart';
+import 'package:Resilio/l10n/app_localizations.dart';
 import '../bloc/admin_content_cubit.dart';
 import '../bloc/admin_content_state.dart';
 import 'widgets/admin_widgets.dart';
@@ -54,7 +55,9 @@ class _AdminContentScreenState extends State<AdminContentScreen> with SingleTick
   @override
   void dispose() {
     _tabController.dispose();
-    for (final c in _searchControllers) c.dispose();
+    for (final c in _searchControllers) {
+      c.dispose();
+    }
     super.dispose();
   }
 
@@ -66,7 +69,7 @@ class _AdminContentScreenState extends State<AdminContentScreen> with SingleTick
         backgroundColor: context.backgroundColor,
         elevation: 0,
         automaticallyImplyLeading: false,
-        title: Text('Content Management', style: TextStyle(fontFamily: 'Poppins', fontSize: 20.sp, fontWeight: FontWeight.w700, color: context.textPrimaryColor)),
+        title: Text(AppLocalizations.of(context)!.admContentManagement, style: TextStyle(fontFamily: 'Poppins', fontSize: 20.sp, fontWeight: FontWeight.w700, color: context.textPrimaryColor)),
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
@@ -157,7 +160,7 @@ class _TipsTab extends StatelessWidget {
               padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 8.h),
               child: AdminSearchBar(
                 controller: searchController,
-                hint: 'Search tips...',
+                hint: AppLocalizations.of(context)!.admSearchTips,
                 onChanged: (v) => context.read<AdminContentCubit>().loadTips(search: v),
                 onClear: () => context.read<AdminContentCubit>().loadTips(),
               ),
@@ -165,7 +168,7 @@ class _TipsTab extends StatelessWidget {
             Expanded(child: isLoading
               ? const Center(child: CircularProgressIndicator())
               : tips.isEmpty
-                ? AdminEmptyState(icon: Icons.lightbulb_outline_rounded, title: 'No tips yet', subtitle: 'Add your first tip with the + button')
+                ? AdminEmptyState(icon: Icons.lightbulb_outline_rounded, title: AppLocalizations.of(context)!.admNoTipsYet, subtitle: AppLocalizations.of(context)!.admAddFirstTip)
                 : ListView.builder(
                     padding: EdgeInsets.symmetric(horizontal: 16.w),
                     itemCount: tips.length,
@@ -216,10 +219,10 @@ class _QuotesTab extends StatelessWidget {
           children: [
             Padding(
               padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 8.h),
-              child: AdminSearchBar(controller: searchController, hint: 'Search quotes...', onChanged: (v) => context.read<AdminContentCubit>().loadQuotes(search: v), onClear: () => context.read<AdminContentCubit>().loadQuotes()),
+              child: AdminSearchBar(controller: searchController, hint: AppLocalizations.of(context)!.admSearchQuotes, onChanged: (v) => context.read<AdminContentCubit>().loadQuotes(search: v), onClear: () => context.read<AdminContentCubit>().loadQuotes()),
             ),
             Expanded(child: quotes.isEmpty
-              ? AdminEmptyState(icon: Icons.format_quote_rounded, title: 'No quotes yet')
+              ? AdminEmptyState(icon: Icons.format_quote_rounded, title: AppLocalizations.of(context)!.admNoQuotesYet)
               : ListView.builder(
                   padding: EdgeInsets.symmetric(horizontal: 16.w),
                   itemCount: quotes.length,
@@ -262,10 +265,10 @@ class _AudioTab extends StatelessWidget {
           children: [
             Padding(
               padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 8.h),
-              child: AdminSearchBar(controller: searchController, hint: 'Search audio...', onChanged: (v) => context.read<AdminContentCubit>().loadAudio(search: v), onClear: () => context.read<AdminContentCubit>().loadAudio()),
+              child: AdminSearchBar(controller: searchController, hint: AppLocalizations.of(context)!.admSearchAudio, onChanged: (v) => context.read<AdminContentCubit>().loadAudio(search: v), onClear: () => context.read<AdminContentCubit>().loadAudio()),
             ),
             Expanded(child: audio.isEmpty
-              ? AdminEmptyState(icon: Icons.headphones_rounded, title: 'No audio tracks yet')
+              ? AdminEmptyState(icon: Icons.headphones_rounded, title: AppLocalizations.of(context)!.admNoAudioYet)
               : ListView.builder(
                   padding: EdgeInsets.symmetric(horizontal: 16.w),
                   itemCount: audio.length,
@@ -311,22 +314,22 @@ class _VideoTab extends StatelessWidget {
               padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 8.h),
               child: Column(
                 children: [
-                  AdminSearchBar(controller: searchController, hint: 'Search videos...', onChanged: (v) => context.read<AdminContentCubit>().loadVideos(search: v, videoType: vtFilter), onClear: () => context.read<AdminContentCubit>().loadVideos(videoType: vtFilter)),
+                  AdminSearchBar(controller: searchController, hint: AppLocalizations.of(context)!.admSearchVideos, onChanged: (v) => context.read<AdminContentCubit>().loadVideos(search: v, videoType: vtFilter), onClear: () => context.read<AdminContentCubit>().loadVideos(videoType: vtFilter)),
                   SizedBox(height: 8.h),
                   Row(
                     children: [
-                      AdminFilterChip(label: 'All', isSelected: vtFilter == 'all', onTap: () => context.read<AdminContentCubit>().loadVideos(videoType: 'all'), selectedColor: const Color(0xFFEC4899)),
+                      AdminFilterChip(label: AppLocalizations.of(context)!.admAll, isSelected: vtFilter == 'all', onTap: () => context.read<AdminContentCubit>().loadVideos(videoType: 'all'), selectedColor: const Color(0xFFEC4899)),
                       SizedBox(width: 8.w),
-                      AdminFilterChip(label: '⚡ Shorts', isSelected: vtFilter == 'short', onTap: () => context.read<AdminContentCubit>().loadVideos(videoType: 'short'), selectedColor: const Color(0xFFEC4899)),
+                      AdminFilterChip(label: '⚡ ${AppLocalizations.of(context)!.admShorts}', isSelected: vtFilter == 'short', onTap: () => context.read<AdminContentCubit>().loadVideos(videoType: 'short'), selectedColor: const Color(0xFFEC4899)),
                       SizedBox(width: 8.w),
-                      AdminFilterChip(label: '🎬 Long', isSelected: vtFilter == 'long', onTap: () => context.read<AdminContentCubit>().loadVideos(videoType: 'long'), selectedColor: const Color(0xFFEC4899)),
+                      AdminFilterChip(label: '🎬 ${AppLocalizations.of(context)!.admLong}', isSelected: vtFilter == 'long', onTap: () => context.read<AdminContentCubit>().loadVideos(videoType: 'long'), selectedColor: const Color(0xFFEC4899)),
                     ],
                   ),
                 ],
               ),
             ),
             Expanded(child: videos.isEmpty
-              ? AdminEmptyState(icon: Icons.videocam_rounded, title: 'No videos yet')
+              ? AdminEmptyState(icon: Icons.videocam_rounded, title: AppLocalizations.of(context)!.admNoVideosYet)
               : ListView.builder(
                   padding: EdgeInsets.symmetric(horizontal: 16.w),
                   itemCount: videos.length,
@@ -369,10 +372,10 @@ class _ImagesTab extends StatelessWidget {
           children: [
             Padding(
               padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 8.h),
-              child: AdminSearchBar(controller: searchController, hint: 'Search images...', onChanged: (v) => context.read<AdminContentCubit>().loadImages(search: v), onClear: () => context.read<AdminContentCubit>().loadImages()),
+              child: AdminSearchBar(controller: searchController, hint: AppLocalizations.of(context)!.admSearchImages, onChanged: (v) => context.read<AdminContentCubit>().loadImages(search: v), onClear: () => context.read<AdminContentCubit>().loadImages()),
             ),
             Expanded(child: images.isEmpty
-              ? AdminEmptyState(icon: Icons.image_rounded, title: 'No images yet')
+              ? AdminEmptyState(icon: Icons.image_rounded, title: AppLocalizations.of(context)!.admNoImagesYet)
               : ListView.builder(
                   padding: EdgeInsets.symmetric(horizontal: 16.w),
                   itemCount: images.length,
@@ -445,7 +448,7 @@ class _ContentCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(10.r),
             child: thumbnail != null && thumbnail.isNotEmpty
                 ? Image.network(thumbnail, width: 52.w, height: 52.w, fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _IconBox(icon: icon, color: color))
+                    errorBuilder: (_, _, _) => _IconBox(icon: icon, color: color))
                 : _IconBox(icon: icon, color: color),
           ),
           SizedBox(width: 12.w),
@@ -495,17 +498,17 @@ class _ContentCard extends StatelessWidget {
       context: context,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-        title: const Text('Delete Content', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w700)),
-        content: const Text('Are you sure you want to delete this item?'),
+        title: Text(AppLocalizations.of(context)!.admDeleteContent, style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w700)),
+        content: Text(AppLocalizations.of(context)!.admDeleteItemConfirm),
         actions: [
-          TextButton(onPressed: () => context.pop(), child: const Text('Cancel')),
+          TextButton(onPressed: () => context.pop(), child: Text(AppLocalizations.of(context)!.admCancel)),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFEF4444)),
             onPressed: () async {
               context.pop();
               await onDelete(item['id']?.toString() ?? '');
             },
-            child: const Text('Delete', style: TextStyle(color: Colors.white, fontFamily: 'Poppins')),
+            child: Text(AppLocalizations.of(context)!.admDelete, style: const TextStyle(color: Colors.white, fontFamily: 'Poppins')),
           ),
         ],
       ),

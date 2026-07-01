@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:Resilio/l10n/app_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -304,7 +305,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
               decoration: InputDecoration(
                 filled: false,
                 fillColor: Colors.transparent,
-                hintText: 'Search ${widget.category.name}...',
+                hintText: AppLocalizations.of(context)!.catSearchIn(widget.category.name),
                 hintStyle: TextStyle(
                   fontFamily: 'Poppins',
                   fontSize: 15.sp,
@@ -593,7 +594,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
                           width: 20.r,
                           height: 20.r,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Icon(
+                          errorBuilder: (_, _, _) => Icon(
                             Icons.person_rounded,
                             size: 12.sp,
                             color: context.primaryColor.withOpacity(0.5),
@@ -704,11 +705,13 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
       typeStr = e.tags.first;
     }
 
-    if (typeStr == TipType.relationshipBooster.toString())
+    if (typeStr == TipType.relationshipBooster.toString()) {
       return TipType.relationshipBooster;
+    }
     if (typeStr == TipType.lettingGo.toString()) return TipType.lettingGo;
-    if (typeStr == TipType.communication.toString())
+    if (typeStr == TipType.communication.toString()) {
       return TipType.communication;
+    }
     if (typeStr == TipType.selfCare.toString()) return TipType.selfCare;
     if (typeStr == TipType.mindfulness.toString()) return TipType.mindfulness;
     if (typeStr == TipType.general.toString()) return TipType.general;
@@ -719,8 +722,9 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
     if (lower.contains('communication')) return TipType.communication;
     if (lower.contains('self_care') ||
         lower.contains('self-care') ||
-        lower.contains('self care'))
+        lower.contains('self care')) {
       return TipType.selfCare;
+    }
     if (lower.contains('mindful')) return TipType.mindfulness;
 
     return TipType.general;

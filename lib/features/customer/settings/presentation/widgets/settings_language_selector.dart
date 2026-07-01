@@ -46,7 +46,7 @@ class SettingsLanguageSelector extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Language',
+                      l10n.accLanguage,
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
@@ -55,7 +55,7 @@ class SettingsLanguageSelector extends StatelessWidget {
                     ),
                     SizedBox(height: 4.h),
                     Text(
-                      'Select your preferred language',
+                      l10n.accSelectPreferredLanguage,
                       style: TextStyle(
                         fontSize: 13.sp,
                         color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
@@ -71,7 +71,7 @@ class SettingsLanguageSelector extends StatelessWidget {
             children: [
               Expanded(
                 child: _LanguageOptionCard(
-                  title: 'English',
+                  title: l10n.accEnglish,
                   flagAsset: 'assets/icons/svg/flag_uk.svg',
                   isSelected: currentLanguage == AppLanguage.english,
                   onTap: () {
@@ -84,7 +84,7 @@ class SettingsLanguageSelector extends StatelessWidget {
               SizedBox(width: 12.w),
               Expanded(
                 child: _LanguageOptionCard(
-                  title: 'Nepali',
+                  title: l10n.accNepali,
                   flagAsset: 'assets/icons/svg/flag_nepal.svg',
                   isSelected: currentLanguage == AppLanguage.nepali,
                   onTap: () {

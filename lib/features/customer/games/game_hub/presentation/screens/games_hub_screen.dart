@@ -12,6 +12,7 @@ import 'package:Resilio/features/customer/games/mood_tracker/presentation/widget
 import 'package:Resilio/features/customer/games/story_game/presentation/screens/story_game_screen.dart';
 import 'package:Resilio/features/customer/games/wellness_trivia/presentation/screens/wellness_quiz_screen.dart';
 import 'package:Resilio/features/customer/games/game_hub/presentation/bloc/games_hub_cubit.dart';
+import 'package:Resilio/l10n/app_localizations.dart';
 
 // ─── Game definitions ─────────────────────────────────────────────────────────
 
@@ -97,7 +98,7 @@ const _games = [
 class GamesHubScreen extends StatefulWidget {
   final String userId;
 
-  const GamesHubScreen({Key? key, required this.userId}) : super(key: key);
+  const GamesHubScreen({super.key, required this.userId});
 
   @override
   GamesHubScreenState createState() => GamesHubScreenState();
@@ -207,7 +208,7 @@ class GamesHubScreenState extends State<GamesHubScreen>
                   _buildQuickActions(),
                   SizedBox(height: 24.h),
                   _buildSectionHeader(
-                    'Games',
+                    AppLocalizations.of(context)!.gmGames,
                     '${_pageIndex + 1}/${_games.length}',
                   ),
                   SizedBox(height: 12.h),
@@ -217,7 +218,10 @@ class GamesHubScreenState extends State<GamesHubScreen>
                   SizedBox(height: 28.h),
                   _buildDailyChallenge(),
                   SizedBox(height: 24.h),
-                  _buildSectionHeader('Today\'s Mood', null),
+                  _buildSectionHeader(
+                    AppLocalizations.of(context)!.gmTodaysMood,
+                    null,
+                  ),
                   SizedBox(height: 10.h),
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -249,7 +253,7 @@ class GamesHubScreenState extends State<GamesHubScreen>
         onPressed: () => Navigator.of(context).pop(),
       ),
       title: Text(
-        'Wellness Hub',
+        AppLocalizations.of(context)!.gmWellnessHub,
         style: TextStyle(
           fontFamily: 'Poppins',
           fontSize: 20.sp,
@@ -411,7 +415,7 @@ class GamesHubScreenState extends State<GamesHubScreen>
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Level Progress',
+                            AppLocalizations.of(context)!.gmLevelProgress,
                             style: TextStyle(
                               fontFamily: 'Poppins',
                               fontSize: 10.sp,
@@ -917,14 +921,18 @@ class GamesHubScreenState extends State<GamesHubScreen>
   // ── Level system ───────────────────────────────────────────────────────────
 
   _Level _levelFor(int pts) {
-    if (pts < 100)
+    if (pts < 100) {
       return _Level('Newcomer', '🌱', const Color(0xFF64748B), 0, 100);
-    if (pts < 300)
+    }
+    if (pts < 300) {
       return _Level('Explorer', '🌿', const Color(0xFF059669), 100, 300);
-    if (pts < 600)
+    }
+    if (pts < 600) {
       return _Level('Practitioner', '⭐', const Color(0xFF2563EB), 300, 600);
-    if (pts < 1000)
+    }
+    if (pts < 1000) {
       return _Level('Achiever', '🏆', const Color(0xFF7C3AED), 600, 1000);
+    }
     return _Level('Master', '👑', const Color(0xFFD97706), 1000, 9999);
   }
 }

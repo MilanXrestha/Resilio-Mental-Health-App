@@ -2167,6 +2167,1104 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Prefer therapist with similar cultural background'**
   String get qPrefOpt4;
+
+  /// No description provided for @admContentManagement.
+  ///
+  /// In en, this message translates to:
+  /// **'Content Management'**
+  String get admContentManagement;
+
+  /// No description provided for @admSearchTips.
+  ///
+  /// In en, this message translates to:
+  /// **'Search tips...'**
+  String get admSearchTips;
+
+  /// No description provided for @admNoTipsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No tips yet'**
+  String get admNoTipsYet;
+
+  /// No description provided for @admSearchQuotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Search quotes...'**
+  String get admSearchQuotes;
+
+  /// No description provided for @admNoQuotesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No quotes yet'**
+  String get admNoQuotesYet;
+
+  /// No description provided for @admSearchAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Search audio...'**
+  String get admSearchAudio;
+
+  /// No description provided for @admNoAudioYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No audio tracks yet'**
+  String get admNoAudioYet;
+
+  /// No description provided for @admSearchVideos.
+  ///
+  /// In en, this message translates to:
+  /// **'Search videos...'**
+  String get admSearchVideos;
+
+  /// No description provided for @admAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get admAll;
+
+  /// No description provided for @admShorts.
+  ///
+  /// In en, this message translates to:
+  /// **'⚡ Shorts'**
+  String get admShorts;
+
+  /// No description provided for @admLong.
+  ///
+  /// In en, this message translates to:
+  /// **'🎬 Long'**
+  String get admLong;
+
+  /// No description provided for @admNoVideosYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No videos yet'**
+  String get admNoVideosYet;
+
+  /// No description provided for @admSearchImages.
+  ///
+  /// In en, this message translates to:
+  /// **'Search images...'**
+  String get admSearchImages;
+
+  /// No description provided for @admNoImagesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No images yet'**
+  String get admNoImagesYet;
+
+  /// No description provided for @admDeleteContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Content'**
+  String get admDeleteContent;
+
+  /// No description provided for @admDeleteItemConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this item?'**
+  String get admDeleteItemConfirm;
+
+  /// No description provided for @admCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get admCancel;
+
+  /// No description provided for @admDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get admDelete;
+
+  /// No description provided for @admOverview.
+  ///
+  /// In en, this message translates to:
+  /// **'Overview'**
+  String get admOverview;
+
+  /// No description provided for @admContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Content'**
+  String get admContent;
+
+  /// No description provided for @admTherapists.
+  ///
+  /// In en, this message translates to:
+  /// **'Therapists'**
+  String get admTherapists;
+
+  /// No description provided for @admUsers.
+  ///
+  /// In en, this message translates to:
+  /// **'Users'**
+  String get admUsers;
+
+  /// No description provided for @admMore.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get admMore;
+
+  /// No description provided for @admPushNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Push Notifications'**
+  String get admPushNotifications;
+
+  /// No description provided for @admPushNotificationsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Broadcast messages to users and therapists'**
+  String get admPushNotificationsSubtitle;
+
+  /// No description provided for @admPreferencesConfig.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferences Config'**
+  String get admPreferencesConfig;
+
+  /// No description provided for @admPreferencesConfigSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage user onboarding options'**
+  String get admPreferencesConfigSubtitle;
+
+  /// No description provided for @admRevenueAnalytics.
+  ///
+  /// In en, this message translates to:
+  /// **'Revenue Analytics'**
+  String get admRevenueAnalytics;
+
+  /// No description provided for @admRevenueAnalyticsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'View detailed charts and payouts'**
+  String get admRevenueAnalyticsSubtitle;
+
+  /// No description provided for @admSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get admSettings;
+
+  /// No description provided for @admSettingsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme, Access, and Logs'**
+  String get admSettingsSubtitle;
+
+  /// No description provided for @homePremiumRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium subscription required to play this content.'**
+  String get homePremiumRequired;
+
+  /// No description provided for @gmGames.
+  ///
+  /// In en, this message translates to:
+  /// **'Games'**
+  String get gmGames;
+
+  /// No description provided for @gmTodaysMood.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s Mood'**
+  String get gmTodaysMood;
+
+  /// No description provided for @gmWellnessHub.
+  ///
+  /// In en, this message translates to:
+  /// **'Wellness Hub'**
+  String get gmWellnessHub;
+
+  /// No description provided for @gmLevelProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Level Progress'**
+  String get gmLevelProgress;
+
+  /// No description provided for @gmToggleSoundEffects.
+  ///
+  /// In en, this message translates to:
+  /// **'Toggle Sound Effects'**
+  String get gmToggleSoundEffects;
+
+  /// No description provided for @gmToggleBackgroundMusic.
+  ///
+  /// In en, this message translates to:
+  /// **'Toggle Background Music'**
+  String get gmToggleBackgroundMusic;
+
+  /// No description provided for @gmExitQuizTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit Quiz?'**
+  String get gmExitQuizTitle;
+
+  /// No description provided for @gmExitProgressLost.
+  ///
+  /// In en, this message translates to:
+  /// **'Your progress will be lost. Are you sure you want to exit?'**
+  String get gmExitProgressLost;
+
+  /// No description provided for @gmCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get gmCancel;
+
+  /// No description provided for @gmExit.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit'**
+  String get gmExit;
+
+  /// No description provided for @gmLoadingQuestions.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading Questions...'**
+  String get gmLoadingQuestions;
+
+  /// No description provided for @gmWellnessTrivia.
+  ///
+  /// In en, this message translates to:
+  /// **'Wellness Trivia'**
+  String get gmWellnessTrivia;
+
+  /// No description provided for @gmTestWellnessKnowledge.
+  ///
+  /// In en, this message translates to:
+  /// **'Test your wellness knowledge'**
+  String get gmTestWellnessKnowledge;
+
+  /// No description provided for @gmTimeLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'Time Limit'**
+  String get gmTimeLimit;
+
+  /// No description provided for @gmScoring.
+  ///
+  /// In en, this message translates to:
+  /// **'Scoring'**
+  String get gmScoring;
+
+  /// No description provided for @gmScoringDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer faster for more points. Build streaks for bonuses!'**
+  String get gmScoringDesc;
+
+  /// No description provided for @gmLearn.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn'**
+  String get gmLearn;
+
+  /// No description provided for @gmLearnDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Explanations will help you understand each answer'**
+  String get gmLearnDesc;
+
+  /// No description provided for @gmNoQuestionsAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No questions available. Please try again later.'**
+  String get gmNoQuestionsAvailable;
+
+  /// No description provided for @gmStartQuiz.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Quiz'**
+  String get gmStartQuiz;
+
+  /// No description provided for @gmExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'Explanation'**
+  String get gmExplanation;
+
+  /// No description provided for @gmYourFinalScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Your final score'**
+  String get gmYourFinalScore;
+
+  /// No description provided for @gmQuestions.
+  ///
+  /// In en, this message translates to:
+  /// **'Questions'**
+  String get gmQuestions;
+
+  /// No description provided for @gmCorrect.
+  ///
+  /// In en, this message translates to:
+  /// **'Correct'**
+  String get gmCorrect;
+
+  /// No description provided for @gmAccuracy.
+  ///
+  /// In en, this message translates to:
+  /// **'Accuracy'**
+  String get gmAccuracy;
+
+  /// No description provided for @gmBestStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Best Streak'**
+  String get gmBestStreak;
+
+  /// No description provided for @gmPlayAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Play Again'**
+  String get gmPlayAgain;
+
+  /// No description provided for @medShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get medShare;
+
+  /// No description provided for @medSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get medSave;
+
+  /// No description provided for @medFullscreen.
+  ///
+  /// In en, this message translates to:
+  /// **'Fullscreen'**
+  String get medFullscreen;
+
+  /// No description provided for @medInspirationalImages.
+  ///
+  /// In en, this message translates to:
+  /// **'Inspirational Images'**
+  String get medInspirationalImages;
+
+  /// No description provided for @medLoadingImages.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading images...'**
+  String get medLoadingImages;
+
+  /// No description provided for @medErrorLoadingImages.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading images'**
+  String get medErrorLoadingImages;
+
+  /// No description provided for @medRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get medRetry;
+
+  /// No description provided for @medNoImagesAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No images available'**
+  String get medNoImagesAvailable;
+
+  /// No description provided for @medCheckBackLaterInspirational.
+  ///
+  /// In en, this message translates to:
+  /// **'Check back later for new inspirational content'**
+  String get medCheckBackLaterInspirational;
+
+  /// No description provided for @medSetWallpaper.
+  ///
+  /// In en, this message translates to:
+  /// **'Set Wallpaper'**
+  String get medSetWallpaper;
+
+  /// No description provided for @medInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Info'**
+  String get medInfo;
+
+  /// No description provided for @medCreator.
+  ///
+  /// In en, this message translates to:
+  /// **'Creator'**
+  String get medCreator;
+
+  /// No description provided for @medWallpaperDownloadComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Wallpaper download feature coming soon!'**
+  String get medWallpaperDownloadComingSoon;
+
+  /// No description provided for @medFailedToSaveImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save image'**
+  String get medFailedToSaveImage;
+
+  /// No description provided for @medNoInspirationalImagesAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'⚠️ No inspirational images available'**
+  String get medNoInspirationalImagesAvailable;
+
+  /// No description provided for @medBeautifulWallpapersInspire.
+  ///
+  /// In en, this message translates to:
+  /// **'Beautiful wallpapers to inspire you'**
+  String get medBeautifulWallpapersInspire;
+
+  /// No description provided for @medSeeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'See All'**
+  String get medSeeAll;
+
+  /// No description provided for @medWallpaperComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Wallpaper feature coming soon!'**
+  String get medWallpaperComingSoon;
+
+  /// No description provided for @medSetAsWallpaper.
+  ///
+  /// In en, this message translates to:
+  /// **'Set as Wallpaper'**
+  String get medSetAsWallpaper;
+
+  /// No description provided for @homeReels.
+  ///
+  /// In en, this message translates to:
+  /// **'Reels'**
+  String get homeReels;
+
+  /// No description provided for @homeLoadingReels.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading Reels...'**
+  String get homeLoadingReels;
+
+  /// No description provided for @homeCouldNotLoadReels.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load reels'**
+  String get homeCouldNotLoadReels;
+
+  /// No description provided for @homeRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get homeRetry;
+
+  /// No description provided for @homeNoReelsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No Reels Yet'**
+  String get homeNoReelsYet;
+
+  /// No description provided for @homeCheckBackSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Check back soon for new content'**
+  String get homeCheckBackSoon;
+
+  /// No description provided for @accEmailCannotBeChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Email cannot be changed'**
+  String get accEmailCannotBeChanged;
+
+  /// No description provided for @accCardHolder.
+  ///
+  /// In en, this message translates to:
+  /// **'CARD HOLDER'**
+  String get accCardHolder;
+
+  /// No description provided for @accValidThru.
+  ///
+  /// In en, this message translates to:
+  /// **'VALID THRU'**
+  String get accValidThru;
+
+  /// No description provided for @accResilioPremium.
+  ///
+  /// In en, this message translates to:
+  /// **'RESILIO PREMIUM'**
+  String get accResilioPremium;
+
+  /// No description provided for @bizPaymentFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment failed'**
+  String get bizPaymentFailed;
+
+  /// No description provided for @bizPaymentCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment cancelled'**
+  String get bizPaymentCancelled;
+
+  /// No description provided for @bizCancelSubscription.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel Subscription'**
+  String get bizCancelSubscription;
+
+  /// No description provided for @bizCancelSubscriptionConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to cancel your subscription?'**
+  String get bizCancelSubscriptionConfirm;
+
+  /// No description provided for @bizNo.
+  ///
+  /// In en, this message translates to:
+  /// **'No'**
+  String get bizNo;
+
+  /// No description provided for @bizYes.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes'**
+  String get bizYes;
+
+  /// No description provided for @bizPremiumMembership.
+  ///
+  /// In en, this message translates to:
+  /// **'PREMIUM MEMBERSHIP'**
+  String get bizPremiumMembership;
+
+  /// No description provided for @bizElevateWellnessJourney.
+  ///
+  /// In en, this message translates to:
+  /// **'Elevate Your\\nWellness Journey'**
+  String get bizElevateWellnessJourney;
+
+  /// No description provided for @bizUnlockPremiumContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock premium content, guided sessions,\\nand exclusive wellness tools.'**
+  String get bizUnlockPremiumContent;
+
+  /// No description provided for @bizUnlimitedContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited Content'**
+  String get bizUnlimitedContent;
+
+  /// No description provided for @bizExpertTips.
+  ///
+  /// In en, this message translates to:
+  /// **'Expert Tips'**
+  String get bizExpertTips;
+
+  /// No description provided for @bizAdFree.
+  ///
+  /// In en, this message translates to:
+  /// **'Ad-Free'**
+  String get bizAdFree;
+
+  /// No description provided for @accConnecting.
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting…'**
+  String get accConnecting;
+
+  /// No description provided for @accVoiceCall.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice Call'**
+  String get accVoiceCall;
+
+  /// No description provided for @accCalling.
+  ///
+  /// In en, this message translates to:
+  /// **'Calling…'**
+  String get accCalling;
+
+  /// No description provided for @accUnmute.
+  ///
+  /// In en, this message translates to:
+  /// **'Unmute'**
+  String get accUnmute;
+
+  /// No description provided for @accCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera'**
+  String get accCamera;
+
+  /// No description provided for @accEnd.
+  ///
+  /// In en, this message translates to:
+  /// **'End'**
+  String get accEnd;
+
+  /// No description provided for @accFlip.
+  ///
+  /// In en, this message translates to:
+  /// **'Flip'**
+  String get accFlip;
+
+  /// No description provided for @accSpeaker.
+  ///
+  /// In en, this message translates to:
+  /// **'Speaker'**
+  String get accSpeaker;
+
+  /// No description provided for @thrSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions'**
+  String get thrSessions;
+
+  /// No description provided for @thrCouldNotLoadSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load sessions'**
+  String get thrCouldNotLoadSessions;
+
+  /// No description provided for @thrRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get thrRetry;
+
+  /// No description provided for @thrNoSessionsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No sessions found'**
+  String get thrNoSessionsFound;
+
+  /// No description provided for @thrDecline.
+  ///
+  /// In en, this message translates to:
+  /// **'Decline'**
+  String get thrDecline;
+
+  /// No description provided for @thrAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept'**
+  String get thrAccept;
+
+  /// No description provided for @thrMessagePatient.
+  ///
+  /// In en, this message translates to:
+  /// **'Message Patient'**
+  String get thrMessagePatient;
+
+  /// No description provided for @thrJoinSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Join Session'**
+  String get thrJoinSession;
+
+  /// No description provided for @thrJoinButtonActivatesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Join button activates 15 min before session'**
+  String get thrJoinButtonActivatesHint;
+
+  /// No description provided for @thrDeleteContentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Content?'**
+  String get thrDeleteContentTitle;
+
+  /// No description provided for @thrActionCannotBeUndone.
+  ///
+  /// In en, this message translates to:
+  /// **'This action cannot be undone.'**
+  String get thrActionCannotBeUndone;
+
+  /// No description provided for @thrCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get thrCancel;
+
+  /// No description provided for @thrDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get thrDelete;
+
+  /// No description provided for @thrEarnings.
+  ///
+  /// In en, this message translates to:
+  /// **'Earnings'**
+  String get thrEarnings;
+
+  /// No description provided for @thrThisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'This Week'**
+  String get thrThisWeek;
+
+  /// No description provided for @thrThisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'This Month'**
+  String get thrThisMonth;
+
+  /// No description provided for @thrTotalEarnings.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Earnings'**
+  String get thrTotalEarnings;
+
+  /// No description provided for @thrAllTimeRevenue.
+  ///
+  /// In en, this message translates to:
+  /// **'All time revenue'**
+  String get thrAllTimeRevenue;
+
+  /// No description provided for @thrWeeklyRevenue.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly Revenue'**
+  String get thrWeeklyRevenue;
+
+  /// No description provided for @thrRecentTransactions.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent Transactions'**
+  String get thrRecentTransactions;
+
+  /// No description provided for @thrMyPatients.
+  ///
+  /// In en, this message translates to:
+  /// **'My Patients'**
+  String get thrMyPatients;
+
+  /// No description provided for @thrSearchPatients.
+  ///
+  /// In en, this message translates to:
+  /// **'Search patients…'**
+  String get thrSearchPatients;
+
+  /// No description provided for @thrNoPatientsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No patients yet'**
+  String get thrNoPatientsYet;
+
+  /// No description provided for @thrNoSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'No sessions'**
+  String get thrNoSessions;
+
+  /// No description provided for @accEar.
+  ///
+  /// In en, this message translates to:
+  /// **'Ear'**
+  String get accEar;
+
+  /// No description provided for @accMute.
+  ///
+  /// In en, this message translates to:
+  /// **'Mute'**
+  String get accMute;
+
+  /// No description provided for @accNoVideo.
+  ///
+  /// In en, this message translates to:
+  /// **'No Video'**
+  String get accNoVideo;
+
+  /// No description provided for @admAddFirstTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your first tip with the + button'**
+  String get admAddFirstTip;
+
+  /// No description provided for @thrNotSessionTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Not Session Time'**
+  String get thrNotSessionTime;
+
+  /// No description provided for @accCustomizeAppInterface.
+  ///
+  /// In en, this message translates to:
+  /// **'Customize your app interface'**
+  String get accCustomizeAppInterface;
+
+  /// No description provided for @accEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get accEnglish;
+
+  /// No description provided for @accLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get accLanguage;
+
+  /// No description provided for @accNepali.
+  ///
+  /// In en, this message translates to:
+  /// **'Nepali'**
+  String get accNepali;
+
+  /// No description provided for @accRegisterAsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'I want to register as a'**
+  String get accRegisterAsLabel;
+
+  /// No description provided for @accRoleCustomer.
+  ///
+  /// In en, this message translates to:
+  /// **'customer'**
+  String get accRoleCustomer;
+
+  /// No description provided for @accRoleTherapist.
+  ///
+  /// In en, this message translates to:
+  /// **'therapist'**
+  String get accRoleTherapist;
+
+  /// No description provided for @accSelectPreferredLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Select your preferred language'**
+  String get accSelectPreferredLanguage;
+
+  /// No description provided for @accTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get accTheme;
+
+  /// No description provided for @accThemeDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get accThemeDark;
+
+  /// No description provided for @accThemeLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get accThemeLight;
+
+  /// No description provided for @accThemeSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get accThemeSystem;
+
+  /// No description provided for @accWellness.
+  ///
+  /// In en, this message translates to:
+  /// **'Wellness'**
+  String get accWellness;
+
+  /// No description provided for @bizCurrentPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Plan'**
+  String get bizCurrentPlan;
+
+  /// No description provided for @bizSubscribeNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscribe Now'**
+  String get bizSubscribeNow;
+
+  /// No description provided for @bizUpgradeNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Upgrade Now'**
+  String get bizUpgradeNow;
+
+  /// No description provided for @gmTimeLimitDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'You have {seconds} seconds for each question'**
+  String gmTimeLimitDesc(Object seconds);
+
+  /// No description provided for @gmSecondsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{seconds} seconds'**
+  String gmSecondsCount(Object seconds);
+
+  /// No description provided for @accErrorWithMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {message}'**
+  String accErrorWithMessage(Object message);
+
+  /// No description provided for @accCameraUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera unavailable: {error}'**
+  String accCameraUnavailable(Object error);
+
+  /// No description provided for @thrSessionsForFilterAppearHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions for \"{filter}\" will appear here'**
+  String thrSessionsForFilterAppearHere(Object filter);
+
+  /// No description provided for @thrNoResultsFor.
+  ///
+  /// In en, this message translates to:
+  /// **'No results for \"{query}\"'**
+  String thrNoResultsFor(Object query);
+
+  /// No description provided for @thrSessionCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 session} other{{count} sessions}}'**
+  String thrSessionCount(int count);
+
+  /// No description provided for @thrLastSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Last: {date}'**
+  String thrLastSession(Object date);
+
+  /// No description provided for @exploreSearchContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Search content...'**
+  String get exploreSearchContent;
+
+  /// No description provided for @exploreTryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try Again'**
+  String get exploreTryAgain;
+
+  /// No description provided for @catSearchCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Search categories...'**
+  String get catSearchCategories;
+
+  /// No description provided for @favSignInToSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to save favorites'**
+  String get favSignInToSave;
+
+  /// No description provided for @gmFailedLoadMoods.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load mood entries'**
+  String get gmFailedLoadMoods;
+
+  /// No description provided for @gmJournalUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Journal updated'**
+  String get gmJournalUpdated;
+
+  /// No description provided for @gmEnterThoughts.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your thoughts...'**
+  String get gmEnterThoughts;
+
+  /// No description provided for @gmStay.
+  ///
+  /// In en, this message translates to:
+  /// **'Stay'**
+  String get gmStay;
+
+  /// No description provided for @gmLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave'**
+  String get gmLeave;
+
+  /// No description provided for @gmExitGame.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit Game?'**
+  String get gmExitGame;
+
+  /// No description provided for @gmMindfulBreathing.
+  ///
+  /// In en, this message translates to:
+  /// **'Mindful Breathing'**
+  String get gmMindfulBreathing;
+
+  /// No description provided for @gmChoosePatternBegin.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Pattern & Begin'**
+  String get gmChoosePatternBegin;
+
+  /// No description provided for @gmChooseYourPattern.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Your Pattern'**
+  String get gmChooseYourPattern;
+
+  /// No description provided for @gmDifferentPatterns.
+  ///
+  /// In en, this message translates to:
+  /// **'Different patterns for different needs'**
+  String get gmDifferentPatterns;
+
+  /// No description provided for @gmHowManyRounds.
+  ///
+  /// In en, this message translates to:
+  /// **'How many rounds?'**
+  String get gmHowManyRounds;
+
+  /// No description provided for @gmGetReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Get Ready'**
+  String get gmGetReady;
+
+  /// No description provided for @gmSessionComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Session Complete!'**
+  String get gmSessionComplete;
+
+  /// No description provided for @gmExcellentWork.
+  ///
+  /// In en, this message translates to:
+  /// **'Excellent mindfulness work today.'**
+  String get gmExcellentWork;
+
+  /// No description provided for @gmDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get gmDone;
+
+  /// No description provided for @catSearchIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Search {name}...'**
+  String catSearchIn(Object name);
+
+  /// No description provided for @gmStartRounds.
+  ///
+  /// In en, this message translates to:
+  /// **'Start {count} Rounds  →'**
+  String gmStartRounds(Object count);
+
+  /// No description provided for @gmRoundProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Round {current} / {total}'**
+  String gmRoundProgress(Object current, Object total);
 }
 
 class _AppLocalizationsDelegate

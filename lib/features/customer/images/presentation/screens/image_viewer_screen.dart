@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:Resilio/l10n/app_localizations.dart';
 
 import '../../../../../core/routing/route_names.dart';
 import '../../../../../core/widgets/premium_tag_widget.dart';
@@ -99,8 +100,9 @@ class _ImageViewerScreenState extends State<ImageViewerScreen>
                 itemBuilder: (context, index, _) {
                   final item = images[index];
                   final String url;
-                  if (item is ImageEntity) url = item.imageUrl;
-                  else if (item is ExploreItemEntity) url = item.imageUrl ?? '';
+                  if (item is ImageEntity) {
+                    url = item.imageUrl;
+                  } else if (item is ExploreItemEntity) url = item.imageUrl ?? '';
                   else url = item.toString();
                   
                   return SizedBox(
@@ -110,7 +112,7 @@ class _ImageViewerScreenState extends State<ImageViewerScreen>
                         ? Image.network(
                             url,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) =>
+                            errorBuilder: (_, _, _) =>
                                 _buildPlaceholder(),
                           )
                         : _buildPlaceholder(),
@@ -286,21 +288,21 @@ class _ImageViewerScreenState extends State<ImageViewerScreen>
                               SizedBox(width: 12.w),
                               _buildActionBtn(
                                 icon: Icons.share_rounded,
-                                label: 'Share',
+                                label: AppLocalizations.of(context)!.medShare,
                                 onTap: _shareImage,
                               ),
                             ],
                           ),
                           _buildActionBtn(
                             icon: Icons.download_rounded,
-                            label: 'Save',
+                            label: AppLocalizations.of(context)!.medSave,
                             onTap: _downloadImage,
                           ),
                           _buildActionBtn(
                             icon: _showControls
                                 ? Icons.fullscreen_exit
                                 : Icons.fullscreen,
-                            label: 'Fullscreen',
+                            label: AppLocalizations.of(context)!.medFullscreen,
                             onTap: _toggleControls,
                           ),
                         ],
@@ -455,7 +457,6 @@ class _ImageViewerScreenState extends State<ImageViewerScreen>
     required IconData icon,
     required String label,
     required VoidCallback onTap,
-    bool isActive = false,
   }) {
     return Column(
       mainAxisSize: MainAxisSize.min,

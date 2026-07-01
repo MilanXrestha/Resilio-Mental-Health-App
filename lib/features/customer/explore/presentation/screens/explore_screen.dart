@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:Resilio/l10n/app_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -241,7 +242,7 @@ class _ExploreViewState extends State<_ExploreView> {
             physics: const NeverScrollableScrollPhysics(),
             itemCount: 4,
             separatorBuilder: (_, _) => SizedBox(width: 24.w),
-            itemBuilder: (_, __) => Column(
+            itemBuilder: (_, _) => Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
@@ -323,7 +324,7 @@ class _ExploreViewState extends State<_ExploreView> {
                 context.read<ExploreBloc>().add(const LoadExploreItems());
               },
               icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Try Again'),
+              label: Text(AppLocalizations.of(context)!.exploreTryAgain),
               style: FilledButton.styleFrom(
                 backgroundColor: context.primaryColor,
                 foregroundColor: Colors.white,
@@ -784,7 +785,7 @@ class _CategoryContentSection extends StatelessWidget {
   Widget build(BuildContext context) {
     if (items.isEmpty) return const SizedBox.shrink();
 
-    double _getMaxHeight() {
+    double getMaxHeight() {
       double maxHeight = 145.h; // default minimum
       for (final item in items) {
         double h = 0;
@@ -828,13 +829,13 @@ class _CategoryContentSection extends StatelessWidget {
         ),
         SizedBox(height: 16.h),
         SizedBox(
-          height: _getMaxHeight(),
+          height: getMaxHeight(),
           child: ListView.separated(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
             itemCount: items.length,
-            separatorBuilder: (_, __) => SizedBox(width: 24.w),
+            separatorBuilder: (_, _) => SizedBox(width: 24.w),
             itemBuilder: (context, index) {
               final item = items[index];
               return Align(

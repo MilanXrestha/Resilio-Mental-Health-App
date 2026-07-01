@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../domain/entities/tip_entity.dart';
-import '../../../../../core/theme/theme_extension.dart';
-import '../../../favorites/domain/entities/favorite_entity.dart';
-import '../../../favorites/presentation/widgets/favorite_button.dart';
 import '../../../../../core/widgets/premium_tag_widget.dart';
 
 class TipCardWidget extends StatelessWidget {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:Resilio/l10n/app_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../../core/theme/app_colors.dart';
@@ -137,7 +138,7 @@ class _ExploreSearchBarState extends State<ExploreSearchBar> {
                   color: isDarkMode ? Colors.white : Colors.black87,
                 ),
                 decoration: InputDecoration(
-                  hintText: 'Search content...',
+                  hintText: AppLocalizations.of(context)!.exploreSearchContent,
                   hintStyle: TextStyle(
                     fontFamily: 'Poppins',
                     fontSize: 14.sp,

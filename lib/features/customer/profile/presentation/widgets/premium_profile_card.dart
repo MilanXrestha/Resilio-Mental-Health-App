@@ -2,9 +2,9 @@ import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:Resilio/features/customer/profile/domain/entities/profile_entity.dart';
 import 'package:Resilio/features/customer/subscription/domain/entities/subscription_entity.dart';
+import 'package:Resilio/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 
 class PremiumProfileCard extends StatelessWidget {
@@ -129,7 +129,7 @@ class PremiumProfileCard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'CARD HOLDER',
+                              AppLocalizations.of(context)!.accCardHolder,
                               style: TextStyle(
                                 color: const Color(0xFFD4AF37)
                                     .withValues(alpha: 0.5),
@@ -159,7 +159,7 @@ class PremiumProfileCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
-                            'VALID THRU',
+                            AppLocalizations.of(context)!.accValidThru,
                             style: TextStyle(
                               color: const Color(0xFFD4AF37)
                                   .withValues(alpha: 0.5),
@@ -192,7 +192,7 @@ class PremiumProfileCard extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'RESILIO PREMIUM',
+                        AppLocalizations.of(context)!.accResilioPremium,
                         style: TextStyle(
                           color: const Color(0xFFD4AF37).withValues(alpha: 0.8),
                           fontWeight: FontWeight.w900,

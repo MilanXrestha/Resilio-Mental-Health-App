@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:Resilio/l10n/app_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:audioplayers/audioplayers.dart';
@@ -44,11 +45,11 @@ class BreathingGameScreen extends StatefulWidget {
   final Map<String, dynamic> gameConfig;
 
   const BreathingGameScreen({
-    Key? key,
+    super.key,
     required this.userId,
     required this.gameId,
     required this.gameConfig,
-  }) : super(key: key);
+  });
 
   @override
   BreathingGameScreenState createState() => BreathingGameScreenState();
@@ -495,7 +496,11 @@ class BreathingGameScreenState extends State<BreathingGameScreen>
             ),
             onPressed: () {
               setState(() => _isMusicMuted = !_isMusicMuted);
-              if (_isMusicMuted) _bgPlayer.pause(); else _bgPlayer.resume();
+              if (_isMusicMuted) {
+                _bgPlayer.pause();
+              } else {
+                _bgPlayer.resume();
+              }
             },
           ),
           IconButton(
@@ -546,7 +551,7 @@ class BreathingGameScreenState extends State<BreathingGameScreen>
             child: Center(child: Text('🫁', style: TextStyle(fontSize: 52.sp))),
           ),
           SizedBox(height: 32.h),
-          Text('Mindful Breathing',
+          Text(AppLocalizations.of(context)!.gmMindfulBreathing,
             style: TextStyle(fontFamily: 'Poppins', fontSize: 28.sp,
               fontWeight: FontWeight.bold, color: Colors.white)),
           SizedBox(height: 12.h),
@@ -576,7 +581,7 @@ class BreathingGameScreenState extends State<BreathingGameScreen>
                 elevation: 10,
                 shadowColor: _selectedPattern.color.withOpacity(0.6),
               ),
-              child: Text('Choose Pattern & Begin',
+              child: Text(AppLocalizations.of(context)!.gmChoosePatternBegin,
                 style: TextStyle(fontFamily: 'Poppins', fontSize: 16.sp,
                   fontWeight: FontWeight.w600)),
             ),
@@ -610,17 +615,17 @@ class BreathingGameScreenState extends State<BreathingGameScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Choose Your Pattern',
+          Text(AppLocalizations.of(context)!.gmChooseYourPattern,
             style: TextStyle(fontFamily: 'Poppins', fontSize: 24.sp,
               fontWeight: FontWeight.bold, color: Colors.white)),
           SizedBox(height: 4.h),
-          Text('Different patterns for different needs',
+          Text(AppLocalizations.of(context)!.gmDifferentPatterns,
             style: TextStyle(fontFamily: 'Poppins', fontSize: 14.sp,
               color: Colors.white60)),
           SizedBox(height: 20.h),
           ..._patterns.map(_patternCard),
           SizedBox(height: 24.h),
-          Text('How many rounds?',
+          Text(AppLocalizations.of(context)!.gmHowManyRounds,
             style: TextStyle(fontFamily: 'Poppins', fontSize: 16.sp,
               fontWeight: FontWeight.w600, color: Colors.white)),
           SizedBox(height: 12.h),
@@ -663,7 +668,7 @@ class BreathingGameScreenState extends State<BreathingGameScreen>
                 elevation: 10,
                 shadowColor: _selectedPattern.color.withOpacity(0.6),
               ),
-              child: Text('Start $_totalRounds Rounds  →',
+              child: Text(AppLocalizations.of(context)!.gmStartRounds(_totalRounds),
                 style: TextStyle(fontFamily: 'Poppins', fontSize: 16.sp,
                   fontWeight: FontWeight.w600)),
             ),
@@ -751,7 +756,7 @@ class BreathingGameScreenState extends State<BreathingGameScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text('Get Ready',
+          Text(AppLocalizations.of(context)!.gmGetReady,
             style: TextStyle(fontFamily: 'Poppins', fontSize: 22.sp,
               color: Colors.white70)),
           SizedBox(height: 32.h),
@@ -802,7 +807,7 @@ class BreathingGameScreenState extends State<BreathingGameScreen>
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Round ${_completedRounds + 1} / $_totalRounds',
+                  Text(AppLocalizations.of(context)!.gmRoundProgress(_completedRounds + 1, _totalRounds),
                     style: TextStyle(fontFamily: 'Poppins', fontSize: 16.sp,
                       fontWeight: FontWeight.w600, color: Colors.white)),
                   Text(_selectedPattern.name,
@@ -1004,11 +1009,11 @@ class BreathingGameScreenState extends State<BreathingGameScreen>
               child: Center(child: Text('🏆', style: TextStyle(fontSize: 52.sp))),
             ),
             SizedBox(height: 24.h),
-            Text('Session Complete!',
+            Text(AppLocalizations.of(context)!.gmSessionComplete,
               style: TextStyle(fontFamily: 'Poppins', fontSize: 28.sp,
                 fontWeight: FontWeight.bold, color: Colors.white)),
             SizedBox(height: 8.h),
-            Text('Excellent mindfulness work today.',
+            Text(AppLocalizations.of(context)!.gmExcellentWork,
               style: TextStyle(fontFamily: 'Poppins', fontSize: 14.sp,
                 color: Colors.white60)),
             SizedBox(height: 32.h),
@@ -1062,7 +1067,7 @@ class BreathingGameScreenState extends State<BreathingGameScreen>
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14.r)),
                   ),
-                  child: Text('Play Again',
+                  child: Text(AppLocalizations.of(context)!.gmPlayAgain,
                     style: TextStyle(fontFamily: 'Poppins', fontSize: 15.sp)),
                 ),
               ),
@@ -1079,7 +1084,7 @@ class BreathingGameScreenState extends State<BreathingGameScreen>
                     elevation: 8,
                     shadowColor: _selectedPattern.color.withOpacity(0.5),
                   ),
-                  child: Text('Done',
+                  child: Text(AppLocalizations.of(context)!.gmDone,
                     style: TextStyle(fontFamily: 'Poppins', fontSize: 15.sp,
                       fontWeight: FontWeight.w600)),
                 ),

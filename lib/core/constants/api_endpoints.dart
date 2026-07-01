@@ -52,7 +52,12 @@ class ApiEndpoints {
   // Favorites
   static const String favorites = '/favorites';
   static const String favoriteStatus = '/favorites/status';
-  static const String favoriteUser = '/favorites/user'; 
+  static const String favoriteUser = '/favorites/user';
+
+  // Mood sharing with therapists
+  static const String moodShareCandidates = '/mood/therapists';
+  static const String moodShare = '/mood/share';
+  static const String moodShares = '/mood/shares';
 
   // SuperTokens FDI endpoints (passwordless)
   // These are served by supertokens-node middleware at /api/v1/auth/**

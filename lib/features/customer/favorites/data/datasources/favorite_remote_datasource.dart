@@ -3,7 +3,6 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../../../core/constants/api_endpoints.dart';
 import '../../../../../../core/errors/failures.dart';
-import '../../domain/entities/favorite_entity.dart';
 
 @LazySingleton()
 class FavoriteRemoteDataSource {

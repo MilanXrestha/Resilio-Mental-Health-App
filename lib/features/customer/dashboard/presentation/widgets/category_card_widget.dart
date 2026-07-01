@@ -62,10 +62,10 @@ class CategoryCardWidget extends StatelessWidget {
                   fit: BoxFit.cover,
                   fadeInDuration: const Duration(milliseconds: 200),
                   fadeOutDuration: const Duration(milliseconds: 200),
-                  placeholder: (_, __) => Container(
+                  placeholder: (_, _) => Container(
                     color: isDarkMode ? Colors.grey[800] : Colors.grey[400],
                   ),
-                  errorWidget: (_, __, ___) => _buildErrorWidget(context, isDarkMode),
+                  errorWidget: (_, _, _) => _buildErrorWidget(context, isDarkMode),
                 )
               else
                 _buildErrorWidget(context, isDarkMode),

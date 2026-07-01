@@ -1107,4 +1107,596 @@ class AppLocalizationsNe extends AppLocalizations {
 
   @override
   String get qPrefOpt4 => 'समान सांस्कृतिक पृष्ठभूमिको थेरापिस्ट रुचाउँछु';
+
+  @override
+  String get admContentManagement => 'सामग्री व्यवस्थापन';
+
+  @override
+  String get admSearchTips => 'सुझाव खोज्नुहोस्...';
+
+  @override
+  String get admNoTipsYet => 'अहिलेसम्म कुनै सुझाव छैन';
+
+  @override
+  String get admSearchQuotes => 'उद्धरण खोज्नुहोस्...';
+
+  @override
+  String get admNoQuotesYet => 'अहिलेसम्म कुनै उद्धरण छैन';
+
+  @override
+  String get admSearchAudio => 'अडियो खोज्नुहोस्...';
+
+  @override
+  String get admNoAudioYet => 'अहिलेसम्म कुनै अडियो छैन';
+
+  @override
+  String get admSearchVideos => 'भिडियो खोज्नुहोस्...';
+
+  @override
+  String get admAll => 'सबै';
+
+  @override
+  String get admShorts => '⚡ सर्ट्स';
+
+  @override
+  String get admLong => '🎬 लामो';
+
+  @override
+  String get admNoVideosYet => 'अहिलेसम्म कुनै भिडियो छैन';
+
+  @override
+  String get admSearchImages => 'तस्बिर खोज्नुहोस्...';
+
+  @override
+  String get admNoImagesYet => 'अहिलेसम्म कुनै तस्बिर छैन';
+
+  @override
+  String get admDeleteContent => 'सामग्री मेटाउनुहोस्';
+
+  @override
+  String get admDeleteItemConfirm =>
+      'के तपाईं यो वस्तु मेटाउन निश्चित हुनुहुन्छ?';
+
+  @override
+  String get admCancel => 'रद्द गर्नुहोस्';
+
+  @override
+  String get admDelete => 'मेटाउनुहोस्';
+
+  @override
+  String get admOverview => 'सिंहावलोकन';
+
+  @override
+  String get admContent => 'सामग्री';
+
+  @override
+  String get admTherapists => 'थेरापिस्टहरू';
+
+  @override
+  String get admUsers => 'प्रयोगकर्ताहरू';
+
+  @override
+  String get admMore => 'थप';
+
+  @override
+  String get admPushNotifications => 'पुश सूचनाहरू';
+
+  @override
+  String get admPushNotificationsSubtitle =>
+      'प्रयोगकर्ता र थेरापिस्टहरूलाई सन्देश पठाउनुहोस्';
+
+  @override
+  String get admPreferencesConfig => 'प्राथमिकता कन्फिग';
+
+  @override
+  String get admPreferencesConfigSubtitle =>
+      'प्रयोगकर्ता अनबोर्डिङ विकल्पहरू व्यवस्थापन गर्नुहोस्';
+
+  @override
+  String get admRevenueAnalytics => 'राजस्व विश्लेषण';
+
+  @override
+  String get admRevenueAnalyticsSubtitle =>
+      'विस्तृत चार्ट र भुक्तानीहरू हेर्नुहोस्';
+
+  @override
+  String get admSettings => 'सेटिङहरू';
+
+  @override
+  String get admSettingsSubtitle => 'थिम, पहुँच र लगहरू';
+
+  @override
+  String get homePremiumRequired =>
+      'यो सामग्री चलाउन प्रिमियम सदस्यता आवश्यक छ।';
+
+  @override
+  String get gmGames => 'खेलहरू';
+
+  @override
+  String get gmTodaysMood => 'आजको मुड';
+
+  @override
+  String get gmWellnessHub => 'वेलनेस हब';
+
+  @override
+  String get gmLevelProgress => 'स्तर प्रगति';
+
+  @override
+  String get gmToggleSoundEffects => 'ध्वनि प्रभाव टगल गर्नुहोस्';
+
+  @override
+  String get gmToggleBackgroundMusic => 'पृष्ठभूमि सङ्गीत टगल गर्नुहोस्';
+
+  @override
+  String get gmExitQuizTitle => 'क्विज बन्द गर्ने?';
+
+  @override
+  String get gmExitProgressLost =>
+      'तपाईंको प्रगति हराउनेछ। के तपाईं बाहिर निस्कन निश्चित हुनुहुन्छ?';
+
+  @override
+  String get gmCancel => 'रद्द गर्नुहोस्';
+
+  @override
+  String get gmExit => 'बाहिर';
+
+  @override
+  String get gmLoadingQuestions => 'प्रश्नहरू लोड हुँदैछ...';
+
+  @override
+  String get gmWellnessTrivia => 'वेलनेस ट्रिभिया';
+
+  @override
+  String get gmTestWellnessKnowledge => 'आफ्नो वेलनेस ज्ञान जाँच्नुहोस्';
+
+  @override
+  String get gmTimeLimit => 'समय सीमा';
+
+  @override
+  String get gmScoring => 'स्कोरिङ';
+
+  @override
+  String get gmScoringDesc =>
+      'बढी अंकका लागि छिटो उत्तर दिनुहोस्। बोनसका लागि स्ट्रिक बनाउनुहोस्!';
+
+  @override
+  String get gmLearn => 'सिक्नुहोस्';
+
+  @override
+  String get gmLearnDesc => 'व्याख्याहरूले प्रत्येक उत्तर बुझ्न मद्दत गर्नेछ';
+
+  @override
+  String get gmNoQuestionsAvailable =>
+      'कुनै प्रश्न उपलब्ध छैन। कृपया पछि फेरि प्रयास गर्नुहोस्।';
+
+  @override
+  String get gmStartQuiz => 'क्विज सुरु गर्नुहोस्';
+
+  @override
+  String get gmExplanation => 'व्याख्या';
+
+  @override
+  String get gmYourFinalScore => 'तपाईंको अन्तिम स्कोर';
+
+  @override
+  String get gmQuestions => 'प्रश्नहरू';
+
+  @override
+  String get gmCorrect => 'सही';
+
+  @override
+  String get gmAccuracy => 'सटीकता';
+
+  @override
+  String get gmBestStreak => 'उत्कृष्ट स्ट्रिक';
+
+  @override
+  String get gmPlayAgain => 'फेरि खेल्नुहोस्';
+
+  @override
+  String get medShare => 'सेयर';
+
+  @override
+  String get medSave => 'सुरक्षित';
+
+  @override
+  String get medFullscreen => 'पूर्ण स्क्रिन';
+
+  @override
+  String get medInspirationalImages => 'प्रेरणादायी तस्बिरहरू';
+
+  @override
+  String get medLoadingImages => 'तस्बिरहरू लोड हुँदैछ...';
+
+  @override
+  String get medErrorLoadingImages => 'तस्बिर लोड गर्न त्रुटि';
+
+  @override
+  String get medRetry => 'पुनः प्रयास';
+
+  @override
+  String get medNoImagesAvailable => 'कुनै तस्बिर उपलब्ध छैन';
+
+  @override
+  String get medCheckBackLaterInspirational =>
+      'नयाँ प्रेरणादायी सामग्रीका लागि पछि फर्केर आउनुहोस्';
+
+  @override
+  String get medSetWallpaper => 'वालपेपर सेट गर्नुहोस्';
+
+  @override
+  String get medInfo => 'जानकारी';
+
+  @override
+  String get medCreator => 'सर्जक';
+
+  @override
+  String get medWallpaperDownloadComingSoon =>
+      'वालपेपर डाउनलोड सुविधा चाँडै आउँदैछ!';
+
+  @override
+  String get medFailedToSaveImage => 'तस्बिर सुरक्षित गर्न असफल';
+
+  @override
+  String get medNoInspirationalImagesAvailable =>
+      '⚠️ कुनै प्रेरणादायी तस्बिर उपलब्ध छैन';
+
+  @override
+  String get medBeautifulWallpapersInspire =>
+      'तपाईंलाई प्रेरित गर्ने सुन्दर वालपेपरहरू';
+
+  @override
+  String get medSeeAll => 'सबै हेर्नुहोस्';
+
+  @override
+  String get medWallpaperComingSoon => 'वालपेपर सुविधा चाँडै आउँदैछ!';
+
+  @override
+  String get medSetAsWallpaper => 'वालपेपरको रूपमा सेट गर्नुहोस्';
+
+  @override
+  String get homeReels => 'रिल्स';
+
+  @override
+  String get homeLoadingReels => 'रिल्स लोड हुँदैछ...';
+
+  @override
+  String get homeCouldNotLoadReels => 'रिल्स लोड गर्न सकिएन';
+
+  @override
+  String get homeRetry => 'पुनः प्रयास';
+
+  @override
+  String get homeNoReelsYet => 'अहिलेसम्म कुनै रिल छैन';
+
+  @override
+  String get homeCheckBackSoon => 'नयाँ सामग्रीका लागि चाँडै फर्केर आउनुहोस्';
+
+  @override
+  String get accEmailCannotBeChanged => 'इमेल परिवर्तन गर्न सकिँदैन';
+
+  @override
+  String get accCardHolder => 'कार्ड धारक';
+
+  @override
+  String get accValidThru => 'मान्य अवधि';
+
+  @override
+  String get accResilioPremium => 'रेजिलियो प्रिमियम';
+
+  @override
+  String get bizPaymentFailed => 'भुक्तानी असफल';
+
+  @override
+  String get bizPaymentCancelled => 'भुक्तानी रद्द भयो';
+
+  @override
+  String get bizCancelSubscription => 'सदस्यता रद्द गर्नुहोस्';
+
+  @override
+  String get bizCancelSubscriptionConfirm =>
+      'के तपाईं आफ्नो सदस्यता रद्द गर्न निश्चित हुनुहुन्छ?';
+
+  @override
+  String get bizNo => 'होइन';
+
+  @override
+  String get bizYes => 'हो';
+
+  @override
+  String get bizPremiumMembership => 'प्रिमियम सदस्यता';
+
+  @override
+  String get bizElevateWellnessJourney => 'आफ्नो\nवेलनेस यात्रा उकास्नुहोस्';
+
+  @override
+  String get bizUnlockPremiumContent =>
+      'प्रिमियम सामग्री, निर्देशित सत्रहरू,\nर विशेष वेलनेस उपकरणहरू अनलक गर्नुहोस्।';
+
+  @override
+  String get bizUnlimitedContent => 'असीमित सामग्री';
+
+  @override
+  String get bizExpertTips => 'विशेषज्ञ सुझावहरू';
+
+  @override
+  String get bizAdFree => 'विज्ञापन रहित';
+
+  @override
+  String get accConnecting => 'जडान हुँदैछ…';
+
+  @override
+  String get accVoiceCall => 'भ्वाइस कल';
+
+  @override
+  String get accCalling => 'कल गर्दै…';
+
+  @override
+  String get accUnmute => 'अनम्युट';
+
+  @override
+  String get accCamera => 'क्यामेरा';
+
+  @override
+  String get accEnd => 'अन्त्य';
+
+  @override
+  String get accFlip => 'फ्लिप';
+
+  @override
+  String get accSpeaker => 'स्पिकर';
+
+  @override
+  String get thrSessions => 'सत्रहरू';
+
+  @override
+  String get thrCouldNotLoadSessions => 'सत्रहरू लोड गर्न सकिएन';
+
+  @override
+  String get thrRetry => 'पुनः प्रयास';
+
+  @override
+  String get thrNoSessionsFound => 'कुनै सत्र फेला परेन';
+
+  @override
+  String get thrDecline => 'अस्वीकार';
+
+  @override
+  String get thrAccept => 'स्वीकार';
+
+  @override
+  String get thrMessagePatient => 'बिरामीलाई सन्देश';
+
+  @override
+  String get thrJoinSession => 'सत्रमा सामेल हुनुहोस्';
+
+  @override
+  String get thrJoinButtonActivatesHint =>
+      'सत्र सुरु हुनु १५ मिनेट अघि जोइन बटन सक्रिय हुन्छ';
+
+  @override
+  String get thrDeleteContentTitle => 'सामग्री मेटाउने?';
+
+  @override
+  String get thrActionCannotBeUndone => 'यो कार्य पूर्ववत गर्न सकिँदैन।';
+
+  @override
+  String get thrCancel => 'रद्द गर्नुहोस्';
+
+  @override
+  String get thrDelete => 'मेटाउनुहोस्';
+
+  @override
+  String get thrEarnings => 'आम्दानी';
+
+  @override
+  String get thrThisWeek => 'यो हप्ता';
+
+  @override
+  String get thrThisMonth => 'यो महिना';
+
+  @override
+  String get thrTotalEarnings => 'कुल आम्दानी';
+
+  @override
+  String get thrAllTimeRevenue => 'सम्पूर्ण समयको राजस्व';
+
+  @override
+  String get thrWeeklyRevenue => 'साप्ताहिक राजस्व';
+
+  @override
+  String get thrRecentTransactions => 'हालका कारोबारहरू';
+
+  @override
+  String get thrMyPatients => 'मेरा बिरामीहरू';
+
+  @override
+  String get thrSearchPatients => 'बिरामी खोज्नुहोस्…';
+
+  @override
+  String get thrNoPatientsYet => 'अहिलेसम्म कुनै बिरामी छैन';
+
+  @override
+  String get thrNoSessions => 'कुनै सत्र छैन';
+
+  @override
+  String get accEar => 'कान';
+
+  @override
+  String get accMute => 'म्युट';
+
+  @override
+  String get accNoVideo => 'भिडियो छैन';
+
+  @override
+  String get admAddFirstTip => '+ बटनबाट आफ्नो पहिलो सुझाव थप्नुहोस्';
+
+  @override
+  String get thrNotSessionTime => 'सत्रको समय होइन';
+
+  @override
+  String get accCustomizeAppInterface => 'आफ्नो एप इन्टरफेस अनुकूलन गर्नुहोस्';
+
+  @override
+  String get accEnglish => 'अंग्रेजी';
+
+  @override
+  String get accLanguage => 'भाषा';
+
+  @override
+  String get accNepali => 'नेपाली';
+
+  @override
+  String get accRegisterAsLabel => 'म यसको रूपमा दर्ता हुन चाहन्छु';
+
+  @override
+  String get accRoleCustomer => 'ग्राहक';
+
+  @override
+  String get accRoleTherapist => 'थेरापिस्ट';
+
+  @override
+  String get accSelectPreferredLanguage => 'आफ्नो मनपर्ने भाषा छान्नुहोस्';
+
+  @override
+  String get accTheme => 'थिम';
+
+  @override
+  String get accThemeDark => 'अँध्यारो';
+
+  @override
+  String get accThemeLight => 'उज्यालो';
+
+  @override
+  String get accThemeSystem => 'सिस्टम';
+
+  @override
+  String get accWellness => 'वेलनेस';
+
+  @override
+  String get bizCurrentPlan => 'हालको योजना';
+
+  @override
+  String get bizSubscribeNow => 'अहिले सदस्यता लिनुहोस्';
+
+  @override
+  String get bizUpgradeNow => 'अहिले अपग्रेड गर्नुहोस्';
+
+  @override
+  String gmTimeLimitDesc(Object seconds) {
+    return 'प्रत्येक प्रश्नका लागि तपाईंसँग $seconds सेकेन्ड छ';
+  }
+
+  @override
+  String gmSecondsCount(Object seconds) {
+    return '$seconds सेकेन्ड';
+  }
+
+  @override
+  String accErrorWithMessage(Object message) {
+    return 'त्रुटि: $message';
+  }
+
+  @override
+  String accCameraUnavailable(Object error) {
+    return 'क्यामेरा उपलब्ध छैन: $error';
+  }
+
+  @override
+  String thrSessionsForFilterAppearHere(Object filter) {
+    return '\"$filter\" का सत्रहरू यहाँ देखिनेछन्';
+  }
+
+  @override
+  String thrNoResultsFor(Object query) {
+    return '\"$query\" का लागि कुनै नतिजा छैन';
+  }
+
+  @override
+  String thrSessionCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count सत्र',
+      one: '१ सत्र',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String thrLastSession(Object date) {
+    return 'अन्तिम: $date';
+  }
+
+  @override
+  String get exploreSearchContent => 'सामग्री खोज्नुहोस्...';
+
+  @override
+  String get exploreTryAgain => 'पुनः प्रयास गर्नुहोस्';
+
+  @override
+  String get catSearchCategories => 'कोटिहरू खोज्नुहोस्...';
+
+  @override
+  String get favSignInToSave => 'मनपर्ने सुरक्षित गर्न साइन इन गर्नुहोस्';
+
+  @override
+  String get gmFailedLoadMoods => 'मुड प्रविष्टिहरू लोड गर्न असफल';
+
+  @override
+  String get gmJournalUpdated => 'जर्नल अपडेट भयो';
+
+  @override
+  String get gmEnterThoughts => 'आफ्ना विचारहरू लेख्नुहोस्...';
+
+  @override
+  String get gmStay => 'रहनुहोस्';
+
+  @override
+  String get gmLeave => 'छोड्नुहोस्';
+
+  @override
+  String get gmExitGame => 'खेल बन्द गर्ने?';
+
+  @override
+  String get gmMindfulBreathing => 'सचेत श्वासप्रश्वास';
+
+  @override
+  String get gmChoosePatternBegin => 'ढाँचा छान्नुहोस् र सुरु गर्नुहोस्';
+
+  @override
+  String get gmChooseYourPattern => 'आफ्नो ढाँचा छान्नुहोस्';
+
+  @override
+  String get gmDifferentPatterns => 'फरक आवश्यकताका लागि फरक ढाँचाहरू';
+
+  @override
+  String get gmHowManyRounds => 'कति राउन्ड?';
+
+  @override
+  String get gmGetReady => 'तयार हुनुहोस्';
+
+  @override
+  String get gmSessionComplete => 'सत्र पूरा भयो!';
+
+  @override
+  String get gmExcellentWork => 'आज उत्कृष्ट सचेतनताको काम।';
+
+  @override
+  String get gmDone => 'सम्पन्न';
+
+  @override
+  String catSearchIn(Object name) {
+    return '$name खोज्नुहोस्...';
+  }
+
+  @override
+  String gmStartRounds(Object count) {
+    return '$count राउन्ड सुरु गर्नुहोस्  →';
+  }
+
+  @override
+  String gmRoundProgress(Object current, Object total) {
+    return 'राउन्ड $current / $total';
+  }
 }

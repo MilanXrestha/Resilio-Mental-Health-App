@@ -1100,4 +1100,594 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get qPrefOpt4 => 'Prefer therapist with similar cultural background';
+
+  @override
+  String get admContentManagement => 'Content Management';
+
+  @override
+  String get admSearchTips => 'Search tips...';
+
+  @override
+  String get admNoTipsYet => 'No tips yet';
+
+  @override
+  String get admSearchQuotes => 'Search quotes...';
+
+  @override
+  String get admNoQuotesYet => 'No quotes yet';
+
+  @override
+  String get admSearchAudio => 'Search audio...';
+
+  @override
+  String get admNoAudioYet => 'No audio tracks yet';
+
+  @override
+  String get admSearchVideos => 'Search videos...';
+
+  @override
+  String get admAll => 'All';
+
+  @override
+  String get admShorts => '⚡ Shorts';
+
+  @override
+  String get admLong => '🎬 Long';
+
+  @override
+  String get admNoVideosYet => 'No videos yet';
+
+  @override
+  String get admSearchImages => 'Search images...';
+
+  @override
+  String get admNoImagesYet => 'No images yet';
+
+  @override
+  String get admDeleteContent => 'Delete Content';
+
+  @override
+  String get admDeleteItemConfirm =>
+      'Are you sure you want to delete this item?';
+
+  @override
+  String get admCancel => 'Cancel';
+
+  @override
+  String get admDelete => 'Delete';
+
+  @override
+  String get admOverview => 'Overview';
+
+  @override
+  String get admContent => 'Content';
+
+  @override
+  String get admTherapists => 'Therapists';
+
+  @override
+  String get admUsers => 'Users';
+
+  @override
+  String get admMore => 'More';
+
+  @override
+  String get admPushNotifications => 'Push Notifications';
+
+  @override
+  String get admPushNotificationsSubtitle =>
+      'Broadcast messages to users and therapists';
+
+  @override
+  String get admPreferencesConfig => 'Preferences Config';
+
+  @override
+  String get admPreferencesConfigSubtitle => 'Manage user onboarding options';
+
+  @override
+  String get admRevenueAnalytics => 'Revenue Analytics';
+
+  @override
+  String get admRevenueAnalyticsSubtitle => 'View detailed charts and payouts';
+
+  @override
+  String get admSettings => 'Settings';
+
+  @override
+  String get admSettingsSubtitle => 'Theme, Access, and Logs';
+
+  @override
+  String get homePremiumRequired =>
+      'Premium subscription required to play this content.';
+
+  @override
+  String get gmGames => 'Games';
+
+  @override
+  String get gmTodaysMood => 'Today\'s Mood';
+
+  @override
+  String get gmWellnessHub => 'Wellness Hub';
+
+  @override
+  String get gmLevelProgress => 'Level Progress';
+
+  @override
+  String get gmToggleSoundEffects => 'Toggle Sound Effects';
+
+  @override
+  String get gmToggleBackgroundMusic => 'Toggle Background Music';
+
+  @override
+  String get gmExitQuizTitle => 'Exit Quiz?';
+
+  @override
+  String get gmExitProgressLost =>
+      'Your progress will be lost. Are you sure you want to exit?';
+
+  @override
+  String get gmCancel => 'Cancel';
+
+  @override
+  String get gmExit => 'Exit';
+
+  @override
+  String get gmLoadingQuestions => 'Loading Questions...';
+
+  @override
+  String get gmWellnessTrivia => 'Wellness Trivia';
+
+  @override
+  String get gmTestWellnessKnowledge => 'Test your wellness knowledge';
+
+  @override
+  String get gmTimeLimit => 'Time Limit';
+
+  @override
+  String get gmScoring => 'Scoring';
+
+  @override
+  String get gmScoringDesc =>
+      'Answer faster for more points. Build streaks for bonuses!';
+
+  @override
+  String get gmLearn => 'Learn';
+
+  @override
+  String get gmLearnDesc => 'Explanations will help you understand each answer';
+
+  @override
+  String get gmNoQuestionsAvailable =>
+      'No questions available. Please try again later.';
+
+  @override
+  String get gmStartQuiz => 'Start Quiz';
+
+  @override
+  String get gmExplanation => 'Explanation';
+
+  @override
+  String get gmYourFinalScore => 'Your final score';
+
+  @override
+  String get gmQuestions => 'Questions';
+
+  @override
+  String get gmCorrect => 'Correct';
+
+  @override
+  String get gmAccuracy => 'Accuracy';
+
+  @override
+  String get gmBestStreak => 'Best Streak';
+
+  @override
+  String get gmPlayAgain => 'Play Again';
+
+  @override
+  String get medShare => 'Share';
+
+  @override
+  String get medSave => 'Save';
+
+  @override
+  String get medFullscreen => 'Fullscreen';
+
+  @override
+  String get medInspirationalImages => 'Inspirational Images';
+
+  @override
+  String get medLoadingImages => 'Loading images...';
+
+  @override
+  String get medErrorLoadingImages => 'Error loading images';
+
+  @override
+  String get medRetry => 'Retry';
+
+  @override
+  String get medNoImagesAvailable => 'No images available';
+
+  @override
+  String get medCheckBackLaterInspirational =>
+      'Check back later for new inspirational content';
+
+  @override
+  String get medSetWallpaper => 'Set Wallpaper';
+
+  @override
+  String get medInfo => 'Info';
+
+  @override
+  String get medCreator => 'Creator';
+
+  @override
+  String get medWallpaperDownloadComingSoon =>
+      'Wallpaper download feature coming soon!';
+
+  @override
+  String get medFailedToSaveImage => 'Failed to save image';
+
+  @override
+  String get medNoInspirationalImagesAvailable =>
+      '⚠️ No inspirational images available';
+
+  @override
+  String get medBeautifulWallpapersInspire =>
+      'Beautiful wallpapers to inspire you';
+
+  @override
+  String get medSeeAll => 'See All';
+
+  @override
+  String get medWallpaperComingSoon => 'Wallpaper feature coming soon!';
+
+  @override
+  String get medSetAsWallpaper => 'Set as Wallpaper';
+
+  @override
+  String get homeReels => 'Reels';
+
+  @override
+  String get homeLoadingReels => 'Loading Reels...';
+
+  @override
+  String get homeCouldNotLoadReels => 'Could not load reels';
+
+  @override
+  String get homeRetry => 'Retry';
+
+  @override
+  String get homeNoReelsYet => 'No Reels Yet';
+
+  @override
+  String get homeCheckBackSoon => 'Check back soon for new content';
+
+  @override
+  String get accEmailCannotBeChanged => 'Email cannot be changed';
+
+  @override
+  String get accCardHolder => 'CARD HOLDER';
+
+  @override
+  String get accValidThru => 'VALID THRU';
+
+  @override
+  String get accResilioPremium => 'RESILIO PREMIUM';
+
+  @override
+  String get bizPaymentFailed => 'Payment failed';
+
+  @override
+  String get bizPaymentCancelled => 'Payment cancelled';
+
+  @override
+  String get bizCancelSubscription => 'Cancel Subscription';
+
+  @override
+  String get bizCancelSubscriptionConfirm =>
+      'Are you sure you want to cancel your subscription?';
+
+  @override
+  String get bizNo => 'No';
+
+  @override
+  String get bizYes => 'Yes';
+
+  @override
+  String get bizPremiumMembership => 'PREMIUM MEMBERSHIP';
+
+  @override
+  String get bizElevateWellnessJourney => 'Elevate Your\\nWellness Journey';
+
+  @override
+  String get bizUnlockPremiumContent =>
+      'Unlock premium content, guided sessions,\\nand exclusive wellness tools.';
+
+  @override
+  String get bizUnlimitedContent => 'Unlimited Content';
+
+  @override
+  String get bizExpertTips => 'Expert Tips';
+
+  @override
+  String get bizAdFree => 'Ad-Free';
+
+  @override
+  String get accConnecting => 'Connecting…';
+
+  @override
+  String get accVoiceCall => 'Voice Call';
+
+  @override
+  String get accCalling => 'Calling…';
+
+  @override
+  String get accUnmute => 'Unmute';
+
+  @override
+  String get accCamera => 'Camera';
+
+  @override
+  String get accEnd => 'End';
+
+  @override
+  String get accFlip => 'Flip';
+
+  @override
+  String get accSpeaker => 'Speaker';
+
+  @override
+  String get thrSessions => 'Sessions';
+
+  @override
+  String get thrCouldNotLoadSessions => 'Could not load sessions';
+
+  @override
+  String get thrRetry => 'Retry';
+
+  @override
+  String get thrNoSessionsFound => 'No sessions found';
+
+  @override
+  String get thrDecline => 'Decline';
+
+  @override
+  String get thrAccept => 'Accept';
+
+  @override
+  String get thrMessagePatient => 'Message Patient';
+
+  @override
+  String get thrJoinSession => 'Join Session';
+
+  @override
+  String get thrJoinButtonActivatesHint =>
+      'Join button activates 15 min before session';
+
+  @override
+  String get thrDeleteContentTitle => 'Delete Content?';
+
+  @override
+  String get thrActionCannotBeUndone => 'This action cannot be undone.';
+
+  @override
+  String get thrCancel => 'Cancel';
+
+  @override
+  String get thrDelete => 'Delete';
+
+  @override
+  String get thrEarnings => 'Earnings';
+
+  @override
+  String get thrThisWeek => 'This Week';
+
+  @override
+  String get thrThisMonth => 'This Month';
+
+  @override
+  String get thrTotalEarnings => 'Total Earnings';
+
+  @override
+  String get thrAllTimeRevenue => 'All time revenue';
+
+  @override
+  String get thrWeeklyRevenue => 'Weekly Revenue';
+
+  @override
+  String get thrRecentTransactions => 'Recent Transactions';
+
+  @override
+  String get thrMyPatients => 'My Patients';
+
+  @override
+  String get thrSearchPatients => 'Search patients…';
+
+  @override
+  String get thrNoPatientsYet => 'No patients yet';
+
+  @override
+  String get thrNoSessions => 'No sessions';
+
+  @override
+  String get accEar => 'Ear';
+
+  @override
+  String get accMute => 'Mute';
+
+  @override
+  String get accNoVideo => 'No Video';
+
+  @override
+  String get admAddFirstTip => 'Add your first tip with the + button';
+
+  @override
+  String get thrNotSessionTime => 'Not Session Time';
+
+  @override
+  String get accCustomizeAppInterface => 'Customize your app interface';
+
+  @override
+  String get accEnglish => 'English';
+
+  @override
+  String get accLanguage => 'Language';
+
+  @override
+  String get accNepali => 'Nepali';
+
+  @override
+  String get accRegisterAsLabel => 'I want to register as a';
+
+  @override
+  String get accRoleCustomer => 'customer';
+
+  @override
+  String get accRoleTherapist => 'therapist';
+
+  @override
+  String get accSelectPreferredLanguage => 'Select your preferred language';
+
+  @override
+  String get accTheme => 'Theme';
+
+  @override
+  String get accThemeDark => 'Dark';
+
+  @override
+  String get accThemeLight => 'Light';
+
+  @override
+  String get accThemeSystem => 'System';
+
+  @override
+  String get accWellness => 'Wellness';
+
+  @override
+  String get bizCurrentPlan => 'Current Plan';
+
+  @override
+  String get bizSubscribeNow => 'Subscribe Now';
+
+  @override
+  String get bizUpgradeNow => 'Upgrade Now';
+
+  @override
+  String gmTimeLimitDesc(Object seconds) {
+    return 'You have $seconds seconds for each question';
+  }
+
+  @override
+  String gmSecondsCount(Object seconds) {
+    return '$seconds seconds';
+  }
+
+  @override
+  String accErrorWithMessage(Object message) {
+    return 'Error: $message';
+  }
+
+  @override
+  String accCameraUnavailable(Object error) {
+    return 'Camera unavailable: $error';
+  }
+
+  @override
+  String thrSessionsForFilterAppearHere(Object filter) {
+    return 'Sessions for \"$filter\" will appear here';
+  }
+
+  @override
+  String thrNoResultsFor(Object query) {
+    return 'No results for \"$query\"';
+  }
+
+  @override
+  String thrSessionCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sessions',
+      one: '1 session',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String thrLastSession(Object date) {
+    return 'Last: $date';
+  }
+
+  @override
+  String get exploreSearchContent => 'Search content...';
+
+  @override
+  String get exploreTryAgain => 'Try Again';
+
+  @override
+  String get catSearchCategories => 'Search categories...';
+
+  @override
+  String get favSignInToSave => 'Sign in to save favorites';
+
+  @override
+  String get gmFailedLoadMoods => 'Failed to load mood entries';
+
+  @override
+  String get gmJournalUpdated => 'Journal updated';
+
+  @override
+  String get gmEnterThoughts => 'Enter your thoughts...';
+
+  @override
+  String get gmStay => 'Stay';
+
+  @override
+  String get gmLeave => 'Leave';
+
+  @override
+  String get gmExitGame => 'Exit Game?';
+
+  @override
+  String get gmMindfulBreathing => 'Mindful Breathing';
+
+  @override
+  String get gmChoosePatternBegin => 'Choose Pattern & Begin';
+
+  @override
+  String get gmChooseYourPattern => 'Choose Your Pattern';
+
+  @override
+  String get gmDifferentPatterns => 'Different patterns for different needs';
+
+  @override
+  String get gmHowManyRounds => 'How many rounds?';
+
+  @override
+  String get gmGetReady => 'Get Ready';
+
+  @override
+  String get gmSessionComplete => 'Session Complete!';
+
+  @override
+  String get gmExcellentWork => 'Excellent mindfulness work today.';
+
+  @override
+  String get gmDone => 'Done';
+
+  @override
+  String catSearchIn(Object name) {
+    return 'Search $name...';
+  }
+
+  @override
+  String gmStartRounds(Object count) {
+    return 'Start $count Rounds  →';
+  }
+
+  @override
+  String gmRoundProgress(Object current, Object total) {
+    return 'Round $current / $total';
+  }
 }

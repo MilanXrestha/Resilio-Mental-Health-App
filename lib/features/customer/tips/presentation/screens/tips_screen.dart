@@ -266,7 +266,7 @@ class _TipDetailSheet extends StatelessWidget {
                   CircleAvatar(
                     radius: 20.r,
                     backgroundImage: NetworkImage(tip.authorIconUrl),
-                    onBackgroundImageError: (_, __) => null,
+                    onBackgroundImageError: (_, _) {},
                   ),
                   SizedBox(width: 12.w),
                 ],

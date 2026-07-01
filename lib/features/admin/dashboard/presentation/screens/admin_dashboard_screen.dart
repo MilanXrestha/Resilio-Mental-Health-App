@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Resilio/core/theme/app_colors.dart';
 import 'package:Resilio/core/di/injection.dart';
+import 'package:Resilio/l10n/app_localizations.dart';
 import 'admin_overview_screen.dart';
 import 'admin_content_screen.dart';
 import 'admin_therapists_screen.dart';
@@ -70,22 +71,22 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           elevation: 8,
           selectedLabelStyle: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600, fontSize: 11),
           unselectedLabelStyle: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w500, fontSize: 11),
-          items: const [
+          items: [
             BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard_rounded),
-              label: 'Overview',
+              icon: const Icon(Icons.dashboard_rounded),
+              label: AppLocalizations.of(context)!.admOverview,
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.perm_media_rounded),
-              label: 'Content',
+              icon: const Icon(Icons.perm_media_rounded),
+              label: AppLocalizations.of(context)!.admContent,
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.psychology_rounded),
-              label: 'Therapists',
+              icon: const Icon(Icons.psychology_rounded),
+              label: AppLocalizations.of(context)!.admTherapists,
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.people_rounded),
-              label: 'Users',
+              icon: const Icon(Icons.people_rounded),
+              label: AppLocalizations.of(context)!.admUsers,
             ),
           ],
         ),

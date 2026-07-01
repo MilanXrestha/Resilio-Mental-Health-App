@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
 
-import '../../domain/entities/image_entity.dart';
 
 abstract class ImageEvent extends Equatable {
   const ImageEvent();

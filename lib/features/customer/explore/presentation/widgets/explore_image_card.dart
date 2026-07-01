@@ -44,8 +44,8 @@ class ExploreImageCard extends StatelessWidget {
                   ? CachedNetworkImage(
                       imageUrl: item.imageUrl!,
                       fit: BoxFit.cover,
-                      placeholder: (_, __) => _buildPlaceholder(isDarkMode),
-                      errorWidget: (_, __, ___) => _buildPlaceholder(isDarkMode),
+                      placeholder: (_, _) => _buildPlaceholder(isDarkMode),
+                      errorWidget: (_, _, _) => _buildPlaceholder(isDarkMode),
                       memCacheWidth: 400,
                     )
                   : _buildPlaceholder(isDarkMode),

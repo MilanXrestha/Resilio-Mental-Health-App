@@ -43,10 +43,6 @@ class ProtobufInterceptor extends Interceptor {
     super.onRequest(options, handler);
   }
 
-  @override
-  void onResponse(Response response, ResponseInterceptorHandler handler) {
-    super.onResponse(response, handler);
-  }
 
   String _getMessageType(GeneratedMessage message) {
     return message.info_.qualifiedMessageName;

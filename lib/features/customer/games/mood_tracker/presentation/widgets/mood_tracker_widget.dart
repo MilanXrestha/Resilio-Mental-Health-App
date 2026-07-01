@@ -10,7 +10,7 @@ import 'package:Resilio/features/customer/games/mood_tracker/presentation/screen
 class MoodTrackerWidget extends StatefulWidget {
   final String userId;
 
-  const MoodTrackerWidget({Key? key, required this.userId}) : super(key: key);
+  const MoodTrackerWidget({super.key, required this.userId});
 
   @override
   _MoodTrackerWidgetState createState() => _MoodTrackerWidgetState();
@@ -668,7 +668,7 @@ class _XpBurstState extends State<_XpBurst>
       right: 0,
       child: AnimatedBuilder(
         animation: _ctrl,
-        builder: (_, __) => Opacity(
+        builder: (_, _) => Opacity(
           opacity: _opacity.value,
           child: Transform.translate(
             offset: Offset(0, _translate.value),

@@ -13,9 +13,8 @@ import '../../../../../core/services/media_duration_cache.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/widgets/media_duration_resolver.dart';
 import '../../../../../core/widgets/premium_tag_widget.dart';
+import 'package:Resilio/l10n/app_localizations.dart';
 import '../../../video/domain/entities/video_entity.dart';
-import '../../../favorites/domain/entities/favorite_entity.dart';
-import '../../../favorites/presentation/widgets/favorite_button.dart';
 import '../../../subscription/presentation/bloc/subscription_bloc.dart';
 import '../../../subscription/presentation/bloc/subscription_state.dart';
 
@@ -53,7 +52,7 @@ class ShortVideoCardWidget extends StatelessWidget {
           final isPremiumUser = state is SubscriptionLoaded && state.subscription.isActive;
           if (!isPremiumUser) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Premium subscription required to play this content.')),
+              SnackBar(content: Text(AppLocalizations.of(context)!.homePremiumRequired)),
             );
             context.pushNamed(RouteNames.subscription);
             return;

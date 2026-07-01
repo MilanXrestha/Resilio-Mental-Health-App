@@ -1,4 +1,5 @@
 import '../../widgets/shimmer_therapist_widgets.dart';
+import 'package:Resilio/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -48,7 +49,7 @@ class _TherapistEarningsTabState extends State<TherapistEarningsTab> {
                     TextButton(
                       onPressed: () =>
                           context.read<TherapistCubit>().loadEarnings(),
-                      child: const Text('Retry'),
+                      child: Text(AppLocalizations.of(context)!.thrRetry),
                     ),
                   ],
                 ),
@@ -72,7 +73,7 @@ class _TherapistEarningsTabState extends State<TherapistEarningsTab> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Earnings',
+                      AppLocalizations.of(context)!.thrEarnings,
                       style: TextStyle(
                         fontFamily: 'Poppins',
                         fontSize: 26.sp,
@@ -87,7 +88,7 @@ class _TherapistEarningsTabState extends State<TherapistEarningsTab> {
                       children: [
                         Expanded(
                           child: _EarningsCard(
-                            label: 'This Week',
+                            label: AppLocalizations.of(context)!.thrThisWeek,
                             amount: (earnings['weekEarnings'] as num?)?.toDouble() ?? 0.0,
                             icon: Icons.date_range_rounded,
                             color: const Color(0xFF6366F1),
@@ -96,7 +97,7 @@ class _TherapistEarningsTabState extends State<TherapistEarningsTab> {
                         SizedBox(width: 12.w),
                         Expanded(
                           child: _EarningsCard(
-                            label: 'This Month',
+                            label: AppLocalizations.of(context)!.thrThisMonth,
                             amount: (earnings['monthEarnings'] as num?)?.toDouble() ?? 0.0,
                             icon: Icons.calendar_month_rounded,
                             color: const Color(0xFF0D9488),
@@ -150,7 +151,7 @@ class _TotalEarningsHero extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Total Earnings',
+            AppLocalizations.of(context)!.thrTotalEarnings,
             style: TextStyle(
               fontFamily: 'Poppins',
               fontSize: 13.sp,
@@ -169,7 +170,7 @@ class _TotalEarningsHero extends StatelessWidget {
           ),
           SizedBox(height: 4.h),
           Text(
-            'All time revenue',
+            AppLocalizations.of(context)!.thrAllTimeRevenue,
             style: TextStyle(
               fontFamily: 'Poppins',
               fontSize: 12.sp,
@@ -263,7 +264,7 @@ class _WeeklyEarningsChart extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Weekly Revenue',
+          AppLocalizations.of(context)!.thrWeeklyRevenue,
           style: TextStyle(
             fontFamily: 'Poppins',
             fontSize: 16.sp,
@@ -321,8 +322,9 @@ class _WeeklyEarningsChart extends StatelessWidget {
                     reservedSize: 24,
                     getTitlesWidget: (val, _) {
                       final i = val.toInt();
-                      if (i < 0 || i >= chart.length)
+                      if (i < 0 || i >= chart.length) {
                         return const SizedBox.shrink();
+                      }
                       return Padding(
                         padding: EdgeInsets.only(top: 4.h),
                         child: Text(
@@ -383,7 +385,7 @@ class _TransactionList extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Recent Transactions',
+          AppLocalizations.of(context)!.thrRecentTransactions,
           style: TextStyle(
             fontFamily: 'Poppins',
             fontSize: 16.sp,

@@ -779,7 +779,7 @@ class _FeaturedAudioSection extends StatelessWidget {
                 scrollDirection: Axis.horizontal,
                 physics: const BouncingScrollPhysics(),
                 itemCount: tracks.length,
-                separatorBuilder: (_, __) => SizedBox(width: 16.w),
+                separatorBuilder: (_, _) => SizedBox(width: 16.w),
                 itemBuilder: (context, index) {
                   final track = tracks[index];
                   return AudioCardWidget(
@@ -901,7 +901,7 @@ class _ShortVideosSection extends StatelessWidget {
                 scrollDirection: Axis.horizontal,
                 physics: const BouncingScrollPhysics(),
                 itemCount: shortVideos.length,
-                separatorBuilder: (_, __) => SizedBox(width: 14.w),
+                separatorBuilder: (_, _) => SizedBox(width: 14.w),
                 itemBuilder: (context, index) {
                   final video = shortVideos[index];
                   return ShortVideoCardWidget(
@@ -1026,7 +1026,7 @@ class _LongVideosSection extends StatelessWidget {
                 scrollDirection: Axis.horizontal,
                 physics: const BouncingScrollPhysics(),
                 itemCount: longVideos.length,
-                separatorBuilder: (_, __) => SizedBox(width: 16.w),
+                separatorBuilder: (_, _) => SizedBox(width: 16.w),
                 itemBuilder: (context, index) {
                   final video = longVideos[index];
                   return SizedBox(
@@ -1219,7 +1219,7 @@ class _QuotesListSection extends StatelessWidget {
                 scrollDirection: Axis.horizontal,
                 physics: const BouncingScrollPhysics(),
                 itemCount: quotes.length,
-                separatorBuilder: (_, __) => SizedBox(width: 14.w),
+                separatorBuilder: (_, _) => SizedBox(width: 14.w),
                 itemBuilder: (context, index) {
                   final quote = quotes[index];
                   return QuoteCardWidget(
@@ -1329,7 +1329,7 @@ class _TipDetailSheet extends StatelessWidget {
                   CircleAvatar(
                     radius: 20.r,
                     backgroundImage: NetworkImage(tip.authorIconUrl),
-                    onBackgroundImageError: (_, __) => null,
+                    onBackgroundImageError: (_, _) {},
                   ),
                   SizedBox(width: 12.w),
                 ],
@@ -1422,7 +1422,7 @@ class _CategoriesSection extends StatelessWidget {
                 scrollDirection: Axis.horizontal,
                 physics: const BouncingScrollPhysics(),
                 itemCount: categories.length,
-                separatorBuilder: (_, __) => SizedBox(width: 14.w),
+                separatorBuilder: (_, _) => SizedBox(width: 14.w),
                 itemBuilder: (context, i) {
                   final category = categories[i];
                   return CategoryCardWidget(

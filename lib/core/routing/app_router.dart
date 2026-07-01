@@ -210,9 +210,9 @@ class AppRouter {
           final category = state.extra as CategoryCardEntity;
           final contentTypeStr = state.uri.queryParameters['contentType'];
           ExploreItemType? contentType;
-          if (contentTypeStr == 'audio')
+          if (contentTypeStr == 'audio') {
             contentType = ExploreItemType.audio;
-          else if (contentTypeStr == 'shortVideo')
+          } else if (contentTypeStr == 'shortVideo')
             contentType = ExploreItemType.shortVideo;
           else if (contentTypeStr == 'longVideo')
             contentType = ExploreItemType.longVideo;

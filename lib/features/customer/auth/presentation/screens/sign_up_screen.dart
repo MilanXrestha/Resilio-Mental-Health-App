@@ -171,17 +171,17 @@ class _SignUpViewState extends State<_SignUpView> {
 
                       // Role Dropdown
                       DropdownButtonFormField<String>(
-                        value: _selectedRole,
+                        initialValue: _selectedRole,
                         decoration: InputDecoration(
-                          labelText: 'I want to register as a',
+                          labelText: l10n.accRegisterAsLabel,
                           prefixIcon: const Icon(Icons.badge_outlined),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12.r),
                           ),
                         ),
-                        items: const [
-                          DropdownMenuItem(value: 'customer', child: Text('Customer (Seeking Help)')),
-                          DropdownMenuItem(value: 'therapist', child: Text('Therapist (Professional)')),
+                        items: [
+                          DropdownMenuItem(value: 'customer', child: Text(l10n.accRoleCustomer)),
+                          DropdownMenuItem(value: 'therapist', child: Text(l10n.accRoleTherapist)),
                         ],
                         onChanged: (value) {
                           setState(() {

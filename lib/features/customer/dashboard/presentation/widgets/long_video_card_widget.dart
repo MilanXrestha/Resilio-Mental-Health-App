@@ -13,6 +13,7 @@ import '../../../../../core/services/media_duration_cache.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/widgets/media_duration_resolver.dart';
 import '../../../../../core/widgets/premium_tag_widget.dart';
+import 'package:Resilio/l10n/app_localizations.dart';
 import '../../../video/domain/entities/video_entity.dart';
 import '../../../favorites/domain/entities/favorite_entity.dart';
 import '../../../favorites/presentation/widgets/favorite_button.dart';
@@ -46,7 +47,7 @@ class LongVideoCardWidget extends StatelessWidget {
           final isPremiumUser = state is SubscriptionLoaded && state.subscription.isActive;
           if (!isPremiumUser) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Premium subscription required to play this content.')),
+              SnackBar(content: Text(AppLocalizations.of(context)!.homePremiumRequired)),
             );
             context.pushNamed(RouteNames.subscription);
             return;
@@ -308,8 +309,8 @@ class LongVideoThumbnailState extends State<LongVideoThumbnail> {
           return CachedNetworkImage(
             imageUrl: widget.fallbackUrl,
             fit: BoxFit.cover,
-            placeholder: (_, __) => _Placeholder(isDarkMode: widget.isDarkMode),
-            errorWidget: (_, __, ___) => _Placeholder(isDarkMode: widget.isDarkMode),
+            placeholder: (_, _) => _Placeholder(isDarkMode: widget.isDarkMode),
+            errorWidget: (_, _, _) => _Placeholder(isDarkMode: widget.isDarkMode),
           );
         }
 

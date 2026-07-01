@@ -169,6 +169,12 @@ class DatabaseHelper {
     await db.delete('cache');
   }
 
+  /// Remove a single cache entry by key (targeted invalidation).
+  Future<void> removeFromCache(String key) async {
+    final db = await database;
+    await db.delete('cache', where: 'key = ?', whereArgs: [key]);
+  }
+
   // Cache validity check
   bool isCacheValid(int timestamp, int validityMinutes) {
     final cacheTime = DateTime.fromMillisecondsSinceEpoch(timestamp);

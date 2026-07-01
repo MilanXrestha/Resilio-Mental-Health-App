@@ -14,7 +14,6 @@ import '../datasources/remote/supertokens_data_source.dart';
 import '../../../preferences/domain/repositories/preference_repository.dart';
 
 import '../../../../../core/network/network_info.dart';
-import '../../../../../core/services/push_notification_service.dart';
 
 @LazySingleton(as: AuthRepository)
 class AuthRepositoryImpl implements AuthRepository {

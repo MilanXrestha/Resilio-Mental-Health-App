@@ -2,7 +2,6 @@ import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 
 import 'package:Resilio/core/errors/exceptions.dart';
-import 'package:Resilio/core/proto_generated/common.pb.dart' as common_pb;
 import 'package:Resilio/core/proto_generated/games.pb.dart' as pb;
 import 'package:Resilio/features/customer/games/achievements/data/models/achievement_model.dart';
 import 'package:Resilio/features/customer/games/affirmation_builder/data/models/affirmation_model.dart';

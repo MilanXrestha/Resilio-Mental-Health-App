@@ -990,7 +990,7 @@ class _ContentPage extends StatelessWidget {
                   CircleAvatar(
                     radius: 14.r,
                     backgroundImage: NetworkImage(authorAvatar!),
-                    onBackgroundImageError: (_, __) {},
+                    onBackgroundImageError: (_, _) {},
                     backgroundColor: Colors.white.withValues(alpha: 0.2),
                   ),
                   SizedBox(width: 8.w),

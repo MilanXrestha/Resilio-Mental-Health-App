@@ -1,5 +1,7 @@
 import '../../widgets/shimmer_therapist_widgets.dart';
+import 'package:Resilio/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:Resilio/features/therapist/patients/presentation/screens/patient_moods_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
@@ -42,7 +44,7 @@ class _TherapistPatientsTabState extends State<TherapistPatientsTab> {
             Padding(
               padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 0),
               child: Text(
-                'My Patients',
+                AppLocalizations.of(context)!.thrMyPatients,
                 style: TextStyle(
                   fontFamily: 'Poppins',
                   fontSize: 26.sp,
@@ -72,7 +74,7 @@ class _TherapistPatientsTabState extends State<TherapistPatientsTab> {
                   onChanged: (q) =>
                       context.read<TherapistCubit>().filterPatients(q),
                   decoration: InputDecoration(
-                    hintText: 'Search patients…',
+                    hintText: AppLocalizations.of(context)!.thrSearchPatients,
                     hintStyle: TextStyle(
                       fontFamily: 'Poppins',
                       fontSize: 14.sp,
@@ -127,7 +129,7 @@ class _TherapistPatientsTabState extends State<TherapistPatientsTab> {
                           TextButton(
                             onPressed: () =>
                                 context.read<TherapistCubit>().loadPatients(),
-                            child: const Text('Retry'),
+                            child: Text(AppLocalizations.of(context)!.thrRetry),
                           ),
                         ],
                       ),
@@ -149,8 +151,8 @@ class _TherapistPatientsTabState extends State<TherapistPatientsTab> {
                           SizedBox(height: 16.h),
                           Text(
                             state.patientQuery.isEmpty
-                                ? 'No patients yet'
-                                : 'No results for "${state.patientQuery}"',
+                                ? AppLocalizations.of(context)!.thrNoPatientsYet
+                                : AppLocalizations.of(context)!.thrNoResultsFor(state.patientQuery),
                             style: TextStyle(
                               fontFamily: 'Poppins',
                               fontSize: 15.sp,
@@ -171,7 +173,7 @@ class _TherapistPatientsTabState extends State<TherapistPatientsTab> {
                         parent: BouncingScrollPhysics(),
                       ),
                       itemCount: state.filteredPatients!.length,
-                      separatorBuilder: (_, __) => SizedBox(height: 12.h),
+                      separatorBuilder: (_, _) => SizedBox(height: 12.h),
                       itemBuilder: (context, i) =>
                           _PatientCard(patient: state.filteredPatients![i]),
                     ),
@@ -200,9 +202,18 @@ class _PatientCard extends StatelessWidget {
     if (lastStr != null) lastDate = DateTime.tryParse(lastStr);
     final lastFormatted = lastDate != null
         ? DateFormat('MMM d, yyyy').format(lastDate.toLocal())
-        : 'No sessions';
+        : AppLocalizations.of(context)!.thrNoSessions;
 
-    return Container(
+    return GestureDetector(
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => PatientMoodsScreen(
+            patientId: patient['id'] as String? ?? '',
+            patientName: name,
+          ),
+        ),
+      ),
+      child: Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: context.surfaceColor,
@@ -261,12 +272,12 @@ class _PatientCard extends StatelessWidget {
                 Row(
                   children: [
                     _PillBadge(
-                      label: '$sessions session${sessions != 1 ? 's' : ''}',
+                      label: AppLocalizations.of(context)!.thrSessionCount(sessions),
                       color: context.primaryColor,
                     ),
                     SizedBox(width: 8.w),
                     _PillBadge(
-                      label: 'Last: $lastFormatted',
+                      label: AppLocalizations.of(context)!.thrLastSession(lastFormatted),
                       color: context.textSecondaryColor,
                     ),
                   ],
@@ -280,6 +291,7 @@ class _PatientCard extends StatelessWidget {
             size: 20.sp,
           ),
         ],
+      ),
       ),
     );
   }

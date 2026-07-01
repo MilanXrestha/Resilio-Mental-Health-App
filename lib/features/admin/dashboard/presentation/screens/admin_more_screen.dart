@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:Resilio/core/theme/app_colors.dart';
+import 'package:Resilio/l10n/app_localizations.dart';
 
 class AdminMoreScreen extends StatelessWidget {
   const AdminMoreScreen({super.key});
@@ -11,7 +12,7 @@ class AdminMoreScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
-        title: Text('More', style: TextStyle(fontFamily: 'Poppins', fontSize: 20.sp, fontWeight: FontWeight.w700, color: context.textPrimaryColor)),
+        title: Text(AppLocalizations.of(context)!.admMore, style: TextStyle(fontFamily: 'Poppins', fontSize: 20.sp, fontWeight: FontWeight.w700, color: context.textPrimaryColor)),
         backgroundColor: context.backgroundColor,
         elevation: 0,
         automaticallyImplyLeading: false,
@@ -23,8 +24,8 @@ class AdminMoreScreen extends StatelessWidget {
             _buildMenuItem(
               context: context,
               icon: Icons.notifications_active_rounded,
-              title: 'Push Notifications',
-              subtitle: 'Broadcast messages to users and therapists',
+              title: AppLocalizations.of(context)!.admPushNotifications,
+              subtitle: AppLocalizations.of(context)!.admPushNotificationsSubtitle,
               color: const Color(0xFFF59E0B),
               onTap: () => context.push('/admin-notifications'), // Need to add routing
             ),
@@ -32,8 +33,8 @@ class AdminMoreScreen extends StatelessWidget {
             _buildMenuItem(
               context: context,
               icon: Icons.app_settings_alt_rounded,
-              title: 'Preferences Config',
-              subtitle: 'Manage user onboarding options',
+              title: AppLocalizations.of(context)!.admPreferencesConfig,
+              subtitle: AppLocalizations.of(context)!.admPreferencesConfigSubtitle,
               color: const Color(0xFF10B981),
               onTap: () => context.push('/admin-preferences'), // Need to add routing
             ),
@@ -41,8 +42,8 @@ class AdminMoreScreen extends StatelessWidget {
             _buildMenuItem(
               context: context,
               icon: Icons.paid_rounded,
-              title: 'Revenue Analytics',
-              subtitle: 'View detailed charts and payouts',
+              title: AppLocalizations.of(context)!.admRevenueAnalytics,
+              subtitle: AppLocalizations.of(context)!.admRevenueAnalyticsSubtitle,
               color: const Color(0xFF0D9488),
               onTap: () => context.push('/admin-revenue'), // Need to add routing
             ),
@@ -52,8 +53,8 @@ class AdminMoreScreen extends StatelessWidget {
             _buildMenuItem(
               context: context,
               icon: Icons.settings_rounded,
-              title: 'Settings',
-              subtitle: 'Theme, Access, and Logs',
+              title: AppLocalizations.of(context)!.admSettings,
+              subtitle: AppLocalizations.of(context)!.admSettingsSubtitle,
               color: const Color(0xFF6366F1),
               onTap: () => context.push('/admin-settings'), 
             ),

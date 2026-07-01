@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:Resilio/l10n/app_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:Resilio/core/di/injection.dart';
@@ -101,7 +102,7 @@ class _FavoriteButtonState extends State<FavoriteButton> {
           final userId = _resolveUserId(context.read<AuthBloc>().state);
           if (userId == null || userId.isEmpty) {
             ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-              const SnackBar(content: Text('Sign in to save favorites')),
+              SnackBar(content: Text(AppLocalizations.of(context)!.favSignInToSave)),
             );
             return;
           }

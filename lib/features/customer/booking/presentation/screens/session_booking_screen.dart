@@ -390,7 +390,7 @@ class _SessionBookingScreenState extends State<SessionBookingScreen> {
                             child: ListView.separated(
                               scrollDirection: Axis.horizontal,
                               itemCount: _dates.length,
-                              separatorBuilder: (_, __) => SizedBox(width: 10.w),
+                              separatorBuilder: (_, _) => SizedBox(width: 10.w),
                               itemBuilder: (context, i) {
                                 final d = _dates[i];
                                 final isSelected = _selectedDate != null &&
@@ -664,7 +664,7 @@ class _SessionBookingScreenState extends State<SessionBookingScreen> {
                                       Image.asset(
                                         'assets/images/esewa_logo.png',
                                         height: 20.h,
-                                        errorBuilder: (_, __, ___) => Icon(
+                                        errorBuilder: (_, _, _) => Icon(
                                             Icons.payment_rounded,
                                             color: Colors.white,
                                             size: 20.sp),

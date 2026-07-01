@@ -87,8 +87,11 @@ class _AddEditContentSheetState extends State<AddEditContentSheet> {
       final picked = await picker.pickImage(source: ImageSource.gallery);
       if (picked != null) {
         setState(() {
-          if (isThumbnail) _selectedThumbnail = File(picked.path);
-          else _selectedFile = File(picked.path);
+          if (isThumbnail) {
+            _selectedThumbnail = File(picked.path);
+          } else {
+            _selectedFile = File(picked.path);
+          }
         });
       }
     } else {
@@ -263,7 +266,7 @@ class _AddEditContentSheetState extends State<AddEditContentSheet> {
                   Padding(
                     padding: EdgeInsets.only(bottom: 16.h),
                     child: DropdownButtonFormField<String>(
-                      value: _quoteType,
+                      initialValue: _quoteType,
                       decoration: InputDecoration(
                         labelText: 'Quote Type',
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
@@ -282,7 +285,7 @@ class _AddEditContentSheetState extends State<AddEditContentSheet> {
                   Padding(
                     padding: EdgeInsets.only(bottom: 16.h),
                     child: DropdownButtonFormField<String>(
-                      value: _tipType,
+                      initialValue: _tipType,
                       decoration: InputDecoration(
                         labelText: 'Tip Type',
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
@@ -320,7 +323,7 @@ class _AddEditContentSheetState extends State<AddEditContentSheet> {
                   Padding(
                     padding: EdgeInsets.only(bottom: 16.h),
                     child: DropdownButtonFormField<String>(
-                      value: _videoType,
+                      initialValue: _videoType,
                       decoration: InputDecoration(
                         labelText: 'Video Type',
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),

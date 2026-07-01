@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:Resilio/l10n/app_localizations.dart';
 
 import '../../../../../core/routing/route_names.dart';
 import '../../../../../core/theme/app_colors.dart';
@@ -56,7 +57,7 @@ class ImagesSection extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Text(
-                '⚠️ No inspirational images available',
+                AppLocalizations.of(context)!.medNoInspirationalImagesAvailable,
                 style: TextStyle(
                   fontFamily: 'Poppins',
                   fontSize: 14.sp,
@@ -71,8 +72,8 @@ class ImagesSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SectionHeaderWidget(
-              title: 'Inspirational Images',
-              subtitle: 'Beautiful wallpapers to inspire you',
+              title: AppLocalizations.of(context)!.medInspirationalImages,
+              subtitle: AppLocalizations.of(context)!.medBeautifulWallpapersInspire,
               onSeeAll: () {
                 context.pushNamed(
                   RouteNames.categoryDetail,
@@ -146,7 +147,7 @@ class ImagesSection extends StatelessWidget {
                   ),
                 );
               },
-              errorWidget: (_, __, ___) => Container(
+              errorWidget: (_, _, _) => Container(
                 color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
                 child: Icon(
                   Icons.image_not_supported_outlined,
@@ -306,7 +307,7 @@ class _SeeAllButton extends StatelessWidget {
     return TextButton(
       onPressed: onTap,
       child: Text(
-        'See All',
+        AppLocalizations.of(context)!.medSeeAll,
         style: TextStyle(
           fontFamily: 'Poppins',
           fontSize: 14.sp,
@@ -358,7 +359,7 @@ class _ImageDetailSheet extends StatelessWidget {
                   fit: BoxFit.cover,
                   width: double.infinity,
                   height: 400.h,
-                  errorWidget: (_, __, ___) => Container(
+                  errorWidget: (_, _, _) => Container(
                     height: 400.h,
                     color: Colors.grey.shade200,
                     child: const Icon(Icons.broken_image_rounded),
@@ -427,13 +428,13 @@ class _ImageDetailSheet extends StatelessWidget {
                 child: ElevatedButton.icon(
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Wallpaper feature coming soon!'),
+                      SnackBar(
+                        content: Text(AppLocalizations.of(context)!.medWallpaperComingSoon),
                       ),
                     );
                   },
                   icon: const Icon(Icons.download_outlined),
-                  label: const Text('Set as Wallpaper'),
+                  label: Text(AppLocalizations.of(context)!.medSetAsWallpaper),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: Colors.white,

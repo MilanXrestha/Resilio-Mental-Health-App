@@ -28,7 +28,7 @@ class AdminRepositoryImpl implements AdminRepository {
   Future<bool> verifyTherapist(String therapistId, {required bool isVerified, String? rejectionReason}) async {
     await _dio.patch('/admin/therapists/$therapistId/verify', data: {
       'isVerified': isVerified,
-      if (rejectionReason != null) 'rejectionReason': rejectionReason,
+      'rejectionReason': ?rejectionReason,
     });
     return true;
   }
@@ -248,8 +248,8 @@ class AdminRepositoryImpl implements AdminRepository {
   }) async {
     final r = await _dio.post('/admin/notifications/broadcast', data: {
       'title': title, 'body': body, 'targetRole': targetRole,
-      if (actionType != null) 'actionType': actionType,
-      if (actionPayload != null) 'actionPayload': actionPayload,
+      'actionType': ?actionType,
+      'actionPayload': ?actionPayload,
     });
     return r.data as Map<String, dynamic>;
   }

@@ -1,4 +1,5 @@
 import '../../widgets/shimmer_therapist_widgets.dart';
+import 'package:Resilio/l10n/app_localizations.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -52,11 +53,11 @@ class _TherapistContentHubTabState extends State<TherapistContentHubTab> {
     showCupertinoDialog(
       context: context,
       builder: (ctx) => CupertinoAlertDialog(
-        title: const Text('Delete Content?'),
-        content: const Text('This action cannot be undone.'),
+        title: Text(AppLocalizations.of(context)!.thrDeleteContentTitle),
+        content: Text(AppLocalizations.of(context)!.thrActionCannotBeUndone),
         actions: [
           CupertinoDialogAction(
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.thrCancel),
             onPressed: () => Navigator.pop(ctx),
           ),
           CupertinoDialogAction(
@@ -65,7 +66,7 @@ class _TherapistContentHubTabState extends State<TherapistContentHubTab> {
               Navigator.pop(ctx);
               context.read<TherapistContentCubit>().deleteContent(id);
             },
-            child: const Text('Delete'),
+            child: Text(AppLocalizations.of(context)!.thrDelete),
           ),
         ],
       ),
@@ -153,7 +154,7 @@ class _TherapistContentHubTabState extends State<TherapistContentHubTab> {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: _tabs.length,
-        separatorBuilder: (_, __) => SizedBox(width: 8.w),
+        separatorBuilder: (_, _) => SizedBox(width: 8.w),
         itemBuilder: (context, index) {
           final tab = _tabs[index];
           final isActive = tab == _activeTab;
@@ -199,7 +200,7 @@ class _TherapistContentHubTabState extends State<TherapistContentHubTab> {
           if (state.items.isEmpty) {
             return Center(
               child: Text(
-                'No ${_activeTab} found.\nTap + to add some!',
+                'No $_activeTab found.\nTap + to add some!',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontFamily: 'Poppins',
@@ -283,7 +284,7 @@ class _TherapistContentHubTabState extends State<TherapistContentHubTab> {
                     width: 60.w,
                     height: 60.w,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
+                    errorBuilder: (_, _, _) => Container(
                       width: 60.w,
                       height: 60.w,
                       color: context.dividerColor,

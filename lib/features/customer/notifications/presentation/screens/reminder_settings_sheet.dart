@@ -31,8 +31,16 @@ class _ReminderSettingsSheetState extends State<ReminderSettingsSheet> {
   @override
   void initState() {
     super.initState();
-    _initPlugin();
     _loadPrefs();
+    // Initialise, then ask for permissions once the sheet is on screen so the
+    // exact-alarm explainer dialog has a valid context.
+    _setup();
+  }
+
+  Future<void> _setup() async {
+    await _initPlugin();
+    if (!mounted) return;
+    await _requestPermissions();
   }
 
   Future<void> _initPlugin() async {
@@ -52,12 +60,48 @@ class _ReminderSettingsSheetState extends State<ReminderSettingsSheet> {
     await _plugin.initialize(
       settings: const InitializationSettings(android: android, iOS: ios),
     );
-    // Request runtime permissions on Android 13+ and exact alarm on Android 12+
-    final androidPlugin = _plugin
+  }
+
+  /// Requests notification + exact-alarm permissions. If exact alarms aren't
+  /// allowed (Android 12+), shows an explainer then opens the system screen so
+  /// the reminder can fire at the precise time the user picked.
+  Future<void> _requestPermissions() async {
+    final android = _plugin
         .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
-    if (androidPlugin != null) {
-      await androidPlugin.requestNotificationsPermission();
-      await androidPlugin.requestExactAlarmsPermission();
+    if (android == null) return;
+
+    // Android 13+ POST_NOTIFICATIONS runtime prompt.
+    await android.requestNotificationsPermission();
+
+    // Android 12+ exact-alarm gate.
+    final canExact = await android.canScheduleExactNotifications() ?? true;
+    if (canExact || !mounted) return;
+
+    final proceed = await showDialog<bool>(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        title: const Text('Allow exact reminders'),
+        content: const Text(
+          'To send your daily wellness reminder at the exact time you choose, '
+          'Resilio needs the "Alarms & reminders" permission. '
+          'Tap Allow, then enable it on the next screen.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogCtx, false),
+            child: const Text('Not now'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogCtx, true),
+            child: const Text('Allow'),
+          ),
+        ],
+      ),
+    );
+
+    if (proceed == true) {
+      // Opens the system "Alarms & reminders" settings screen.
+      await android.requestExactAlarmsPermission();
     }
   }
 
@@ -173,28 +217,39 @@ class _ReminderSettingsSheetState extends State<ReminderSettingsSheet> {
             ? 'an inspiring quote'
             : 'your daily wellness boost';
 
-    await _plugin.zonedSchedule(
-      id: _notificationId,
-      title: 'Your Daily Wellness Check-in 🌱',
-      body: 'Open the app for $contentLabel — small steps, big progress.',
-      scheduledDate: scheduledDate,
-      notificationDetails: NotificationDetails(
-        android: AndroidNotificationDetails(
-          'resilio_reminders',
-          'Daily Reminders',
-          channelDescription: 'Daily wellness reminders from Resilio',
-          importance: Importance.high,
-          priority: Priority.high,
-          icon: '@mipmap/ic_launcher',
-          color: const Color(0xFF14B8A6),
-        ),
-        iOS: const DarwinNotificationDetails(
-          categoryIdentifier: 'reminder',
-        ),
+    final details = NotificationDetails(
+      android: AndroidNotificationDetails(
+        'resilio_reminders',
+        'Daily Reminders',
+        channelDescription: 'Daily wellness reminders from Resilio',
+        importance: Importance.high,
+        priority: Priority.high,
+        icon: '@mipmap/ic_launcher',
+        color: const Color(0xFF14B8A6),
       ),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      matchDateTimeComponents: DateTimeComponents.time, // repeat daily
+      iOS: const DarwinNotificationDetails(
+        categoryIdentifier: 'reminder',
+      ),
     );
+
+    Future<void> schedule(AndroidScheduleMode mode) => _plugin.zonedSchedule(
+          id: _notificationId,
+          title: 'Your Daily Wellness Check-in 🌱',
+          body: 'Open the app for $contentLabel — small steps, big progress.',
+          scheduledDate: scheduledDate,
+          notificationDetails: details,
+          androidScheduleMode: mode,
+          matchDateTimeComponents: DateTimeComponents.time, // repeat daily
+        );
+
+    try {
+      // Preferred: exact firing. Requires the exact-alarm permission (Android 12+).
+      await schedule(AndroidScheduleMode.exactAllowWhileIdle);
+    } catch (_) {
+      // Exact alarm not permitted → inexact still fires (approximate time) and
+      // needs no special permission, so the reminder always works.
+      await schedule(AndroidScheduleMode.inexactAllowWhileIdle);
+    }
   }
 
   @override

@@ -775,8 +775,9 @@ class _SessionChart extends StatelessWidget {
                     reservedSize: 28,
                     getTitlesWidget: (value, meta) {
                       final idx = value.toInt();
-                      if (idx < 0 || idx >= chart.length)
+                      if (idx < 0 || idx >= chart.length) {
                         return const SizedBox.shrink();
+                      }
                       final date = chart[idx]['date'] as String? ?? '';
                       final short = date.length >= 10
                           ? date.substring(5)

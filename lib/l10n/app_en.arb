@@ -35,7 +35,9 @@
   "resendOtpIn": "Resend in {seconds}s",
   "@resendOtpIn": {
     "placeholders": {
-      "seconds": { "type": "Object" }
+      "seconds": {
+        "type": "Object"
+      }
     }
   },
   "otpResent": "A new code has been sent to your email.",
@@ -69,11 +71,12 @@
   "exitAppTitle": "Exit App",
   "exitAppMessage": "Do you really want to exit the app?",
   "exitButton": "Exit",
-
   "hello": "Hello, {name}",
   "@hello": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "timeToUnwind": "Time to unwind",
@@ -104,7 +107,6 @@
   "mySessions": "My Sessions",
   "getMatched": "Get Matched",
   "findNew": "Find New",
-
   "editProfile": "Edit Profile",
   "changeNameEmailPhoto": "Change your name, email, and photo",
   "subscription": "Subscription",
@@ -115,7 +117,6 @@
   "logoutConfirm": "Are you sure you want to logout?",
   "signOutAccount": "Sign out of your account",
   "free": "Free",
-
   "profileSection": "Profile",
   "yourProfile": "Your Profile",
   "manageAccountPrefs": "Manage account, subscription, and preferences",
@@ -131,7 +132,9 @@
   "currentCacheSize": "Current cache size: {size}",
   "@currentCacheSize": {
     "placeholders": {
-      "size": { "type": "String" }
+      "size": {
+        "type": "String"
+      }
     }
   },
   "clear": "Clear",
@@ -140,7 +143,9 @@
   "freeUpSpaceSize": "Free up space · {size}",
   "@freeUpSpaceSize": {
     "placeholders": {
-      "size": { "type": "String" }
+      "size": {
+        "type": "String"
+      }
     }
   },
   "aboutResilio": "About Resilio",
@@ -149,15 +154,11 @@
   "versionLearnMore": "Version {version} · Learn more",
   "@versionLearnMore": {
     "placeholders": {
-      "version": { "type": "String" }
+      "version": {
+        "type": "String"
+      }
     }
   },
-  "@versionLearnMore": {
-    "placeholders": {
-      "version": { "type": "String" }
-    }
-  },
-
   "myAppointments": "My Appointments",
   "upcoming": "Upcoming",
   "past": "Past",
@@ -168,7 +169,9 @@
   "sessionStartingSoon": "Your session with {name} starts soon.",
   "@sessionStartingSoon": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "noUpcomingAppointments": "No upcoming appointments",
@@ -188,7 +191,6 @@
   "statusScheduled": "Scheduled",
   "statusAccepted": "Accepted",
   "statusUnknown": "Unknown",
-
   "bookSession": "Book Session",
   "selectDate": "Select Date",
   "selectTime": "Select Time",
@@ -197,10 +199,12 @@
   "sessionBooked": "Session Booked!",
   "sessionBookedDesc": "You'll get a notification when it's time for your session.",
   "selectTimeSlot": "Select a time slot",
-  "payWithEsewa": "Pay NPR {amount} with eSewa",
+  "payWithEsewa": "Pay with eSewa",
   "@payWithEsewa": {
     "placeholders": {
-      "amount": { "type": "String" }
+      "amount": {
+        "type": "String"
+      }
     }
   },
   "sessionDuration": "50 min",
@@ -209,27 +213,25 @@
   "paymentSuccessBookingFailed": "Payment went through (ref: {ref}) but booking failed. Please contact support.",
   "@paymentSuccessBookingFailed": {
     "placeholders": {
-      "ref": { "type": "String" }
+      "ref": {
+        "type": "String"
+      }
     }
   },
-  "sessionDuration": "50 min",
-  "videoCall": "Video call",
   "done": "Done",
-  "selectDate": "Select Date",
-  "selectTime": "Select Time",
   "confirmBooking": "Confirm Booking",
-  "payWithEsewa": "Pay with eSewa",
   "sessionFee": "NPR {fee}",
   "@sessionFee": {
     "placeholders": {
-      "fee": { "type": "String" }
+      "fee": {
+        "type": "String"
+      }
     }
   },
   "bookingSuccess": "Session booked successfully!",
   "bookingFailed": "Booking failed. Please try again.",
   "slotAlreadyBooked": "This slot is already booked.",
   "noSlotsAvailable": "No slots available",
-
   "explore": "Explore",
   "searchHint": "Search for content…",
   "all": "All",
@@ -242,7 +244,6 @@
   "applyFilters": "Apply Filters",
   "clearFilters": "Clear Filters",
   "noResultsFound": "No results found",
-
   "gamesHub": "Games & Wellness",
   "dailyQuest": "DAILY QUEST",
   "bonusXp": "+50 bonus XP",
@@ -255,7 +256,9 @@
   "xpToNextRank": "{xp} XP to next rank",
   "@xpToNextRank": {
     "placeholders": {
-      "xp": { "type": "Object" }
+      "xp": {
+        "type": "Object"
+      }
     }
   },
   "maxRankAchieved": "Maximum rank achieved 🎉",
@@ -266,7 +269,6 @@
   "triviaGame": "Trivia",
   "affirmationGame": "Affirmation",
   "moodTracker": "Mood",
-
   "goPremium": "Go Premium",
   "transactionHistory": "Transaction History",
   "choosePlan": "Choose Your Plan",
@@ -280,13 +282,17 @@
   "endsOn": "Ends on {date}",
   "@endsOn": {
     "placeholders": {
-      "date": { "type": "String" }
+      "date": {
+        "type": "String"
+      }
     }
   },
   "savingsUpgrade": "Save {percent}% by upgrading!",
   "@savingsUpgrade": {
     "placeholders": {
-      "percent": { "type": "Object" }
+      "percent": {
+        "type": "Object"
+      }
     }
   },
   "subscribe": "Subscribe",
@@ -294,31 +300,35 @@
   "currentPlanLabel": "Current Plan",
   "noTransactions": "No transactions yet",
   "retry": "Retry",
-
   "notifications": "Notifications",
   "noNotifications": "No notifications yet",
   "justNow": "Just now",
   "minutesAgo": "{min}m ago",
   "@minutesAgo": {
     "placeholders": {
-      "min": { "type": "Object" }
+      "min": {
+        "type": "Object"
+      }
     }
   },
   "hoursAgo": "{hr}h ago",
   "@hoursAgo": {
     "placeholders": {
-      "hr": { "type": "Object" }
+      "hr": {
+        "type": "Object"
+      }
     }
   },
   "yesterday": "Yesterday",
   "daysAgo": "{d}d ago",
   "@daysAgo": {
     "placeholders": {
-      "d": { "type": "Object" }
+      "d": {
+        "type": "Object"
+      }
     }
   },
   "markAllRead": "Mark all read",
-
   "favoriteAudio": "Audio",
   "favoriteVideos": "Videos",
   "favoriteQuotes": "Quotes",
@@ -327,7 +337,6 @@
   "signInToSaveFavorites": "Sign in to save favorites",
   "noFavorites": "No favorites yet",
   "addFavorites": "Tap the heart icon to save content here",
-
   "editProfileTitle": "Edit Profile",
   "personalInformation": "Personal Information",
   "moreAboutYou": "More About You",
@@ -344,7 +353,6 @@
   "selectDateOfBirth": "Select Date of Birth",
   "tapToSet": "Tap to set",
   "profileUpdated": "Profile updated successfully!",
-
   "inspirationalImages": "Inspirational Images",
   "beautifulWallpapers": "Beautiful wallpapers to inspire you",
   "share": "Share",
@@ -355,12 +363,13 @@
   "premiumRequired": "Premium subscription required to {action} this content.",
   "@premiumRequired": {
     "placeholders": {
-      "action": { "type": "String" }
+      "action": {
+        "type": "String"
+      }
     }
   },
   "failedToSaveImage": "Failed to save image",
   "allImages": "All inspirational images",
-
   "therapistList": "Find a Therapist",
   "therapistDetail": "Therapist Profile",
   "bookNow": "Book Now",
@@ -371,7 +380,9 @@
   "reviewsCount": "({count} reviews)",
   "@reviewsCount": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "perSession": "Per Session",
@@ -384,22 +395,19 @@
   "feeViaEsewa": "NPR {fee} via eSewa",
   "@feeViaEsewa": {
     "placeholders": {
-      "fee": { "type": "String" }
+      "fee": {
+        "type": "String"
+      }
     }
   },
   "noTherapistsFound": "No therapists found",
-
   "categoriesTitle": "Categories",
   "allCategories": "All Categories",
-
   "tipsTitle": "Wellness Tips",
   "allTips": "All wellness tips",
-
   "audioTitle": "Calming Audio",
   "allAudio": "All audio content",
-
   "allVideos": "All video content",
-
   "matchingTitle": "Find Your Match",
   "matchingSubtitle": "Answer a few questions to find the right therapist",
   "next": "Next",
@@ -408,21 +416,27 @@
   "questionProgress": "Question {current} of {total}",
   "@questionProgress": {
     "placeholders": {
-      "current": { "type": "int" },
-      "total": { "type": "int" }
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "@questionOf": {
     "placeholders": {
-      "current": { "type": "Object" },
-      "total": { "type": "Object" }
+      "current": {
+        "type": "Object"
+      },
+      "total": {
+        "type": "Object"
+      }
     }
   },
-
   "appointmentChatTitle": "Chat",
   "sendMessage": "Send a message…",
   "send": "Send",
-
   "premiumSubscriptionRequired": "Premium Subscription Required",
   "unlockPremium": "Upgrade to unlock this content",
   "loading": "Loading…",
@@ -476,5 +490,246 @@
   "qPrefOpt1": "No preference",
   "qPrefOpt2": "Prefer female therapist",
   "qPrefOpt3": "Prefer male therapist",
-  "qPrefOpt4": "Prefer therapist with similar cultural background"
+  "qPrefOpt4": "Prefer therapist with similar cultural background",
+  "admContentManagement": "Content Management",
+  "admSearchTips": "Search tips...",
+  "admNoTipsYet": "No tips yet",
+  "admSearchQuotes": "Search quotes...",
+  "admNoQuotesYet": "No quotes yet",
+  "admSearchAudio": "Search audio...",
+  "admNoAudioYet": "No audio tracks yet",
+  "admSearchVideos": "Search videos...",
+  "admAll": "All",
+  "admShorts": "⚡ Shorts",
+  "admLong": "🎬 Long",
+  "admNoVideosYet": "No videos yet",
+  "admSearchImages": "Search images...",
+  "admNoImagesYet": "No images yet",
+  "admDeleteContent": "Delete Content",
+  "admDeleteItemConfirm": "Are you sure you want to delete this item?",
+  "admCancel": "Cancel",
+  "admDelete": "Delete",
+  "admOverview": "Overview",
+  "admContent": "Content",
+  "admTherapists": "Therapists",
+  "admUsers": "Users",
+  "admMore": "More",
+  "admPushNotifications": "Push Notifications",
+  "admPushNotificationsSubtitle": "Broadcast messages to users and therapists",
+  "admPreferencesConfig": "Preferences Config",
+  "admPreferencesConfigSubtitle": "Manage user onboarding options",
+  "admRevenueAnalytics": "Revenue Analytics",
+  "admRevenueAnalyticsSubtitle": "View detailed charts and payouts",
+  "admSettings": "Settings",
+  "admSettingsSubtitle": "Theme, Access, and Logs",
+  "homePremiumRequired": "Premium subscription required to play this content.",
+  "gmGames": "Games",
+  "gmTodaysMood": "Today's Mood",
+  "gmWellnessHub": "Wellness Hub",
+  "gmLevelProgress": "Level Progress",
+  "gmToggleSoundEffects": "Toggle Sound Effects",
+  "gmToggleBackgroundMusic": "Toggle Background Music",
+  "gmExitQuizTitle": "Exit Quiz?",
+  "gmExitProgressLost": "Your progress will be lost. Are you sure you want to exit?",
+  "gmCancel": "Cancel",
+  "gmExit": "Exit",
+  "gmLoadingQuestions": "Loading Questions...",
+  "gmWellnessTrivia": "Wellness Trivia",
+  "gmTestWellnessKnowledge": "Test your wellness knowledge",
+  "gmTimeLimit": "Time Limit",
+  "gmScoring": "Scoring",
+  "gmScoringDesc": "Answer faster for more points. Build streaks for bonuses!",
+  "gmLearn": "Learn",
+  "gmLearnDesc": "Explanations will help you understand each answer",
+  "gmNoQuestionsAvailable": "No questions available. Please try again later.",
+  "gmStartQuiz": "Start Quiz",
+  "gmExplanation": "Explanation",
+  "gmYourFinalScore": "Your final score",
+  "gmQuestions": "Questions",
+  "gmCorrect": "Correct",
+  "gmAccuracy": "Accuracy",
+  "gmBestStreak": "Best Streak",
+  "gmPlayAgain": "Play Again",
+  "medShare": "Share",
+  "medSave": "Save",
+  "medFullscreen": "Fullscreen",
+  "medInspirationalImages": "Inspirational Images",
+  "medLoadingImages": "Loading images...",
+  "medErrorLoadingImages": "Error loading images",
+  "medRetry": "Retry",
+  "medNoImagesAvailable": "No images available",
+  "medCheckBackLaterInspirational": "Check back later for new inspirational content",
+  "medSetWallpaper": "Set Wallpaper",
+  "medInfo": "Info",
+  "medCreator": "Creator",
+  "medWallpaperDownloadComingSoon": "Wallpaper download feature coming soon!",
+  "medFailedToSaveImage": "Failed to save image",
+  "medNoInspirationalImagesAvailable": "⚠️ No inspirational images available",
+  "medBeautifulWallpapersInspire": "Beautiful wallpapers to inspire you",
+  "medSeeAll": "See All",
+  "medWallpaperComingSoon": "Wallpaper feature coming soon!",
+  "medSetAsWallpaper": "Set as Wallpaper",
+  "homeReels": "Reels",
+  "homeLoadingReels": "Loading Reels...",
+  "homeCouldNotLoadReels": "Could not load reels",
+  "homeRetry": "Retry",
+  "homeNoReelsYet": "No Reels Yet",
+  "homeCheckBackSoon": "Check back soon for new content",
+  "accEmailCannotBeChanged": "Email cannot be changed",
+  "accCardHolder": "CARD HOLDER",
+  "accValidThru": "VALID THRU",
+  "accResilioPremium": "RESILIO PREMIUM",
+  "bizPaymentFailed": "Payment failed",
+  "bizPaymentCancelled": "Payment cancelled",
+  "bizCancelSubscription": "Cancel Subscription",
+  "bizCancelSubscriptionConfirm": "Are you sure you want to cancel your subscription?",
+  "bizNo": "No",
+  "bizYes": "Yes",
+  "bizPremiumMembership": "PREMIUM MEMBERSHIP",
+  "bizElevateWellnessJourney": "Elevate Your\\nWellness Journey",
+  "bizUnlockPremiumContent": "Unlock premium content, guided sessions,\\nand exclusive wellness tools.",
+  "bizUnlimitedContent": "Unlimited Content",
+  "bizExpertTips": "Expert Tips",
+  "bizAdFree": "Ad-Free",
+  "accConnecting": "Connecting…",
+  "accVoiceCall": "Voice Call",
+  "accCalling": "Calling…",
+  "accUnmute": "Unmute",
+  "accCamera": "Camera",
+  "accEnd": "End",
+  "accFlip": "Flip",
+  "accSpeaker": "Speaker",
+  "thrSessions": "Sessions",
+  "thrCouldNotLoadSessions": "Could not load sessions",
+  "thrRetry": "Retry",
+  "thrNoSessionsFound": "No sessions found",
+  "thrDecline": "Decline",
+  "thrAccept": "Accept",
+  "thrMessagePatient": "Message Patient",
+  "thrJoinSession": "Join Session",
+  "thrJoinButtonActivatesHint": "Join button activates 15 min before session",
+  "thrDeleteContentTitle": "Delete Content?",
+  "thrActionCannotBeUndone": "This action cannot be undone.",
+  "thrCancel": "Cancel",
+  "thrDelete": "Delete",
+  "thrEarnings": "Earnings",
+  "thrThisWeek": "This Week",
+  "thrThisMonth": "This Month",
+  "thrTotalEarnings": "Total Earnings",
+  "thrAllTimeRevenue": "All time revenue",
+  "thrWeeklyRevenue": "Weekly Revenue",
+  "thrRecentTransactions": "Recent Transactions",
+  "thrMyPatients": "My Patients",
+  "thrSearchPatients": "Search patients…",
+  "thrNoPatientsYet": "No patients yet",
+  "thrNoSessions": "No sessions",
+  "accEar": "Ear",
+  "accMute": "Mute",
+  "accNoVideo": "No Video",
+  "admAddFirstTip": "Add your first tip with the + button",
+  "thrNotSessionTime": "Not Session Time",
+  "accCustomizeAppInterface": "Customize your app interface",
+  "accEnglish": "English",
+  "accLanguage": "Language",
+  "accNepali": "Nepali",
+  "accRegisterAsLabel": "I want to register as a",
+  "accRoleCustomer": "customer",
+  "accRoleTherapist": "therapist",
+  "accSelectPreferredLanguage": "Select your preferred language",
+  "accTheme": "Theme",
+  "accThemeDark": "Dark",
+  "accThemeLight": "Light",
+  "accThemeSystem": "System",
+  "accWellness": "Wellness",
+  "bizCurrentPlan": "Current Plan",
+  "bizSubscribeNow": "Subscribe Now",
+  "bizUpgradeNow": "Upgrade Now",
+  "gmTimeLimitDesc": "You have {seconds} seconds for each question",
+  "@gmTimeLimitDesc": {
+    "placeholders": {
+      "seconds": {}
+    }
+  },
+  "gmSecondsCount": "{seconds} seconds",
+  "@gmSecondsCount": {
+    "placeholders": {
+      "seconds": {}
+    }
+  },
+  "accErrorWithMessage": "Error: {message}",
+  "@accErrorWithMessage": {
+    "placeholders": {
+      "message": {}
+    }
+  },
+  "accCameraUnavailable": "Camera unavailable: {error}",
+  "@accCameraUnavailable": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "thrSessionsForFilterAppearHere": "Sessions for \"{filter}\" will appear here",
+  "@thrSessionsForFilterAppearHere": {
+    "placeholders": {
+      "filter": {}
+    }
+  },
+  "thrNoResultsFor": "No results for \"{query}\"",
+  "@thrNoResultsFor": {
+    "placeholders": {
+      "query": {}
+    }
+  },
+  "thrSessionCount": "{count, plural, =1{1 session} other{{count} sessions}}",
+  "@thrSessionCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "thrLastSession": "Last: {date}",
+  "@thrLastSession": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "exploreSearchContent": "Search content...",
+  "exploreTryAgain": "Try Again",
+  "catSearchCategories": "Search categories...",
+  "favSignInToSave": "Sign in to save favorites",
+  "gmFailedLoadMoods": "Failed to load mood entries",
+  "gmJournalUpdated": "Journal updated",
+  "gmEnterThoughts": "Enter your thoughts...",
+  "gmStay": "Stay",
+  "gmLeave": "Leave",
+  "gmExitGame": "Exit Game?",
+  "gmMindfulBreathing": "Mindful Breathing",
+  "gmChoosePatternBegin": "Choose Pattern & Begin",
+  "gmChooseYourPattern": "Choose Your Pattern",
+  "gmDifferentPatterns": "Different patterns for different needs",
+  "gmHowManyRounds": "How many rounds?",
+  "gmGetReady": "Get Ready",
+  "gmSessionComplete": "Session Complete!",
+  "gmExcellentWork": "Excellent mindfulness work today.",
+  "gmDone": "Done",
+  "catSearchIn": "Search {name}...",
+  "@catSearchIn": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "gmStartRounds": "Start {count} Rounds  →",
+  "@gmStartRounds": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "gmRoundProgress": "Round {current} / {total}",
+  "@gmRoundProgress": {
+    "placeholders": {
+      "current": {},
+      "total": {}
+    }
+  }
 }

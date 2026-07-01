@@ -231,7 +231,7 @@ class _ContentFormDialogState extends State<ContentFormDialog> {
     return Padding(
       padding: EdgeInsets.only(bottom: 16.h),
       child: DropdownButtonFormField<String>(
-        value: _data[key] ?? options.first,
+        initialValue: _data[key] ?? options.first,
         dropdownColor: context.surfaceColor,
         style: TextStyle(fontFamily: 'Poppins', fontSize: 13.sp, color: context.textPrimaryColor),
         decoration: InputDecoration(

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:Resilio/l10n/app_localizations.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lottie/lottie.dart';
@@ -15,11 +16,11 @@ class AffirmationBuilderScreen extends StatefulWidget {
   final Map<String, dynamic> gameConfig;
 
   const AffirmationBuilderScreen({
-    Key? key,
+    super.key,
     required this.userId,
     required this.gameId,
     required this.gameConfig,
-  }) : super(key: key);
+  });
 
   @override
   _AffirmationBuilderScreenState createState() =>
@@ -475,14 +476,14 @@ class _AffirmationBuilderScreenState extends State<AffirmationBuilderScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Exit Game?'),
+        title: Text(AppLocalizations.of(context)!.gmExitGame),
         content: Text(
           'Your progress will be lost. Are you sure you want to exit?',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.gmCancel),
           ),
           TextButton(
             onPressed: () async {
@@ -498,7 +499,7 @@ class _AffirmationBuilderScreenState extends State<AffirmationBuilderScreen>
               Navigator.of(context).pop(); // Close dialog
               Navigator.of(context).pop(); // Exit game screen
             },
-            child: Text('Exit', style: TextStyle(color: Colors.red)),
+            child: Text(AppLocalizations.of(context)!.gmExit, style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -978,8 +979,8 @@ class _AffirmationBuilderScreenState extends State<AffirmationBuilderScreen>
           ),
         );
       },
-      onWillAccept: (data) => isEmpty && data != null,
-      onAccept: (word) {
+      onWillAcceptWithDetails: (data) => isEmpty && data != null,
+      onAcceptWithDetails: (word) {
         _placeWord(word, index);
       },
     );

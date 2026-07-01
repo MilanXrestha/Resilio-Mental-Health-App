@@ -184,9 +184,9 @@ class _AppointmentChatScreenState extends State<AppointmentChatScreen> {
 
   String _therapistName() {
     if (_therapist != null) {
-      return _therapist!['displayName'] as String? ??
-          _therapist!['display_name'] as String? ??
-          _therapist!['name'] as String? ??
+      return _therapist['displayName'] as String? ??
+          _therapist['display_name'] as String? ??
+          _therapist['name'] as String? ??
           'Therapist';
     }
     return 'Therapist';
@@ -194,8 +194,8 @@ class _AppointmentChatScreenState extends State<AppointmentChatScreen> {
 
   String? _therapistAvatar() {
     if (_therapist == null) return null;
-    return _therapist!['profileImageUrl'] as String? ??
-        _therapist!['profile_image_url'] as String?;
+    return _therapist['profileImageUrl'] as String? ??
+        _therapist['profile_image_url'] as String?;
   }
 
   String _sessionLabel() {

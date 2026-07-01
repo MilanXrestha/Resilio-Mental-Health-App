@@ -12,10 +12,10 @@ class QuoteCardWidget extends StatelessWidget {
   final VoidCallback? onTap;
 
   const QuoteCardWidget({
-    Key? key,
+    super.key,
     required this.quote,
     this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -95,7 +95,7 @@ class QuoteCardWidget extends StatelessWidget {
                                     width: 20.r,
                                     height: 20.r,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) => Icon(
+                                    errorBuilder: (_, _, _) => Icon(
                                       Icons.person_rounded,
                                       size: 12.sp,
                                       color: context.primaryColor.withValues(alpha: 0.5),

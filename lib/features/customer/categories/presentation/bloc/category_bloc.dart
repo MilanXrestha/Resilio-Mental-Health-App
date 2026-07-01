@@ -1,7 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
-import '../../../../../core/usecases/usecase.dart';
 import '../../domain/usecases/get_categories_usecase.dart';
 import 'category_event.dart';
 import 'category_state.dart';

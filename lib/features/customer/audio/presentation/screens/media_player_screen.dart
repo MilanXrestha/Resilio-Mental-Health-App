@@ -455,7 +455,7 @@ class _MediaPlayerScreenState extends State<MediaPlayerScreen>
         ? Image.network(
             track.coverImageUrl,
             fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => _buildAlbumPlaceholder(),
+            errorBuilder: (_, _, _) => _buildAlbumPlaceholder(),
           )
         : _buildAlbumPlaceholder();
 
@@ -574,7 +574,7 @@ class _MediaPlayerScreenState extends State<MediaPlayerScreen>
                               ? Image.network(
                                   track.coverImageUrl,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) =>
+                                  errorBuilder: (_, _, _) =>
                                       _buildMiniPlaceholder(),
                                 )
                               : _buildMiniPlaceholder(),

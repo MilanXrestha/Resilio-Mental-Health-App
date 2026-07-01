@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:video_player/video_player.dart';
 
+import 'package:Resilio/l10n/app_localizations.dart';
 import '../../../../../core/di/injection.dart';
 import '../../../../../core/services/video_cache_manager.dart';
 import '../../../../../core/theme/app_colors.dart';
@@ -310,7 +311,7 @@ class _ReelsViewState extends State<_ReelsView> with WidgetsBindingObserver {
                   child: Row(
                     children: [
                       Text(
-                        'Reels',
+                        AppLocalizations.of(context)!.homeReels,
                         style: TextStyle(
                           fontFamily: 'Poppins',
                           fontSize: 22.sp,
@@ -430,7 +431,7 @@ class _ReelsViewState extends State<_ReelsView> with WidgetsBindingObserver {
           ),
           SizedBox(height: 16.h),
           Text(
-            'Loading Reels...',
+            AppLocalizations.of(context)!.homeLoadingReels,
             style: TextStyle(
               fontFamily: 'Poppins',
               fontSize: 14.sp,
@@ -452,7 +453,7 @@ class _ReelsViewState extends State<_ReelsView> with WidgetsBindingObserver {
             Icon(Icons.error_outline_rounded, size: 48.sp, color: Colors.redAccent),
             SizedBox(height: 16.h),
             Text(
-              'Could not load reels',
+              AppLocalizations.of(context)!.homeCouldNotLoadReels,
               style: TextStyle(
                 fontFamily: 'Poppins',
                 fontSize: 16.sp,
@@ -470,7 +471,7 @@ class _ReelsViewState extends State<_ReelsView> with WidgetsBindingObserver {
             FilledButton.icon(
               onPressed: () => context.read<ShortVideoBloc>().add(const LoadShortVideos()),
               icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Retry'),
+              label: Text(AppLocalizations.of(context)!.homeRetry),
               style: FilledButton.styleFrom(
                 backgroundColor: context.primaryColor,
                 foregroundColor: Colors.white,
@@ -490,7 +491,7 @@ class _ReelsViewState extends State<_ReelsView> with WidgetsBindingObserver {
           Icon(Icons.movie_filter_rounded, size: 64.sp, color: Colors.white24),
           SizedBox(height: 16.h),
           Text(
-            'No Reels Yet',
+            AppLocalizations.of(context)!.homeNoReelsYet,
             style: TextStyle(
               fontFamily: 'Poppins',
               fontSize: 18.sp,
@@ -500,7 +501,7 @@ class _ReelsViewState extends State<_ReelsView> with WidgetsBindingObserver {
           ),
           SizedBox(height: 8.h),
           Text(
-            'Check back soon for new content',
+            AppLocalizations.of(context)!.homeCheckBackSoon,
             style: TextStyle(fontSize: 14.sp, color: Colors.white54),
           ),
         ],

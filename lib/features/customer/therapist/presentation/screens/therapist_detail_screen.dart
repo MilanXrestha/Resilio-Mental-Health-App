@@ -126,7 +126,7 @@ class _TherapistDetailScreenState extends State<TherapistDetailScreen> {
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 8),
-                    itemBuilder: (_, __) => const Icon(Icons.circle,
+                    itemBuilder: (_, _) => const Icon(Icons.circle,
                         size: 4, color: Colors.white),
                   ),
                 ),
@@ -319,7 +319,7 @@ class _TherapistDetailScreenState extends State<TherapistDetailScreen> {
                         AppLocalizations.of(context)!.sessionDuration),
                     SizedBox(height: 12.h),
                     _InfoRow(context, Icons.payments_rounded, AppLocalizations.of(context)!.fee,
-                        AppLocalizations.of(context)!.feeViaEsewa((fee as num).toStringAsFixed(0))),
+                        AppLocalizations.of(context)!.feeViaEsewa((fee).toStringAsFixed(0))),
                   ],
                 ),
               ),

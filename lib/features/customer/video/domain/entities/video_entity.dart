@@ -155,6 +155,6 @@ class VideoEntity extends Equatable {
 
   @override
   String toString() {
-    return 'VideoEntity(id: $id, title: $title, videoType: $videoType, duration: ${formattedDuration})';
+    return 'VideoEntity(id: $id, title: $title, videoType: $videoType, duration: $formattedDuration)';
   }
 }

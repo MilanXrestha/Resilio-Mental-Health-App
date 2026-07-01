@@ -9,6 +9,7 @@ import '../../../../../core/services/media_duration_cache.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/widgets/media_duration_resolver.dart';
 import '../../../../../core/widgets/premium_tag_widget.dart';
+import 'package:Resilio/l10n/app_localizations.dart';
 import '../../../audio/domain/entities/audio_entity.dart';
 import '../../../favorites/domain/entities/favorite_entity.dart';
 import '../../../favorites/presentation/widgets/favorite_button.dart';
@@ -37,7 +38,7 @@ class AudioCardWidget extends StatelessWidget {
           final isPremiumUser = state is SubscriptionLoaded && state.subscription.isActive;
           if (!isPremiumUser) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Premium subscription required to play this content.')),
+              SnackBar(content: Text(AppLocalizations.of(context)!.homePremiumRequired)),
             );
             context.pushNamed(RouteNames.subscription);
             return;
@@ -136,7 +137,7 @@ class AudioCardWidget extends StatelessWidget {
                             ? Image.network(
                                 track.coverImageUrl,
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => Icon(
+                                errorBuilder: (_, _, _) => Icon(
                                   Icons.music_note_rounded,
                                   color: context.primaryColor.withValues(alpha: 0.5),
                                   size: 36.sp,

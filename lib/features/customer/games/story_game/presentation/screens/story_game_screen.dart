@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:Resilio/l10n/app_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:Resilio/features/customer/games/game_hub/data/services/game_service.dart';
@@ -490,11 +491,11 @@ class StoryGameScreen extends StatefulWidget {
   final Map<String, dynamic> gameConfig;
 
   const StoryGameScreen({
-    Key? key,
+    super.key,
     required this.userId,
     required this.gameId,
     required this.gameConfig,
-  }) : super(key: key);
+  });
 
   @override
   State<StoryGameScreen> createState() => _StoryGameScreenState();
@@ -1119,7 +1120,7 @@ class _StoryGameScreenState extends State<StoryGameScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Stay',
+            child: Text(AppLocalizations.of(context)!.gmStay,
                 style: TextStyle(
                     fontFamily: 'Poppins', color: const Color(0xFF0D9488))),
           ),
@@ -1128,7 +1129,7 @@ class _StoryGameScreenState extends State<StoryGameScreen>
               Navigator.pop(context);
               Navigator.pop(context);
             },
-            child: Text('Leave',
+            child: Text(AppLocalizations.of(context)!.gmLeave,
                 style: TextStyle(
                     fontFamily: 'Poppins',
                     color: Colors.white.withValues(alpha: 0.5))),

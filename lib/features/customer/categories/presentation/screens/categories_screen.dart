@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:Resilio/l10n/app_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -263,7 +264,7 @@ class _CategoryViewState extends State<CategoryView> {
                                         : Colors.black87,
                                   ),
                               decoration: InputDecoration(
-                                hintText: 'Search categories...',
+                                hintText: AppLocalizations.of(context)!.catSearchCategories,
                                 hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                       color: Theme.of(context).brightness == Brightness.dark
                                           ? Colors.grey.shade500

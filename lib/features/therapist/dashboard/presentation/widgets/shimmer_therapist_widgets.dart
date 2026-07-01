@@ -232,8 +232,8 @@ class TherapistListShimmer extends StatelessWidget {
         padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 100.h),
         physics: const NeverScrollableScrollPhysics(),
         itemCount: 6,
-        separatorBuilder: (_, __) => SizedBox(height: 12.h),
-        itemBuilder: (_, __) => Container(
+        separatorBuilder: (_, _) => SizedBox(height: 12.h),
+        itemBuilder: (_, _) => Container(
           height: 110.h,
           decoration: BoxDecoration(
             color: Colors.white,

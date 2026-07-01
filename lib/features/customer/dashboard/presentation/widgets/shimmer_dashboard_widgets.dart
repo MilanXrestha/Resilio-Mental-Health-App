@@ -282,7 +282,7 @@ class _HorizontalSectionSkeleton extends StatelessWidget {
             physics: const NeverScrollableScrollPhysics(),
             itemCount: itemCount,
             separatorBuilder: (_, _) => SizedBox(width: gap.w),
-            itemBuilder: (_, __) => Container(
+            itemBuilder: (_, _) => Container(
               width: cardWidth.w,
               decoration: BoxDecoration(
                 color: Colors.white,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:Resilio/l10n/app_localizations.dart';
 
 import '../../../../../core/di/injection.dart';
 import '../../../../../core/theme/app_colors.dart';
@@ -29,7 +30,7 @@ class _ImagesView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Inspirational Images',
+          AppLocalizations.of(context)!.medInspirationalImages,
           style: TextStyle(
             fontFamily: 'PlayfairDisplay',
             fontSize: 24.sp,
@@ -58,7 +59,7 @@ class _ImagesView extends StatelessWidget {
                   CircularProgressIndicator(color: context.primaryColor),
                   SizedBox(height: 16.h),
                   Text(
-                    'Loading images...',
+                    AppLocalizations.of(context)!.medLoadingImages,
                     style: TextStyle(
                       fontFamily: 'Poppins',
                       fontSize: 14.sp,
@@ -82,7 +83,7 @@ class _ImagesView extends StatelessWidget {
                   ),
                   SizedBox(height: 16.h),
                   Text(
-                    'Error loading images',
+                    AppLocalizations.of(context)!.medErrorLoadingImages,
                     style: TextStyle(
                       fontFamily: 'Poppins',
                       fontSize: 16.sp,
@@ -109,7 +110,7 @@ class _ImagesView extends StatelessWidget {
                       context.read<ImageBloc>().add(const LoadFeaturedImages(limit: 20));
                     },
                     icon: const Icon(Icons.refresh),
-                    label: const Text('Retry'),
+                    label: Text(AppLocalizations.of(context)!.medRetry),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: context.primaryColor,
                       foregroundColor: Colors.white,
@@ -133,7 +134,7 @@ class _ImagesView extends StatelessWidget {
                   ),
                   SizedBox(height: 16.h),
                   Text(
-                    'No images available',
+                    AppLocalizations.of(context)!.medNoImagesAvailable,
                     style: TextStyle(
                       fontFamily: 'Poppins',
                       fontSize: 16.sp,
@@ -143,7 +144,7 @@ class _ImagesView extends StatelessWidget {
                   ),
                   SizedBox(height: 8.h),
                   Text(
-                    'Check back later for new inspirational content',
+                    AppLocalizations.of(context)!.medCheckBackLaterInspirational,
                     style: TextStyle(
                       fontFamily: 'Poppins',
                       fontSize: 14.sp,

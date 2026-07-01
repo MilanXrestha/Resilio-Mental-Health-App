@@ -122,7 +122,7 @@ class _MatchingQuestionnaireScreenState extends State<MatchingQuestionnaireScree
   bool _canProceed(List<_Question> questions) {
     final a = _answers[_step];
     if (questions[_step].type == _QType.multi) {
-      return a is List && (a as List).isNotEmpty;
+      return a is List && (a).isNotEmpty;
     }
     return a != null;
   }

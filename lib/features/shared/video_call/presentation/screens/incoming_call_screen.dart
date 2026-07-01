@@ -269,7 +269,7 @@ class _ExpandingRing extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: controller,
-      builder: (_, __) {
+      builder: (_, _) {
         final v = controller.value;
         final size = maxSize * v;
         return Container(

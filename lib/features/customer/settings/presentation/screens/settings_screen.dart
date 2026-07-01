@@ -103,7 +103,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(content: Text(l10n.accErrorWithMessage(e.toString()))),
         );
       }
     }
@@ -164,7 +164,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _chip(Icons.videocam_rounded, l10n.favoriteVideos, theme),
                   _chip(Icons.tips_and_updates_rounded, l10n.favoriteTips, theme),
                   _chip(Icons.games_rounded, l10n.gamesHub, theme),
-                  _chip(Icons.favorite_rounded, 'Wellness', theme),
+                  _chip(Icons.favorite_rounded, l10n.accWellness, theme),
                 ],
               ),
               SizedBox(height: 16.h),

@@ -75,7 +75,7 @@ class TherapistNotificationsScreen extends StatelessWidget {
       body: ListView.separated(
         padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
         itemCount: mockNotifications.length,
-        separatorBuilder: (_, __) => SizedBox(height: 12.h),
+        separatorBuilder: (_, _) => SizedBox(height: 12.h),
         itemBuilder: (context, i) {
           final n = mockNotifications[i];
           final isUnread = n['isUnread'] as bool;

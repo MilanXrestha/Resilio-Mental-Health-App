@@ -84,7 +84,7 @@ class _AdminPreferencesScreenState extends State<AdminPreferencesScreen> {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(16.r),
                         child: iconUrl != null && iconUrl.isNotEmpty 
-                          ? Image.network(iconUrl, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Icon(Icons.category_rounded, color: context.primaryColor))
+                          ? Image.network(iconUrl, fit: BoxFit.cover, errorBuilder: (_, _, _) => Icon(Icons.category_rounded, color: context.primaryColor))
                           : Icon(Icons.category_rounded, color: context.primaryColor, size: 28.sp),
                       ),
                     ),

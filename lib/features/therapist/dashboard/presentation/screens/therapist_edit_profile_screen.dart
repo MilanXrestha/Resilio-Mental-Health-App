@@ -33,7 +33,7 @@ class _TherapistEditProfileScreenState
   List<String> _selectedLanguages = [];
   final List<String> _availableLanguages = ['English', 'Nepali', 'Hindi', 'Spanish', 'French'];
 
-  Map<String, bool> _days = {
+  final Map<String, bool> _days = {
     'Monday': true,
     'Tuesday': true,
     'Wednesday': true,
@@ -365,8 +365,11 @@ class _TherapistEditProfileScreenState
                       checkmarkColor: Colors.white,
                       onSelected: (val) {
                         setState(() {
-                          if (val) _selectedLanguages.add(lang);
-                          else _selectedLanguages.remove(lang);
+                          if (val) {
+                            _selectedLanguages.add(lang);
+                          } else {
+                            _selectedLanguages.remove(lang);
+                          }
                         });
                       },
                     );
