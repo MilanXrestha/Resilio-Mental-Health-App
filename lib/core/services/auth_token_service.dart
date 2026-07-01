@@ -45,9 +45,14 @@ class AuthTokenService {
           final freshToken = await fbUser.getIdToken();
           if (freshToken != null && freshToken.isNotEmpty) {
             _currentToken = freshToken;
-            _userId = fbUser.uid;
             await _prefs?.setString(_keyToken, freshToken);
-            await _prefs?.setString(_keyUserId, fbUser.uid);
+            // Do NOT overwrite the stored backend (Supabase) user id with the
+            // Firebase uid — favorites/comments key on the Supabase UUID. Only
+            // seed it as a last resort if we have never synced.
+            _userId ??= fbUser.uid;
+            if (_userId != null) {
+              await _prefs?.setString(_keyUserId, _userId!);
+            }
             print('✓ AuthTokenService: Refreshed Firebase ID token');
           }
         } catch (e) {
@@ -131,10 +136,14 @@ class AuthTokenService {
           _prefs ??= await SharedPreferences.getInstance();
           _provider = AuthProvider.firebase;
           _currentToken = token;
-          _userId = fbUser.uid;
           _prefs?.setString(_keyToken, token);
           _prefs?.setString(_keyProvider, 'firebase');
-          _prefs?.setString(_keyUserId, fbUser.uid);
+          // Keep the synced Supabase user id; only seed from Firebase uid if
+          // we have never stored one (see note in init()).
+          _userId ??= fbUser.uid;
+          if (_userId != null) {
+            _prefs?.setString(_keyUserId, _userId!);
+          }
           print('✓ AuthTokenService: Token recovered via ensureAuthenticated');
           return true;
         }

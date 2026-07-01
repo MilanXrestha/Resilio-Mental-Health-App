@@ -37,6 +37,7 @@ class _ReelsViewState extends State<_ReelsView> with WidgetsBindingObserver {
   int _currentIndex = 0;
   final Map<int, VideoPlayerController> _controllers = {};
   bool _isPaused = true;
+  bool _immersive = false;
 
   // Tracks whether this tab is the visible page in the outer PageView.
   // TickerMode is inherited and set to false by Flutter's PageView for
@@ -61,10 +62,22 @@ class _ReelsViewState extends State<_ReelsView> with WidgetsBindingObserver {
     _wasTickerEnabled = tickerEnabled;
 
     if (!tickerEnabled) {
-      // Tab is no longer visible — pause the active video
+      // Tab is no longer visible — pause the active video and drop immersive
+      // so other tabs / the bottom nav aren't left in fullscreen.
       _controllers[_currentIndex]?.pause();
+      if (_immersive) {
+        _immersive = false;
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      }
     }
     // Autoplay removed as requested - we no longer resume here
+  }
+
+  void _toggleImmersive() {
+    setState(() => _immersive = !_immersive);
+    SystemChrome.setEnabledSystemUIMode(
+      _immersive ? SystemUiMode.immersiveSticky : SystemUiMode.edgeToEdge,
+    );
   }
 
   @override
@@ -79,6 +92,7 @@ class _ReelsViewState extends State<_ReelsView> with WidgetsBindingObserver {
 
   @override
   void dispose() {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     WidgetsBinding.instance.removeObserver(this);
     _pageController.dispose();
     for (final c in _controllers.values) {
@@ -206,48 +220,53 @@ class _ReelsViewState extends State<_ReelsView> with WidgetsBindingObserver {
           },
         ),
 
-        // ── Top bar (Reels header) ────────────────────────────────────────
-        Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.black.withValues(alpha: 0.6),
-                  Colors.transparent,
-                ],
-              ),
-            ),
-            child: SafeArea(
-              bottom: false,
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                child: Row(
-                  children: [
-                    Text(
-                      'Reels',
-                      style: TextStyle(
-                        fontFamily: 'Poppins',
-                        fontSize: 22.sp,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const Spacer(),
-                    // Camera button removed as requested
+        // ── Top bar (Reels header) — hidden in immersive mode ─────────────
+        if (!_immersive)
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withValues(alpha: 0.6),
+                    Colors.transparent,
                   ],
+                ),
+              ),
+              child: SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                  child: Row(
+                    children: [
+                      Text(
+                        'Reels',
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          fontSize: 22.sp,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const Spacer(),
+                      _circleIconButton(
+                        icon: Icons.fullscreen_rounded,
+                        onTap: _toggleImmersive,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
 
         // ── Right actions column ──────────────────────────────────────────
-        if (videos.isNotEmpty)
+        if (!_immersive && videos.isNotEmpty)
           Positioned(
             right: 12.w,
             bottom: MediaQuery.of(context).padding.bottom + 165.h,
@@ -255,7 +274,7 @@ class _ReelsViewState extends State<_ReelsView> with WidgetsBindingObserver {
           ),
 
         // ── Bottom info panel ─────────────────────────────────────────────
-        if (videos.isNotEmpty)
+        if (!_immersive && videos.isNotEmpty)
           Positioned(
             left: 16.w,
             right: 80.w,
@@ -264,13 +283,29 @@ class _ReelsViewState extends State<_ReelsView> with WidgetsBindingObserver {
           ),
 
         // ── Progress indicator ─────────────────────────────────────────────
-        if (videos.isNotEmpty && _controllers[_currentIndex] != null)
+        if (!_immersive && videos.isNotEmpty && _controllers[_currentIndex] != null)
           Positioned(
             left: 0,
             right: 0,
             bottom: MediaQuery.of(context).padding.bottom + 55.h,
             child: ShortsReelsProgressBar(
               controller: _controllers[_currentIndex]!,
+            ),
+          ),
+
+        // ── "Show UI" affordance — only control visible in immersive mode ──
+        if (_immersive)
+          Positioned(
+            top: 0,
+            right: 12.w,
+            child: SafeArea(
+              child: Padding(
+                padding: EdgeInsets.all(8.w),
+                child: _circleIconButton(
+                  icon: Icons.fullscreen_exit_rounded,
+                  onTap: _toggleImmersive,
+                ),
+              ),
             ),
           ),
 
@@ -293,6 +328,23 @@ class _ReelsViewState extends State<_ReelsView> with WidgetsBindingObserver {
             ),
           ),
       ],
+    );
+  }
+
+  Widget _circleIconButton({
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.all(8.w),
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.3),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: Colors.white, size: 24.sp),
+      ),
     );
   }
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hugeicons/hugeicons.dart';
 import '../../../../../core/di/injection.dart';
+import '../../../../../core/services/auth_token_service.dart';
 import '../../domain/entities/video_comment_entity.dart';
 import '../../domain/repositories/video_repository.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -63,7 +64,10 @@ class _CommentSheetWidgetState extends State<CommentSheetWidget> {
     if (content.isEmpty) return;
 
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
+    // The backend's video_comments.user_id references users(id) — the Supabase
+    // UUID, not the Firebase uid. AuthTokenService.userId holds that synced id.
+    final userId = getIt<AuthTokenService>().userId;
+    if (user == null || userId == null || userId.isEmpty) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Please login to comment')));
@@ -72,19 +76,9 @@ class _CommentSheetWidgetState extends State<CommentSheetWidget> {
 
     setState(() => _isPosting = true);
 
-    // Note: The backend expects the internal UUID from the users table,
-    // but many parts of this app use firebase_uid and sync them.
-    // For now we'll pass the firebase_uid as user_id and assume backend handles it
-    // or use the email/uid to fetch the internal ID if needed.
-    // However, the backend implementation I wrote uses user_id REFERENCES users(id).
-    // I should ideally fetch the current user profile from the database first.
-
-    // As a simplification for this task, I'll pass the firebase_uid
-    // and assume the backend can resolve it, or I should fetch the UserEntity.
-
     final result = await getIt<VideoRepository>().addVideoComment(
       videoId: widget.videoId,
-      userId: user.uid, // This might need mapping to internal ID
+      userId: userId,
       content: content,
     );
 

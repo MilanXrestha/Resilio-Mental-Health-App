@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:Resilio/core/di/injection.dart';
 import 'package:Resilio/core/services/auth_token_service.dart';
+import 'package:Resilio/core/theme/app_colors.dart';
 import 'package:Resilio/features/customer/favorites/domain/entities/favorite_entity.dart';
 import 'package:Resilio/features/customer/favorites/presentation/bloc/favorite_bloc.dart';
 import 'package:Resilio/features/customer/favorites/presentation/bloc/favorite_event.dart';
@@ -12,7 +13,7 @@ import '../bloc/favorite_state.dart';
 
 /// Heart toggle for favorites. Uses rounded [InkWell] (not [IconButton]) so the
 /// ripple matches bordered action buttons. Set [bordered] to match Share/Save chrome.
-class FavoriteButton extends StatelessWidget {
+class FavoriteButton extends StatefulWidget {
   final String contentId;
   final FavoriteType contentType;
   final double? size;
@@ -37,6 +38,11 @@ class FavoriteButton extends StatelessWidget {
     this.borderedPadding,
   });
 
+  @override
+  State<FavoriteButton> createState() => _FavoriteButtonState();
+}
+
+class _FavoriteButtonState extends State<FavoriteButton> {
   String? _resolveUserId(AuthState auth) {
     if (auth is AuthAuthenticated) return auth.user.id;
     final stored = getIt<AuthTokenService>().userId;
@@ -45,34 +51,54 @@ class FavoriteButton extends StatelessWidget {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _requestStatusCheck();
+  }
+
+  @override
+  void didUpdateWidget(covariant FavoriteButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Widget reused for a different item (e.g. list recycling) → re-check.
+    if (oldWidget.contentId != widget.contentId) {
+      _requestStatusCheck();
+    }
+  }
+
+  // Loads THIS item's favorite status once, regardless of bloc state. Fixes
+  // the bug where only the very first heart (FavoriteInitial) ever checked,
+  // leaving later hearts stuck showing an incorrect un-favorited state.
+  void _requestStatusCheck() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final userId = _resolveUserId(context.read<AuthBloc>().state);
+      if (userId == null || userId.isEmpty) return;
+      context.read<FavoriteBloc>().add(
+            CheckFavoriteStatus(
+              userId: userId,
+              contentId: widget.contentId,
+              contentType: widget.contentType,
+            ),
+          );
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return BlocBuilder<FavoriteBloc, FavoriteState>(
       builder: (context, state) {
         var isFavorited = false;
-        
+
         // Check if we have the status loaded
         if (state is FavoritesLoaded) {
-          isFavorited = state.favoriteStatusMap[contentId] ?? false;
-        }
-        
-        // If state is initial, try to check the status automatically
-        if (state is FavoriteInitial) {
-          final auth = context.read<AuthBloc>().state;
-          if (auth is AuthAuthenticated) {
-            // Dispatch a check event to load this item's status
-            context.read<FavoriteBloc>().add(
-                  CheckFavoriteStatus(
-                    userId: auth.user.id,
-                    contentId: contentId,
-                    contentType: contentType,
-                  ),
-                );
-          }
+          isFavorited = state.favoriteStatusMap[widget.contentId] ?? false;
         }
 
-        final iconSize = size ?? 22.sp;
-        final unfilled = color ?? Colors.white.withValues(alpha: 0.9);
-        final iconColor = isFavorited ? Colors.redAccent : unfilled;
+        final iconSize = widget.size ?? 22.sp;
+        final unfilled = widget.color ?? Colors.white.withValues(alpha: 0.9);
+        // Filled heart uses the theme accent so it matches both light & dark
+        // backgrounds instead of a fixed red.
+        final iconColor = isFavorited ? context.primaryColor : unfilled;
 
         void onTap() {
           final userId = _resolveUserId(context.read<AuthBloc>().state);
@@ -85,22 +111,22 @@ class FavoriteButton extends StatelessWidget {
           context.read<FavoriteBloc>().add(
                 ToggleFavorite(
                   userId: userId,
-                  contentId: contentId,
-                  contentType: contentType,
+                  contentId: widget.contentId,
+                  contentType: widget.contentType,
                 ),
               );
         }
 
-        final radius = bordered ? 16.r : 12.r;
+        final radius = widget.bordered ? 16.r : 12.r;
         final heart = Icon(
           isFavorited ? Icons.favorite_rounded : Icons.favorite_border_rounded,
           color: iconColor,
           size: iconSize,
         );
 
-        final child = bordered
+        final child = widget.bordered
             ? Container(
-                padding: borderedPadding ?? EdgeInsets.all(12.r),
+                padding: widget.borderedPadding ?? EdgeInsets.all(12.r),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(16.r),
@@ -112,7 +138,7 @@ class FavoriteButton extends StatelessWidget {
                 child: heart,
               )
             : Padding(
-                padding: padding ?? EdgeInsets.all(8.r),
+                padding: widget.padding ?? EdgeInsets.all(8.r),
                 child: heart,
               );
 

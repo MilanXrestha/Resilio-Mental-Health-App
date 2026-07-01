@@ -356,7 +356,11 @@ class AuthRepositoryImpl implements AuthRepository {
     }
 
     return UserEntity(
-      id: firebaseUser.uid,
+      // Use the backend (Supabase) user UUID — NOT the Firebase uid. Favorites,
+      // comments and every other user_id-keyed feature reference users(id), a
+      // UUID column; the Firebase uid is not a UUID and fails those writes.
+      // AuthTokenService.userId holds the synced Supabase id (persisted).
+      id: _authTokenService.userId ?? firebaseUser.uid,
       email: firebaseUser.email ?? '',
       name: firebaseUser.displayName ??
           firebaseUser.email?.split('@').first ??
