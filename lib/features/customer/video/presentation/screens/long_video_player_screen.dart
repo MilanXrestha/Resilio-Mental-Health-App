@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -10,6 +9,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/di/injection.dart';
 import '../../../../../core/routing/route_names.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../dashboard/presentation/widgets/long_video_card_widget.dart';
 import '../../domain/entities/video_entity.dart';
 import '../bloc/long_video/long_video_bloc.dart';
 import '../bloc/long_video/long_video_event.dart';
@@ -444,38 +444,19 @@ class _RelatedVideoCard extends StatelessWidget {
   }
 
   Widget _relatedThumbnail(BuildContext context, VideoEntity video) {
-    final url = video.thumbnailUrl.isNotEmpty
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final fallbackUrl = video.thumbnailUrl.isNotEmpty
         ? video.thumbnailUrl
         : video.coverImageUrl;
-    if (url.isEmpty) {
-      return ColoredBox(
-        color: context.primaryColor.withValues(alpha: 0.1),
-        child: Center(
-          child: Icon(
-            Icons.play_circle_outline_rounded,
-            size: 40.sp,
-            color: context.primaryColor,
-          ),
-        ),
-      );
-    }
     return Stack(
       fit: StackFit.expand,
       children: [
-        CachedNetworkImage(
-          imageUrl: url,
-          fit: BoxFit.cover,
-          placeholder: (_, __) => ColoredBox(
-            color: context.primaryColor.withValues(alpha: 0.08),
-          ),
-          errorWidget: (_, __, ___) => ColoredBox(
-            color: context.primaryColor.withValues(alpha: 0.1),
-            child: Icon(
-              Icons.play_circle_outline_rounded,
-              size: 40.sp,
-              color: context.primaryColor,
-            ),
-          ),
+        // Generate a poster from the video URL (same builder as the cards),
+        // falling back to thumbnail/cover URL when generation fails.
+        LongVideoThumbnail(
+          videoUrl: video.videoUrl,
+          fallbackUrl: fallbackUrl,
+          isDarkMode: isDarkMode,
         ),
         Center(
           child: Icon(

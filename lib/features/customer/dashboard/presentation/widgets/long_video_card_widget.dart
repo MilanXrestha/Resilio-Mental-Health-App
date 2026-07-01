@@ -9,7 +9,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../../core/routing/route_names.dart';
+import '../../../../../core/services/media_duration_cache.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/widgets/media_duration_resolver.dart';
 import '../../../../../core/widgets/premium_tag_widget.dart';
 import '../../../video/domain/entities/video_entity.dart';
 import '../../../favorites/domain/entities/favorite_entity.dart';
@@ -78,7 +80,7 @@ class LongVideoCardWidget extends StatelessWidget {
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(12.r),
-                      child: _LongVideoThumbnail(
+                      child: LongVideoThumbnail(
                         videoUrl: video.videoUrl,
                         fallbackUrl: video.coverImageUrl.isNotEmpty
                             ? video.coverImageUrl
@@ -107,31 +109,38 @@ class LongVideoCardWidget extends StatelessWidget {
                     ),
                   ),
 
-                  // Duration chip
-                  if (video.formattedDuration.isNotEmpty)
-                    Positioned(
-                      bottom: 10.h,
-                      right: 10.w,
-                      child: Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 10.w,
-                          vertical: 6.h,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.6),
-                          borderRadius: BorderRadius.circular(10.r),
-                        ),
-                        child: Text(
-                          video.formattedDuration,
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 14.sp,
-                            color: Colors.white,
-                            fontWeight: FontWeight.w500,
+                  // Duration chip — uses DB value, else probes the video.
+                  Positioned(
+                    bottom: 10.h,
+                    right: 10.w,
+                    child: MediaDurationResolver(
+                      url: video.videoUrl,
+                      fallbackSeconds: video.durationSeconds,
+                      kind: MediaKind.video,
+                      builder: (context, label) {
+                        if (label == null) return const SizedBox.shrink();
+                        return Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 10.w,
+                            vertical: 6.h,
                           ),
-                        ),
-                      ),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.6),
+                            borderRadius: BorderRadius.circular(10.r),
+                          ),
+                          child: Text(
+                            label,
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              fontSize: 14.sp,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        );
+                      },
                     ),
+                  ),
 
                   // Premium Tag
                   PremiumTagWidget(
@@ -232,22 +241,23 @@ class LongVideoCardWidget extends StatelessWidget {
 // with in-memory caching and CachedNetworkImage fallback.
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _LongVideoThumbnail extends StatefulWidget {
+class LongVideoThumbnail extends StatefulWidget {
   final String videoUrl;
   final String fallbackUrl;
   final bool isDarkMode;
 
-  const _LongVideoThumbnail({
+  const LongVideoThumbnail({
+    super.key,
     required this.videoUrl,
     required this.fallbackUrl,
     required this.isDarkMode,
   });
 
   @override
-  State<_LongVideoThumbnail> createState() => _LongVideoThumbnailState();
+  State<LongVideoThumbnail> createState() => LongVideoThumbnailState();
 }
 
-class _LongVideoThumbnailState extends State<_LongVideoThumbnail> {
+class LongVideoThumbnailState extends State<LongVideoThumbnail> {
   late Future<Uint8List?> _future;
 
   @override

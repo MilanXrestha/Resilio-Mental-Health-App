@@ -9,7 +9,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../../core/routing/route_names.dart';
+import '../../../../../core/services/media_duration_cache.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/widgets/media_duration_resolver.dart';
 import '../../../../../core/widgets/premium_tag_widget.dart';
 import '../../../video/domain/entities/video_entity.dart';
 import '../../../favorites/domain/entities/favorite_entity.dart';
@@ -143,27 +145,35 @@ class ShortVideoCardWidget extends StatelessWidget {
                   ),
                 ),
 
-                // Duration chip
-                if (video.formattedDuration.isNotEmpty)
-                  Positioned(
-                    bottom: 8.h,
-                    right: 8.w,
-                    child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.6),
-                        borderRadius: BorderRadius.circular(4.r),
-                      ),
-                      child: Text(
-                        video.formattedDuration,
-                        style: TextStyle(
-                          fontFamily: 'Poppins',
-                          fontSize: 10.sp,
-                          color: Colors.white,
+                // Duration chip — uses DB value, else probes the video.
+                Positioned(
+                  bottom: 8.h,
+                  right: 8.w,
+                  child: MediaDurationResolver(
+                    url: video.videoUrl,
+                    fallbackSeconds: video.durationSeconds,
+                    kind: MediaKind.video,
+                    builder: (context, label) {
+                      if (label == null) return const SizedBox.shrink();
+                      return Container(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.6),
+                          borderRadius: BorderRadius.circular(4.r),
                         ),
-                      ),
-                    ),
+                        child: Text(
+                          label,
+                          style: TextStyle(
+                            fontFamily: 'Poppins',
+                            fontSize: 10.sp,
+                            color: Colors.white,
+                          ),
+                        ),
+                      );
+                    },
                   ),
+                ),
 
                 // View count chip
                 Positioned(

@@ -471,7 +471,12 @@ class _ExploreViewState extends State<_ExploreView> {
     ExploreLoaded state,
     Map<ExploreItemType, List<ExploreItemEntity>> itemsByType,
   ) {
-    final categories = itemsByType[ExploreItemType.category] ?? [];
+    // Category headers come from ALL items, not the filtered set — a type
+    // filter (e.g. Audio) removes the 'category' items, which would otherwise
+    // leave zero headers and render a blank list even with matching content.
+    final categories = state.allItems
+        .where((i) => i.type == ExploreItemType.category)
+        .toList();
     final Map<String, List<ExploreItemEntity>> itemsByCategory = {};
     final List<ExploreItemEntity> uncategorized = [];
 

@@ -5,7 +5,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../../../../core/di/injection.dart';
+import '../../../../../core/services/video_cache_manager.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../video/domain/entities/video_entity.dart';
 import '../../../video/presentation/bloc/short_video/short_video_bloc.dart';
 import '../../../video/presentation/bloc/short_video/short_video_event.dart';
 import '../../../video/presentation/bloc/short_video/short_video_state.dart';
@@ -36,8 +38,14 @@ class _ReelsViewState extends State<_ReelsView> with WidgetsBindingObserver {
   late PageController _pageController;
   int _currentIndex = 0;
   final Map<int, VideoPlayerController> _controllers = {};
+  final Set<int> _initializing = {};
+  final VideoCacheManager _cacheManager = VideoCacheManager();
+  List<VideoEntity> _videos = const [];
   bool _isPaused = true;
   bool _immersive = false;
+
+  // Controllers kept alive on each side of the current index (OOM guard).
+  static const int _window = 1;
 
   // Tracks whether this tab is the visible page in the outer PageView.
   // TickerMode is inherited and set to false by Flutter's PageView for
@@ -103,32 +111,88 @@ class _ReelsViewState extends State<_ReelsView> with WidgetsBindingObserver {
 
   // ── video lifecycle ──────────────────────────────────────────────────────
 
+  // Cache-backed init: streams from the bounded disk cache (offline-capable),
+  // falls back to network streaming on a fetch miss. Race-safe via
+  // [_initializing] so itemBuilder + onPageChanged can't double-download.
   Future<void> _initController(int index, String url) async {
-    if (_controllers.containsKey(index)) return;
-    final controller = VideoPlayerController.networkUrl(Uri.parse(url));
-    _controllers[index] = controller;
+    if (_controllers.containsKey(index) || _initializing.contains(index)) return;
+    _initializing.add(index);
+
+    VideoPlayerController controller;
+    try {
+      final file = await _cacheManager.getSingleFile(url);
+      controller = VideoPlayerController.file(file);
+    } catch (_) {
+      controller = VideoPlayerController.networkUrl(Uri.parse(url));
+    }
+
+    if (!mounted || (index - _currentIndex).abs() > _window) {
+      controller.dispose();
+      _initializing.remove(index);
+      return;
+    }
+
     controller.addListener(() {
       if (mounted) setState(() {});
     });
-    await controller.initialize();
+
+    try {
+      await controller.initialize();
+    } catch (_) {
+      controller.dispose();
+      _initializing.remove(index);
+      return;
+    }
     controller.setLooping(true);
-    // Auto-play removed as requested
+
+    if (!mounted || (index - _currentIndex).abs() > _window) {
+      controller.dispose();
+      _initializing.remove(index);
+      return;
+    }
+
+    setState(() => _controllers[index] = controller);
+    _initializing.remove(index);
+
+    // Resume behaviour: if this is the current reel and the user hasn't paused,
+    // start it once it finishes loading (matches the old page-change autoplay).
+    if (index == _currentIndex && !_isPaused) controller.play();
+  }
+
+  void _pruneControllers() {
+    final toRemove = _controllers.keys
+        .where((k) => (k - _currentIndex).abs() > _window)
+        .toList();
+    for (final k in toRemove) {
+      _controllers[k]?.dispose();
+      _controllers.remove(k);
+    }
+  }
+
+  // Warm the disk cache a couple reels ahead (disk only — memory stays flat).
+  void _prefetchAround(int index) {
+    for (final i in [index + 2, index + 3]) {
+      if (i >= 0 && i < _videos.length) {
+        _cacheManager.getSingleFile(_videos[i].videoUrl).ignore();
+      }
+    }
   }
 
   void _onPageChanged(int index) {
     // Pause previous
     _controllers[_currentIndex]?.pause();
-    
-    // Auto-play next videos by default
-    final c = _controllers[index];
-    if (c != null) {
-      c.play();
-    }
-    
+
     setState(() {
       _currentIndex = index;
       _isPaused = false; // Next page gets auto-played
     });
+
+    _pruneControllers();
+
+    // Auto-play if ready; otherwise _initController plays it once loaded.
+    _controllers[index]?.play();
+
+    _prefetchAround(index);
   }
 
   void _togglePlayPause() {
@@ -194,6 +258,7 @@ class _ReelsViewState extends State<_ReelsView> with WidgetsBindingObserver {
 
   Widget _buildReelsFeed(BuildContext context, ShortVideoLoaded state) {
     final videos = state.videos;
+    _videos = videos;
 
     return Stack(
       children: [

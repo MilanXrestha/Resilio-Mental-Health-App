@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:Resilio/core/di/injection.dart';
 import 'package:Resilio/core/services/auth_token_service.dart';
-import 'package:Resilio/core/theme/app_colors.dart';
 import 'package:Resilio/features/customer/favorites/domain/entities/favorite_entity.dart';
 import 'package:Resilio/features/customer/favorites/presentation/bloc/favorite_bloc.dart';
 import 'package:Resilio/features/customer/favorites/presentation/bloc/favorite_event.dart';
@@ -96,9 +95,7 @@ class _FavoriteButtonState extends State<FavoriteButton> {
 
         final iconSize = widget.size ?? 22.sp;
         final unfilled = widget.color ?? Colors.white.withValues(alpha: 0.9);
-        // Filled heart uses the theme accent so it matches both light & dark
-        // backgrounds instead of a fixed red.
-        final iconColor = isFavorited ? context.primaryColor : unfilled;
+        final iconColor = isFavorited ? Colors.redAccent : unfilled;
 
         void onTap() {
           final userId = _resolveUserId(context.read<AuthBloc>().state);

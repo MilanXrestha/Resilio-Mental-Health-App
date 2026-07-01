@@ -5,7 +5,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../../core/routing/route_names.dart';
+import '../../../../../core/services/media_duration_cache.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/widgets/media_duration_resolver.dart';
 import '../../../../../core/widgets/premium_tag_widget.dart';
 import '../../../audio/domain/entities/audio_entity.dart';
 import '../../../favorites/domain/entities/favorite_entity.dart';
@@ -255,51 +257,59 @@ class AudioCardWidget extends StatelessWidget {
                 left: 8,
               ),
 
-              // Duration chip
-              if (track.formattedDuration.isNotEmpty)
-                Positioned(
-                  bottom: 12.h,
-                  right: 12.w,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                    decoration: BoxDecoration(
-                      color: isDarkMode 
-                          ? context.surfaceColor.withValues(alpha: 0.9) 
-                          : Colors.white.withValues(alpha: 0.9),
-                      borderRadius: BorderRadius.circular(8.r),
-                      border: Border.all(
-                        color: context.primaryColor.withValues(alpha: 0.2),
-                        width: 1.w,
+              // Duration chip — uses DB value, else probes the audio.
+              Positioned(
+                bottom: 12.h,
+                right: 12.w,
+                child: MediaDurationResolver(
+                  url: track.audioUrl,
+                  fallbackSeconds: track.durationSeconds,
+                  kind: MediaKind.audio,
+                  builder: (context, label) {
+                    if (label == null) return const SizedBox.shrink();
+                    return Container(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                      decoration: BoxDecoration(
+                        color: isDarkMode
+                            ? context.surfaceColor.withValues(alpha: 0.9)
+                            : Colors.white.withValues(alpha: 0.9),
+                        borderRadius: BorderRadius.circular(8.r),
+                        border: Border.all(
+                          color: context.primaryColor.withValues(alpha: 0.2),
+                          width: 1.w,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 4.r,
+                          ),
+                        ],
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 4.r,
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.timer_outlined,
-                          size: 12.sp,
-                          color: context.primaryColor,
-                        ),
-                        SizedBox(width: 4.w),
-                        Text(
-                          track.formattedDuration,
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 11.sp,
-                            fontWeight: FontWeight.w600,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.timer_outlined,
+                            size: 12.sp,
                             color: context.primaryColor,
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
+                          SizedBox(width: 4.w),
+                          Text(
+                            label,
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              fontSize: 11.sp,
+                              fontWeight: FontWeight.w600,
+                              color: context.primaryColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
+              ),
             ],
           ),
         ),
