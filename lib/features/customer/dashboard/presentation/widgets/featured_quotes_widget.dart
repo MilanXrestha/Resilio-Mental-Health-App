@@ -342,6 +342,8 @@ class _QuoteCard extends StatelessWidget {
                                   child: CachedNetworkImage(
                                     imageUrl: quote.authorIconUrl!,
                                     fit: BoxFit.cover,
+                                    width: 28.r,
+                                    height: 28.r,
                                     errorWidget: (context, url, error) => Icon(
                                       Icons.person_rounded,
                                       size: 16.sp,

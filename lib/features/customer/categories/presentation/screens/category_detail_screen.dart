@@ -11,6 +11,7 @@ import '../../../../../core/routing/route_names.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/widgets/premium_tag_widget.dart';
 import '../../../audio/domain/entities/audio_entity.dart';
+import '../../../audio/presentation/screens/media_player_screen.dart';
 import '../../../dashboard/domain/entities/quote_entity.dart';
 import '../../../dashboard/presentation/widgets/audio_card_widget.dart';
 import '../../../dashboard/presentation/widgets/long_video_card_widget.dart';
@@ -373,10 +374,21 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
   ) {
     switch (item.type) {
       case ExploreItemType.audio:
+        final audioTracks = all
+            .where((e) => e.type == ExploreItemType.audio)
+            .map(_toAudio)
+            .toList();
+        final startIndex =
+            audioTracks.indexWhere((a) => a.id == item.id);
         return AudioCardWidget(
           track: _toAudio(item),
-          onTap: () =>
-              context.pushNamed(RouteNames.mediaPlayer, extra: _toAudio(item)),
+          onTap: () => context.pushNamed(
+            RouteNames.mediaPlayer,
+            extra: MediaPlayerArgs(
+              playlist: audioTracks,
+              initialIndex: startIndex < 0 ? 0 : startIndex,
+            ),
+          ),
         );
       case ExploreItemType.shortVideo:
         final shorts = all

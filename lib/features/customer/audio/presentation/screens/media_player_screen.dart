@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:just_audio/just_audio.dart';
@@ -8,64 +10,127 @@ import '../../domain/entities/audio_entity.dart';
 import '../../../favorites/presentation/widgets/favorite_button.dart';
 import '../../../favorites/domain/entities/favorite_entity.dart';
 
-/// Beautiful media player screen for audio playback
+/// Arguments for [MediaPlayerScreen] — a playlist plus the track to start on.
+class MediaPlayerArgs {
+  final List<AudioEntity> playlist;
+  final int initialIndex;
+
+  const MediaPlayerArgs({
+    required this.playlist,
+    this.initialIndex = 0,
+  });
+
+  /// Convenience for a single-track playlist.
+  factory MediaPlayerArgs.single(AudioEntity track) =>
+      MediaPlayerArgs(playlist: [track], initialIndex: 0);
+}
+
+/// Beautiful media player screen with a rotating round album cover,
+/// swipe-to-change-track, and an "Up Next" queue.
 class MediaPlayerScreen extends StatefulWidget {
-  final AudioEntity audioTrack;
+  final List<AudioEntity> playlist;
+  final int initialIndex;
 
   const MediaPlayerScreen({
     super.key,
-    required this.audioTrack,
+    required this.playlist,
+    this.initialIndex = 0,
   });
 
   @override
   State<MediaPlayerScreen> createState() => _MediaPlayerScreenState();
 }
 
-class _MediaPlayerScreenState extends State<MediaPlayerScreen> {
+class _MediaPlayerScreenState extends State<MediaPlayerScreen>
+    with SingleTickerProviderStateMixin {
   late final AudioPlayer _audioPlayer;
+  late final PageController _pageController;
+  late final AnimationController _rotationController;
+
   Duration _position = Duration.zero;
   Duration _duration = Duration.zero;
   bool _isPlaying = false;
+  int _currentIndex = 0;
+
+  // Guards against the PageView<->player index feedback loop.
+  bool _isProgrammaticPageChange = false;
+
+  AudioEntity get _current => widget.playlist[_currentIndex];
 
   @override
   void initState() {
     super.initState();
+    _currentIndex = widget.initialIndex.clamp(0, widget.playlist.length - 1);
     _audioPlayer = AudioPlayer();
+    _pageController = PageController(initialPage: _currentIndex);
+    _rotationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 20),
+    );
     _initAudio();
     _setupListeners();
   }
 
   Future<void> _initAudio() async {
     try {
-      await _audioPlayer.setUrl(widget.audioTrack.audioUrl);
-      setState(() {
-        _duration = Duration(seconds: widget.audioTrack.durationSeconds);
-      });
+      await _audioPlayer.setAudioSources(
+        widget.playlist
+            .map((t) => AudioSource.uri(Uri.parse(t.audioUrl)))
+            .toList(),
+        initialIndex: _currentIndex,
+        initialPosition: Duration.zero,
+      );
+      _duration = Duration(seconds: _current.durationSeconds);
+      _audioPlayer.play();
     } catch (e) {
-      print('Error loading audio: $e');
+      debugPrint('Error loading audio: $e');
     }
   }
 
   void _setupListeners() {
     _audioPlayer.playerStateStream.listen((state) {
-      if (mounted) {
-        setState(() {
-          _isPlaying = state.playing;
-        });
+      if (!mounted) return;
+      setState(() => _isPlaying = state.playing);
+      if (state.playing) {
+        if (!_rotationController.isAnimating) _rotationController.repeat();
+      } else {
+        _rotationController.stop();
       }
     });
 
     _audioPlayer.positionStream.listen((position) {
-      if (mounted) {
-        setState(() {
-          _position = position;
-        });
+      if (mounted) setState(() => _position = position);
+    });
+
+    _audioPlayer.durationStream.listen((duration) {
+      if (mounted && duration != null) setState(() => _duration = duration);
+    });
+
+    // Track changes driven by the player (next/prev buttons, auto-advance).
+    _audioPlayer.currentIndexStream.listen((index) {
+      if (!mounted || index == null || index == _currentIndex) return;
+      setState(() {
+        _currentIndex = index;
+        _duration = Duration(seconds: _current.durationSeconds);
+      });
+      if (_pageController.hasClients &&
+          _pageController.page?.round() != index) {
+        _isProgrammaticPageChange = true;
+        _pageController
+            .animateToPage(
+          index,
+          duration: const Duration(milliseconds: 350),
+          curve: Curves.easeInOut,
+        )
+            .then((_) => _isProgrammaticPageChange = false);
       }
     });
   }
 
   @override
   void dispose() {
+    _rotationController.dispose();
+    _pageController.dispose();
     _audioPlayer.dispose();
     super.dispose();
   }
@@ -74,6 +139,13 @@ class _MediaPlayerScreenState extends State<MediaPlayerScreen> {
     final minutes = duration.inMinutes;
     final seconds = duration.inSeconds % 60;
     return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+  }
+
+  // Triggered by user swiping the album art.
+  void _onPageChanged(int index) {
+    if (_isProgrammaticPageChange || index == _currentIndex) return;
+    _audioPlayer.seek(Duration.zero, index: index);
+    _audioPlayer.play();
   }
 
   @override
@@ -117,7 +189,7 @@ class _MediaPlayerScreenState extends State<MediaPlayerScreen> {
                       ),
                     ),
                     FavoriteButton(
-                      contentId: widget.audioTrack.id,
+                      contentId: _current.id,
                       contentType: FavoriteType.audio,
                       size: 28.sp,
                       color: context.textPrimaryColor,
@@ -129,33 +201,16 @@ class _MediaPlayerScreenState extends State<MediaPlayerScreen> {
 
               const Spacer(),
 
-              // Album art
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 40.w),
-                child: AspectRatio(
-                  aspectRatio: 1,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(24.r),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.3),
-                          blurRadius: 30.r,
-                          offset: Offset(0, 15.h),
-                        ),
-                      ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(24.r),
-                      child: widget.audioTrack.coverImageUrl.isNotEmpty
-                          ? Image.network(
-                              widget.audioTrack.coverImageUrl,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => _buildAlbumPlaceholder(),
-                            )
-                          : _buildAlbumPlaceholder(),
-                    ),
-                  ),
+              // Swipeable rotating round album art
+              SizedBox(
+                height: 300.r,
+                child: PageView.builder(
+                  controller: _pageController,
+                  onPageChanged: _onPageChanged,
+                  itemCount: widget.playlist.length,
+                  itemBuilder: (context, index) {
+                    return Center(child: _buildAlbumArt(widget.playlist[index]));
+                  },
                 ),
               ),
 
@@ -166,9 +221,8 @@ class _MediaPlayerScreenState extends State<MediaPlayerScreen> {
                 padding: EdgeInsets.symmetric(horizontal: 24.w),
                 child: Column(
                   children: [
-                    // Title
                     Text(
-                      widget.audioTrack.title,
+                      _current.title,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
@@ -180,9 +234,8 @@ class _MediaPlayerScreenState extends State<MediaPlayerScreen> {
                       ),
                     ),
                     SizedBox(height: 8.h),
-                    // Artist
                     Text(
-                      widget.audioTrack.artistName,
+                      _current.artistName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
@@ -212,20 +265,24 @@ class _MediaPlayerScreenState extends State<MediaPlayerScreen> {
                         ),
                         overlayShape: SliderComponentShape.noOverlay,
                         activeTrackColor: context.primaryColor,
-                        inactiveTrackColor: context.primaryColor.withValues(alpha: 0.3),
+                        inactiveTrackColor:
+                            context.primaryColor.withValues(alpha: 0.3),
                         thumbColor: context.primaryColor,
                       ),
                       child: Slider(
-                        value: _position.inSeconds.toDouble(),
+                        value: _position.inSeconds
+                            .toDouble()
+                            .clamp(0, _duration.inSeconds.toDouble()),
                         min: 0,
-                        max: _duration.inSeconds.toDouble(),
+                        max: _duration.inSeconds.toDouble() > 0
+                            ? _duration.inSeconds.toDouble()
+                            : 1,
                         onChanged: (value) {
                           _audioPlayer.seek(Duration(seconds: value.toInt()));
                         },
                       ),
                     ),
                     SizedBox(height: 8.h),
-                    // Time labels
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 8.w),
                       child: Row(
@@ -264,7 +321,6 @@ class _MediaPlayerScreenState extends State<MediaPlayerScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    // Skip back 10s
                     IconButton(
                       icon: Icon(
                         Icons.replay_10_rounded,
@@ -272,9 +328,12 @@ class _MediaPlayerScreenState extends State<MediaPlayerScreen> {
                         color: context.textPrimaryColor,
                       ),
                       onPressed: () {
-                        final newPosition = _position - const Duration(seconds: 10);
+                        final newPosition =
+                            _position - const Duration(seconds: 10);
                         _audioPlayer.seek(
-                          newPosition < Duration.zero ? Duration.zero : newPosition,
+                          newPosition < Duration.zero
+                              ? Duration.zero
+                              : newPosition,
                         );
                       },
                     ),
@@ -284,11 +343,13 @@ class _MediaPlayerScreenState extends State<MediaPlayerScreen> {
                       icon: Icon(
                         Icons.skip_previous_rounded,
                         size: 44.sp,
-                        color: context.textPrimaryColor,
+                        color: _audioPlayer.hasPrevious
+                            ? context.textPrimaryColor
+                            : context.textPrimaryColor.withValues(alpha: 0.3),
                       ),
-                      onPressed: () {
-                        // TODO: Play previous track
-                      },
+                      onPressed: _audioPlayer.hasPrevious
+                          ? () => _audioPlayer.seekToPrevious()
+                          : null,
                     ),
 
                     // Play/Pause
@@ -311,7 +372,9 @@ class _MediaPlayerScreenState extends State<MediaPlayerScreen> {
                       ),
                       child: IconButton(
                         icon: Icon(
-                          _isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                          _isPlaying
+                              ? Icons.pause_rounded
+                              : Icons.play_arrow_rounded,
                           size: 48.sp,
                           color: Colors.white,
                         ),
@@ -330,14 +393,15 @@ class _MediaPlayerScreenState extends State<MediaPlayerScreen> {
                       icon: Icon(
                         Icons.skip_next_rounded,
                         size: 44.sp,
-                        color: context.textPrimaryColor,
+                        color: _audioPlayer.hasNext
+                            ? context.textPrimaryColor
+                            : context.textPrimaryColor.withValues(alpha: 0.3),
                       ),
-                      onPressed: () {
-                        // TODO: Play next track
-                      },
+                      onPressed: _audioPlayer.hasNext
+                          ? () => _audioPlayer.seekToNext()
+                          : null,
                     ),
 
-                    // Skip forward 10s
                     IconButton(
                       icon: Icon(
                         Icons.forward_10_rounded,
@@ -345,7 +409,8 @@ class _MediaPlayerScreenState extends State<MediaPlayerScreen> {
                         color: context.textPrimaryColor,
                       ),
                       onPressed: () {
-                        final newPosition = _position + const Duration(seconds: 10);
+                        final newPosition =
+                            _position + const Duration(seconds: 10);
                         _audioPlayer.seek(
                           newPosition > _duration ? _duration : newPosition,
                         );
@@ -355,10 +420,227 @@ class _MediaPlayerScreenState extends State<MediaPlayerScreen> {
                 ),
               ),
 
-              SizedBox(height: 48.h),
+              SizedBox(height: 16.h),
+
+              // Up Next button (only when there is a real playlist)
+              if (widget.playlist.length > 1)
+                TextButton.icon(
+                  onPressed: _showUpNext,
+                  icon: Icon(
+                    Icons.queue_music_rounded,
+                    size: 20.sp,
+                    color: context.textSecondaryColor,
+                  ),
+                  label: Text(
+                    'Up Next',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w500,
+                      color: context.textSecondaryColor,
+                    ),
+                  ),
+                ),
+
+              SizedBox(height: 24.h),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildAlbumArt(AudioEntity track) {
+    final image = track.coverImageUrl.isNotEmpty
+        ? Image.network(
+            track.coverImageUrl,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => _buildAlbumPlaceholder(),
+          )
+        : _buildAlbumPlaceholder();
+
+    return AnimatedBuilder(
+      animation: _rotationController,
+      builder: (context, child) {
+        return Transform.rotate(
+          angle: _rotationController.value * 2 * math.pi,
+          child: child,
+        );
+      },
+      child: Container(
+        width: 280.r,
+        height: 280.r,
+        decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+        ),
+        child: ClipOval(
+          child: Stack(
+            alignment: Alignment.center,
+            fit: StackFit.expand,
+            children: [
+              image,
+              // Center hole, like a vinyl record.
+              Center(
+                child: Container(
+                  width: 44.r,
+                  height: 44.r,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: context.backgroundColor,
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.6),
+                      width: 3.r,
+                    ),
+                  ),
+                  child: Center(
+                    child: Container(
+                      width: 12.r,
+                      height: 12.r,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: context.primaryColor,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showUpNext() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: context.backgroundColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(height: 12.h),
+              Container(
+                width: 40.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: context.textSecondaryColor.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.all(16.w),
+                child: Row(
+                  children: [
+                    Text(
+                      'Up Next',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.bold,
+                        color: context.textPrimaryColor,
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      '${widget.playlist.length} tracks',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 13.sp,
+                        color: context.textSecondaryColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: widget.playlist.length,
+                  itemBuilder: (context, index) {
+                    final track = widget.playlist[index];
+                    final isCurrent = index == _currentIndex;
+                    return ListTile(
+                      leading: ClipRRect(
+                        borderRadius: BorderRadius.circular(8.r),
+                        child: SizedBox(
+                          width: 48.r,
+                          height: 48.r,
+                          child: track.coverImageUrl.isNotEmpty
+                              ? Image.network(
+                                  track.coverImageUrl,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) =>
+                                      _buildMiniPlaceholder(),
+                                )
+                              : _buildMiniPlaceholder(),
+                        ),
+                      ),
+                      title: Text(
+                        track.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          fontSize: 14.sp,
+                          fontWeight:
+                              isCurrent ? FontWeight.w600 : FontWeight.w500,
+                          color: isCurrent
+                              ? context.primaryColor
+                              : context.textPrimaryColor,
+                        ),
+                      ),
+                      subtitle: Text(
+                        track.artistName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          fontSize: 12.sp,
+                          color: context.textSecondaryColor,
+                        ),
+                      ),
+                      trailing: isCurrent
+                          ? Icon(
+                              Icons.equalizer_rounded,
+                              size: 20.sp,
+                              color: context.primaryColor,
+                            )
+                          : Text(
+                              track.formattedDuration,
+                              style: TextStyle(
+                                fontFamily: 'Poppins',
+                                fontSize: 12.sp,
+                                color: context.textSecondaryColor,
+                              ),
+                            ),
+                      onTap: () {
+                        Navigator.pop(sheetContext);
+                        _audioPlayer.seek(Duration.zero, index: index);
+                        _audioPlayer.play();
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildMiniPlaceholder() {
+    return Container(
+      color: context.primaryColor.withValues(alpha: 0.3),
+      child: Icon(
+        Icons.music_note_rounded,
+        size: 24.sp,
+        color: Colors.white.withValues(alpha: 0.8),
       ),
     );
   }

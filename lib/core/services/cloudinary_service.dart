@@ -4,8 +4,8 @@ import 'package:injectable/injectable.dart';
 
 @lazySingleton
 class CloudinaryService {
-  static const String _cloudName = 'dczb26ev1';
-  static const String _uploadPreset = 'Wellness_App';
+  static const String _cloudName = 'yh1rva9i';
+  static const String _uploadPreset = 'Resilio';
 
   final CloudinaryPublic _cloudinary = CloudinaryPublic(
     _cloudName,

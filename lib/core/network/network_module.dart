@@ -20,6 +20,11 @@ abstract class NetworkModule {
       ),
     );
 
+    // Remove Dio's default ImplyContentTypeInterceptor. It runs before our
+    // custom interceptors and warns on protobuf (GeneratedMessage) bodies it
+    // can't classify. ProtobufInterceptor sets the content-type instead.
+    dio.interceptors.clear();
+
     dio.interceptors.addAll([
       // Auth interceptor - adds Authorization header automatically
       AuthInterceptor(authTokenService),

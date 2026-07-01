@@ -31,6 +31,13 @@ class ProtobufInterceptor extends Interceptor {
           options.responseType = ResponseType.json;
         }
       }
+
+      // Imply JSON content-type for Map/List bodies. Replaces Dio's default
+      // ImplyContentTypeInterceptor, which we removed to avoid protobuf warnings.
+      if (options.contentType == null &&
+          (options.data is Map || options.data is List)) {
+        options.contentType = 'application/json';
+      }
     }
 
     super.onRequest(options, handler);

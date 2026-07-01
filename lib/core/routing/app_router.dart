@@ -111,11 +111,18 @@ class AppRouter {
         path: '/media-player',
         name: RouteNames.mediaPlayer,
         builder: (context, state) {
-          final audioTrack = state.extra as AudioEntity?;
-          if (audioTrack == null) {
-            return const SizedBox.shrink();
+          final extra = state.extra;
+          // Accept either a playlist (MediaPlayerArgs) or a single track.
+          if (extra is MediaPlayerArgs) {
+            return MediaPlayerScreen(
+              playlist: extra.playlist,
+              initialIndex: extra.initialIndex,
+            );
           }
-          return MediaPlayerScreen(audioTrack: audioTrack);
+          if (extra is AudioEntity) {
+            return MediaPlayerScreen(playlist: [extra], initialIndex: 0);
+          }
+          return const SizedBox.shrink();
         },
       ),
       GoRoute(

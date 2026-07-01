@@ -14,6 +14,7 @@ import '../../../../../core/routing/route_names.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../audio/domain/entities/audio_entity.dart';
 import '../../../audio/presentation/bloc/audio_bloc.dart';
+import '../../../audio/presentation/screens/media_player_screen.dart';
 import '../../../audio/presentation/bloc/audio_event.dart';
 import '../../../audio/presentation/bloc/audio_state.dart';
 import '../../../categories/domain/entities/category_entity.dart';
@@ -784,7 +785,13 @@ class _FeaturedAudioSection extends StatelessWidget {
                   return AudioCardWidget(
                     track: track,
                     onTap: () {
-                      context.pushNamed(RouteNames.mediaPlayer, extra: track);
+                      context.pushNamed(
+                        RouteNames.mediaPlayer,
+                        extra: MediaPlayerArgs(
+                          playlist: tracks,
+                          initialIndex: index,
+                        ),
+                      );
                     },
                   );
                 },
