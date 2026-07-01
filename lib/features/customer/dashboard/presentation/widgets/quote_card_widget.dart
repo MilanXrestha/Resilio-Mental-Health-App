@@ -85,26 +85,33 @@ class QuoteCardWidget extends StatelessWidget {
                         const Spacer(),
                         Row(
                           children: [
-                            if (quote.authorIconUrl?.isNotEmpty ?? false) ...[
-                              CircleAvatar(
-                                radius: 10.r,
-                                backgroundColor: context.primaryColor.withValues(alpha: 0.1),
-                                child: ClipOval(
-                                  child: Image.network(
-                                    quote.authorIconUrl!,
-                                    width: 20.r,
-                                    height: 20.r,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (_, _, _) => Icon(
+                            CircleAvatar(
+                              radius: 10.r,
+                              backgroundColor:
+                                  context.primaryColor.withValues(alpha: 0.1),
+                              child: (quote.authorIconUrl?.isNotEmpty ?? false)
+                                  ? ClipOval(
+                                      child: Image.network(
+                                        quote.authorIconUrl!,
+                                        width: 20.r,
+                                        height: 20.r,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, _, _) => Icon(
+                                          Icons.person_rounded,
+                                          size: 12.sp,
+                                          color: context.primaryColor
+                                              .withValues(alpha: 0.5),
+                                        ),
+                                      ),
+                                    )
+                                  : Icon(
                                       Icons.person_rounded,
                                       size: 12.sp,
-                                      color: context.primaryColor.withValues(alpha: 0.5),
+                                      color: context.primaryColor
+                                          .withValues(alpha: 0.5),
                                     ),
-                                  ),
-                                ),
-                              ),
-                              SizedBox(width: 6.w),
-                            ],
+                            ),
+                            SizedBox(width: 6.w),
                             Expanded(
                               child: Text(
                                 '— ${quote.author}',

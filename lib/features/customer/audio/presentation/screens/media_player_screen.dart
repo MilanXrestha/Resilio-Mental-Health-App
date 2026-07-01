@@ -73,14 +73,18 @@ class _MediaPlayerScreenState extends State<MediaPlayerScreen>
 
   Future<void> _initAudio() async {
     try {
-      await _audioPlayer.setAudioSources(
+      final initialDuration = await _audioPlayer.setAudioSources(
         widget.playlist
             .map((t) => AudioSource.uri(Uri.parse(t.audioUrl)))
             .toList(),
         initialIndex: _currentIndex,
         initialPosition: Duration.zero,
       );
-      _duration = Duration(seconds: _current.durationSeconds);
+      // Real media duration (setAudioSources returns the initial track's length);
+      // durationStream keeps it in sync. The DB value is often blank → 00:00.
+      if (mounted) {
+        setState(() => _duration = initialDuration ?? Duration.zero);
+      }
       _audioPlayer.play();
     } catch (e) {
       debugPrint('Error loading audio: $e');
@@ -111,7 +115,10 @@ class _MediaPlayerScreenState extends State<MediaPlayerScreen>
       if (!mounted || index == null || index == _currentIndex) return;
       setState(() {
         _currentIndex = index;
-        _duration = Duration(seconds: _current.durationSeconds);
+        // Use the player's real duration for the new track; durationStream will
+        // refine it. Don't fall back to the DB value (often 0/blank) — that
+        // would show 00:00 as the end time.
+        _duration = _audioPlayer.duration ?? Duration.zero;
       });
       if (_pageController.hasClients &&
           _pageController.page?.round() != index) {

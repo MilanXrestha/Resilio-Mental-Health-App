@@ -262,14 +262,20 @@ class _TipDetailSheet extends StatelessWidget {
             SizedBox(height: 16.h),
             Row(
               children: [
-                if (tip.authorIconUrl.isNotEmpty) ...[
-                  CircleAvatar(
-                    radius: 20.r,
-                    backgroundImage: NetworkImage(tip.authorIconUrl),
-                    onBackgroundImageError: (_, _) {},
-                  ),
-                  SizedBox(width: 12.w),
-                ],
+                CircleAvatar(
+                  radius: 20.r,
+                  backgroundColor: Colors.white.withValues(alpha: 0.2),
+                  backgroundImage: tip.authorIconUrl.isNotEmpty
+                      ? NetworkImage(tip.authorIconUrl)
+                      : null,
+                  onBackgroundImageError:
+                      tip.authorIconUrl.isNotEmpty ? (_, _) {} : null,
+                  child: tip.authorIconUrl.isEmpty
+                      ? Icon(Icons.person_rounded,
+                          size: 22.sp, color: Colors.white)
+                      : null,
+                ),
+                SizedBox(width: 12.w),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
