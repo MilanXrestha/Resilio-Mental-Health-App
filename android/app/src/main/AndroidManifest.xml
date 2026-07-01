@@ -14,9 +14,12 @@
     <!-- Wake lock to keep screen on during calls -->
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
 
-    <!-- Exact alarms for daily wellness reminders (Android 12+) -->
+    <!-- Exact alarms for daily wellness reminders (Android 12+).
+         SCHEDULE_EXACT_ALARM is user-granted (prompts via the Alarms &
+         reminders screen). USE_EXACT_ALARM is intentionally omitted — it is
+         auto-granted (so no prompt) and reserved by Google Play for alarm-clock
+         apps, which a wellness reminder is not. -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
-    <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
 
     <!-- Re-schedule reminders after device reboot -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>

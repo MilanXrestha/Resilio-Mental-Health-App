@@ -63,12 +63,13 @@ class GameService {
     required String mood,
     int moodScore = 3,
     String? note,
+    String? entryDate,
   }) async {
     await _gamesRepository.saveMoodEntry(
       moodScore: moodScore,
       moodLabel: mood,
       note: note ?? '',
-      entryDate: DateTime.now().toIso8601String().split('T')[0],
+      entryDate: entryDate ?? DateTime.now().toIso8601String().split('T')[0],
     );
   }
 

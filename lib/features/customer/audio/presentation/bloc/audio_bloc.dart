@@ -5,7 +5,10 @@ import '../../domain/repositories/audio_repository.dart';
 import 'audio_event.dart';
 import 'audio_state.dart';
 
-@lazySingleton
+// Factory (not singleton): each BlocProvider gets its own instance and can
+// safely close it on dispose. A shared singleton was reused after close on
+// screen remount → "Cannot add new events after calling close".
+@injectable
 class AudioBloc extends Bloc<AudioEvent, AudioState> {
   final AudioRepository _repository;
 

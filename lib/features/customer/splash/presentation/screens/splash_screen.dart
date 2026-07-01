@@ -50,17 +50,16 @@ class _SplashScreenState extends State<SplashScreen> {
       if (user != null) {
         final checkPrefsStatus = getIt<CheckPreferencesCompletionUseCase>();
         final prefsResult = await checkPrefsStatus.call(const NoParams());
-        preferencesCompleted = prefsResult.getOrElse(() => false);
-        
-        // Use a fast local mechanism or backend check for user_role.
-        // For now, assume it's stored or we go to a loading screen.
-        // I will assume authTokenService or local preference has it, but wait:
-        // By default, let's navigate to home which will branch if it's admin/therapist (if we implement it there)
-        // Or we assume all users go to their respective dashboard here.
-        // Actually, we probably should get the cached user entity to read the role.
         final cachedUserResult = await getIt<AuthRepository>().getCachedUser();
         final cachedUser = cachedUserResult.getOrElse(() => null);
         userRole = cachedUser?.role;
+
+        // Consider prefs done if EITHER the local check OR the backend user
+        // entity says so. Avoids a false negative (e.g. SuperTokens users where
+        // the Firebase id-token check is null) routing to the preferences
+        // screen for a beat before it re-detects completion and bounces home.
+        preferencesCompleted = prefsResult.getOrElse(() => false) ||
+            (cachedUser?.preferencesCompleted ?? false);
       }
 
       // Calculate elapsed time and ensure minimum display

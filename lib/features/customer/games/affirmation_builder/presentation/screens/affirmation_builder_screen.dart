@@ -979,9 +979,9 @@ class _AffirmationBuilderScreenState extends State<AffirmationBuilderScreen>
           ),
         );
       },
-      onWillAcceptWithDetails: (data) => isEmpty && data != null,
-      onAcceptWithDetails: (word) {
-        _placeWord(word, index);
+      onWillAcceptWithDetails: (data) => isEmpty && data.data.isNotEmpty,
+      onAcceptWithDetails: (details) {
+        _placeWord(details.data, index);
       },
     );
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:Resilio/core/theme/app_colors.dart';
 import 'package:Resilio/features/customer/games/game_hub/data/services/game_service.dart';
@@ -71,33 +72,88 @@ class _MoodTrackerWidgetState extends State<MoodTrackerWidget>
     super.dispose();
   }
 
-  Future<void> _loadTodayData() async {
-    setState(() => _isLoading = true);
-    try {
-      final stats = await _gameService.getUserMoodStats(widget.userId);
-      final entries = await _gameService.getUserMoodEntries(widget.userId, limit: 100);
+  static String get _todayStr =>
+      DateTime.now().toIso8601String().split('T').first;
 
-      final today = DateTime.now();
-      final todayKey = DateTime(today.year, today.month, today.day);
-      final todayMatches = entries.where(
-        (e) => DateTime(e.createdAt.year, e.createdAt.month, e.createdAt.day) == todayKey,
-      ).toList();
-      final MoodEntryModel? todayEntry = todayMatches.isNotEmpty ? todayMatches.first : null;
+  void _applyTodayEntry(MoodEntryModel? todayEntry, int streak) {
+    _streakDays = streak;
+    _todayEntry = todayEntry;
+    _savedToday = todayEntry != null;
+    if (todayEntry != null) {
+      var moodIdx = _moods.indexWhere((m) =>
+          m['label'] == todayEntry.moodLabel || m['emoji'] == todayEntry.moodLabel);
+      if (moodIdx < 0) {
+        moodIdx = _moods.indexWhere((m) => m['score'] == todayEntry.moodScore);
+      }
+      _selectedMoodIndex = moodIdx >= 0 ? moodIdx : null;
+      _intensity = todayEntry.moodScore.clamp(1, 5);
+      _journalController.text = todayEntry.note;
+    }
+  }
 
+  Future<void> _writeTodayCache(MoodEntryModel? e, int streak) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('mood_today_date', _todayStr);
+    await prefs.setInt('mood_streak', streak);
+    await prefs.setBool('mood_today_has', e != null);
+    if (e != null) {
+      await prefs.setString('mood_today_id', e.id);
+      await prefs.setInt('mood_today_score', e.moodScore);
+      await prefs.setString('mood_today_label', e.moodLabel);
+      await prefs.setString('mood_today_note', e.note);
+    }
+  }
+
+  /// Shows cached today-state instantly (no skeleton), then refreshes silently.
+  Future<void> _loadTodayData({bool silent = false}) async {
+    // 1. Instant paint from cache when it's for today.
+    final prefs = await SharedPreferences.getInstance();
+    final cacheIsToday = prefs.getString('mood_today_date') == _todayStr;
+    if (cacheIsToday) {
+      final has = prefs.getBool('mood_today_has') ?? false;
+      final cached = has
+          ? MoodEntryModel(
+              id: prefs.getString('mood_today_id') ?? '',
+              userId: widget.userId,
+              moodScore: prefs.getInt('mood_today_score') ?? 3,
+              moodLabel: prefs.getString('mood_today_label') ?? '',
+              note: prefs.getString('mood_today_note') ?? '',
+              entryDate: _todayStr,
+              createdAt: DateTime.now(),
+            )
+          : null;
       if (mounted) {
         setState(() {
-          _streakDays = (stats['currentStreak'] as int?) ?? 0;
-          _todayEntry = todayEntry;
-          _savedToday = todayEntry != null;
+          _applyTodayEntry(cached, prefs.getInt('mood_streak') ?? 0);
           _isLoading = false;
+        });
+      }
+    } else if (!silent) {
+      setState(() => _isLoading = true);
+    }
 
-          if (todayEntry != null) {
-            // Pre-fill from today's entry for potential editing
-            final moodIdx = _moods.indexWhere((m) => m['emoji'] == todayEntry.moodLabel);
-            _selectedMoodIndex = moodIdx >= 0 ? moodIdx : null;
-            _intensity = todayEntry.moodScore.clamp(1, 5);
-            _journalController.text = todayEntry.note;
-          }
+    // 2. Refresh from server + re-cache.
+    try {
+      final stats = await _gameService.getUserMoodStats(widget.userId);
+      final entries =
+          await _gameService.getUserMoodEntries(widget.userId, limit: 100);
+
+      final todayKey = _todayStr;
+      final todayMatches = entries.where((e) {
+        final d = DateTime.tryParse(e.entryDate);
+        final k = d != null
+            ? d.toIso8601String().split('T').first
+            : e.createdAt.toIso8601String().split('T').first;
+        return k == todayKey;
+      }).toList();
+      final todayEntry = todayMatches.isNotEmpty ? todayMatches.first : null;
+      final streak = (stats['currentStreak'] as int?) ?? 0;
+
+      await _writeTodayCache(todayEntry, streak);
+      if (mounted) {
+        setState(() {
+          _applyTodayEntry(todayEntry, streak);
+          _isLoading = false;
         });
       }
     } catch (_) {
@@ -111,48 +167,77 @@ class _MoodTrackerWidgetState extends State<MoodTrackerWidget>
     HapticFeedback.mediumImpact();
 
     final mood = _moods[_selectedMoodIndex!];
-    final emoji = mood['emoji'] as String;
+    final label = mood['label'] as String;
     final note = _journalController.text.trim();
     final score = (_intensity + (mood['score'] as int)) ~/ 2;
 
+    // Snapshot for rollback if the server call fails.
+    final prevEntry = _todayEntry;
+    final prevSaved = _savedToday;
+    final prevStreak = _streakDays;
+    final wasFirstEntryToday = !_savedToday;
+
+    // ── Optimistic update: reflect the new mood immediately ──
+    final optimistic = MoodEntryModel(
+      id: _todayEntry?.id ?? '',
+      userId: widget.userId,
+      moodScore: score,
+      moodLabel: label,
+      note: note,
+      entryDate: _todayStr,
+      createdAt: DateTime.now(),
+    );
+    HapticFeedback.heavyImpact();
+    _showXpFeedback(score * 5 + 10);
+    setState(() {
+      _isSubmitting = false;
+      _savedToday = true;
+      _isEditing = false;
+      _todayEntry = optimistic;
+      if (wasFirstEntryToday) _streakDays++;
+    });
+    _writeTodayCache(optimistic, _streakDays);
+
     try {
-      if (_isEditing && _todayEntry != null) {
+      if (_isEditing && prevEntry != null) {
         await _gameService.updateMoodEntry(
-          id: _todayEntry!.id,
-          mood: emoji,
+          id: prevEntry.id,
+          mood: label,
+          moodScore: score,
+          note: note,
+        );
+      } else if (prevEntry != null) {
+        await _gameService.updateMoodEntry(
+          id: prevEntry.id,
+          mood: label,
           moodScore: score,
           note: note,
         );
       } else {
         await _gameService.saveMoodEntry(
           userId: widget.userId,
-          mood: emoji,
+          mood: label,
           moodScore: score,
           note: note,
         );
       }
-
-      HapticFeedback.heavyImpact();
-      if (mounted) {
-        final wasFirstEntryToday = !_savedToday;
-        _showXpFeedback(score * 5 + 10);
-        setState(() {
-          _isSubmitting = false;
-          _savedToday = true;
-          _isEditing = false;
-          if (wasFirstEntryToday) _streakDays++;
-        });
-        await _loadTodayData();
-      }
+      // Silently reconcile (gets the real id, accurate streak) — no skeleton.
+      await _loadTodayData(silent: true);
     } catch (e) {
+      // Roll back the optimistic change.
       if (mounted) {
-        setState(() => _isSubmitting = false);
+        setState(() {
+          _todayEntry = prevEntry;
+          _savedToday = prevSaved;
+          _streakDays = prevStreak;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Could not save: $e'),
+            content: const Text('Could not save. Tap to retry.'),
             backgroundColor: context.errorColor,
           ),
         );
+        await _writeTodayCache(prevEntry, prevStreak);
       }
     }
   }
@@ -503,9 +588,14 @@ class _MoodTrackerWidgetState extends State<MoodTrackerWidget>
   Widget _buildTodayDone() {
     final entry = _todayEntry;
     if (entry == null) return const SizedBox.shrink();
-    final moodIdx = _moods.indexWhere((m) => m['emoji'] == entry.moodLabel);
+    var moodIdx = _moods.indexWhere((m) =>
+        m['label'] == entry.moodLabel || m['emoji'] == entry.moodLabel);
+    if (moodIdx < 0) {
+      moodIdx = _moods.indexWhere((m) => m['score'] == entry.moodScore);
+    }
     final mood = moodIdx >= 0 ? _moods[moodIdx] : null;
     final color = (mood?['color'] as Color?) ?? context.primaryColor;
+    final emoji = (mood?['emoji'] as String?) ?? '🙂';
 
     return Padding(
       padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 8.h),
@@ -521,7 +611,7 @@ class _MoodTrackerWidgetState extends State<MoodTrackerWidget>
             ),
             child: Row(
               children: [
-                Text(entry.moodLabel, style: TextStyle(fontSize: 32.sp)),
+                Text(emoji, style: TextStyle(fontSize: 32.sp)),
                 SizedBox(width: 12.w),
                 Expanded(
                   child: Column(

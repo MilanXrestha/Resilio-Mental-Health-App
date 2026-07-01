@@ -636,7 +636,7 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i759.NetworkInfo>(),
       ),
     );
-    gh.lazySingleton<_i171.AudioBloc>(
+    gh.factory<_i171.AudioBloc>(
       () => _i171.AudioBloc(gh<_i164.AudioRepository>()),
     );
     gh.factory<_i723.CheckOnboardingStatusUseCase>(
