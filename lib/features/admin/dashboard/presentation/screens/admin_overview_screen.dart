@@ -132,68 +132,55 @@ class _AdminOverviewScreenState extends State<AdminOverviewScreen> {
 
         return GestureDetector(
           onTap: () => context.push('/admin-revenue'),
-          child: Stack(
-            children: [
-              // Fill the card so the gradient actually paints behind the
-              // content — without Positioned.fill this sized to ~0, leaving the
-              // white text on the light scaffold (invisible in light mode).
-              Positioned.fill(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0D9488),
-                    borderRadius: BorderRadius.circular(24.r),
-                    boxShadow: [BoxShadow(color: const Color(0xFF0D9488).withOpacity(0.3), blurRadius: 16, offset: const Offset(0, 8))],
-                  ),
-                ),
-              ),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(24.r),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                  child: Container(
-                    padding: EdgeInsets.all(20.w),
-                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.1), borderRadius: BorderRadius.circular(24.r), border: Border.all(color: Colors.white.withOpacity(0.2), width: 1.5)),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(child: Text('Total Platform Revenue', style: TextStyle(fontFamily: 'Poppins', fontSize: 13.sp, color: Colors.white.withOpacity(0.85)), overflow: TextOverflow.ellipsis)),
-                            Container(
-                              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-                              decoration: BoxDecoration(color: Colors.white.withOpacity(0.25), borderRadius: BorderRadius.circular(12.r)),
-                              child: Text('NPR', style: TextStyle(fontFamily: 'Poppins', fontSize: 11.sp, fontWeight: FontWeight.w700, color: Colors.white)),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 6.h),
-                        FittedBox(
-                          fit: BoxFit.scaleDown,
-                          alignment: Alignment.centerLeft,
-                          child: Text('Rs. ${_formatNum(totalRevenue)}', style: TextStyle(fontFamily: 'Poppins', fontSize: 32.sp, fontWeight: FontWeight.w800, color: Colors.white)),
-                        ),
-                        SizedBox(height: 4.h),
-                        Container(
-                          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-                          decoration: BoxDecoration(color: const Color(0xFF8B5CF6).withOpacity(0.8), borderRadius: BorderRadius.circular(8.r)),
-                          child: Text('Admin Profit: Rs. ${_formatNum(adminCut)}', style: TextStyle(fontFamily: 'Poppins', fontSize: 11.sp, fontWeight: FontWeight.w600, color: Colors.white), overflow: TextOverflow.ellipsis),
-                        ),
-                        SizedBox(height: 24.h),
-                        if (monthly.isNotEmpty) _buildAdvancedMonthlyChart(monthly),
-                      ],
+          child: Container(
+            padding: EdgeInsets.all(20.w),
+            decoration: BoxDecoration(
+              color: context.surfaceColor,
+              borderRadius: BorderRadius.circular(20.r),
+              border: Border.all(color: context.dividerColor, width: 1),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4)),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(child: Text('Total Platform Revenue', style: TextStyle(fontFamily: 'Poppins', fontSize: 13.sp, color: context.textSecondaryColor), overflow: TextOverflow.ellipsis)),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                      decoration: BoxDecoration(color: context.primaryColor.withOpacity(0.1), borderRadius: BorderRadius.circular(12.r)),
+                      child: Text('NPR', style: TextStyle(fontFamily: 'Poppins', fontSize: 11.sp, fontWeight: FontWeight.w700, color: context.primaryColor)),
                     ),
-                  ),
+                  ],
                 ),
-              ),
-            ],
+                SizedBox(height: 12.h),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text('Rs. ${_formatNum(totalRevenue)}', style: TextStyle(fontFamily: 'Poppins', fontSize: 32.sp, fontWeight: FontWeight.w800, color: context.textPrimaryColor)),
+                ),
+                SizedBox(height: 8.h),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                  decoration: BoxDecoration(color: context.primaryColor.withOpacity(0.1), borderRadius: BorderRadius.circular(8.r)),
+                  child: Text('Admin Profit: Rs. ${_formatNum(adminCut)}', style: TextStyle(fontFamily: 'Poppins', fontSize: 11.sp, fontWeight: FontWeight.w600, color: context.primaryColor), overflow: TextOverflow.ellipsis),
+                ),
+                if (monthly.isNotEmpty) ...[
+                  SizedBox(height: 24.h),
+                  _buildAdvancedMonthlyChart(context, monthly),
+                ],
+              ],
+            ),
           ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.05),
         );
       },
     );
   }
 
-  Widget _buildAdvancedMonthlyChart(List<dynamic> monthly) {
+  Widget _buildAdvancedMonthlyChart(BuildContext context, List<dynamic> monthly) {
     final spots = <FlSpot>[];
     for (int i = 0; i < monthly.length; i++) {
       final amount = (monthly[i]['amount'] as num?)?.toDouble() ?? 0;
@@ -209,7 +196,7 @@ class _AdminOverviewScreenState extends State<AdminOverviewScreen> {
         LineChartData(
           gridData: FlGridData(
             show: true, drawVerticalLine: false, horizontalInterval: maxY / 2 == 0 ? 1 : maxY / 2,
-            getDrawingHorizontalLine: (value) => FlLine(color: Colors.white.withOpacity(0.15), strokeWidth: 1, dashArray: [5, 5]),
+            getDrawingHorizontalLine: (value) => FlLine(color: context.dividerColor, strokeWidth: 1, dashArray: [5, 5]),
           ),
           titlesData: const FlTitlesData(show: false),
           borderData: FlBorderData(show: false),
@@ -218,14 +205,14 @@ class _AdminOverviewScreenState extends State<AdminOverviewScreen> {
             enabled: true,
             touchTooltipData: LineTouchTooltipData(
               tooltipPadding: EdgeInsets.all(8.w), tooltipMargin: 8,
-              getTooltipItems: (touchedSpots) => touchedSpots.map((spot) => LineTooltipItem('Rs. ${spot.y.toInt()}', TextStyle(fontFamily: 'Poppins', color: Colors.white, fontWeight: FontWeight.w700, fontSize: 10.sp))).toList(),
+              getTooltipItems: (touchedSpots) => touchedSpots.map((spot) => LineTooltipItem('Rs. ${spot.y.toInt()}', TextStyle(fontFamily: 'Poppins', color: context.textPrimaryColor, fontWeight: FontWeight.w700, fontSize: 10.sp))).toList(),
             ),
           ),
           lineBarsData: [
             LineChartBarData(
-              spots: spots, isCurved: true, curveSmoothness: 0.35, color: Colors.white, barWidth: 3, isStrokeCapRound: true,
-              dotData: FlDotData(show: true, getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(radius: 3.r, color: Colors.white, strokeWidth: 2, strokeColor: const Color(0xFF6366F1))),
-              belowBarData: BarAreaData(show: true, gradient: LinearGradient(colors: [Colors.white.withOpacity(0.4), Colors.white.withOpacity(0.0)], begin: Alignment.topCenter, end: Alignment.bottomCenter)),
+              spots: spots, isCurved: true, curveSmoothness: 0.35, color: context.primaryColor, barWidth: 3, isStrokeCapRound: true,
+              dotData: FlDotData(show: true, getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(radius: 3.r, color: Colors.white, strokeWidth: 2, strokeColor: context.primaryColor)),
+              belowBarData: BarAreaData(show: true, gradient: LinearGradient(colors: [context.primaryColor.withOpacity(0.2), context.primaryColor.withOpacity(0.0)], begin: Alignment.topCenter, end: Alignment.bottomCenter)),
             ),
           ],
         ),
