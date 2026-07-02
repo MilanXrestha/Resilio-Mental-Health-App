@@ -3,6 +3,8 @@ import 'package:equatable/equatable.dart';
 // We use Equatable to help Bloc determine if state changed
 class TherapistState extends Equatable {
   final bool isLoading;
+  // Separate flag to track only profile loading so other loads don't block the header
+  final bool isProfileLoading;
   final String? errorMessage;
   final String? successMessage;
 
@@ -18,6 +20,7 @@ class TherapistState extends Equatable {
 
   const TherapistState({
     this.isLoading = false,
+    this.isProfileLoading = false,
     this.errorMessage,
     this.successMessage,
     this.dashboardData,
@@ -32,6 +35,7 @@ class TherapistState extends Equatable {
 
   TherapistState copyWith({
     bool? isLoading,
+    bool? isProfileLoading,
     String? errorMessage,
     String? successMessage,
     bool clearError = false,
@@ -47,6 +51,7 @@ class TherapistState extends Equatable {
   }) {
     return TherapistState(
       isLoading: isLoading ?? this.isLoading,
+      isProfileLoading: isProfileLoading ?? this.isProfileLoading,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       successMessage: clearSuccess ? null : (successMessage ?? this.successMessage),
       dashboardData: dashboardData ?? this.dashboardData,
@@ -70,6 +75,7 @@ class TherapistState extends Equatable {
   @override
   List<Object?> get props => [
         isLoading,
+        isProfileLoading,
         errorMessage,
         successMessage,
         dashboardData,

@@ -120,18 +120,13 @@ class TherapistHomeTab extends StatelessWidget {
       }
       // Get profile picture
       profilePicUrl = state.profile!['profilePictureUrl'] as String?;
-    } else if (state.hasDashboard && state.dashboardData!['nextAppointment'] != null) {
-      final therapistInfo = state.dashboardData!['nextAppointment']?['therapist'];
-      if (therapistInfo != null) {
-        final displayName = therapistInfo['displayName'] as String? ?? '';
-        if (displayName.isNotEmpty) {
-          firstName = displayName.split(' ')[0];
-        }
-      }
     }
     
-    // Show shimmer for app bar if no data yet
-    if (firstName == null) {
+    // If still loading profile, show shimmer
+    final isProfileLoading = !state.hasProfile && state.isProfileLoading;
+    
+    // Show shimmer for app bar if still loading and no name is available yet
+    if (isProfileLoading && firstName == null) {
       return SliverAppBar(
         backgroundColor: context.backgroundColor,
         surfaceTintColor: Colors.transparent,
@@ -263,7 +258,7 @@ class TherapistHomeTab extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        firstName,
+                        firstName ?? 'Therapist',
                         style: TextStyle(
                           fontFamily: 'Poppins',
                           fontSize: 20.sp,
@@ -426,54 +421,59 @@ class _KpiCard extends StatelessWidget {
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: context.surfaceColor,
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: context.dividerColor, width: 0.5),
         boxShadow: [
           BoxShadow(
-            color: iconColor.withOpacity(0.04),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
+            color: iconColor.withOpacity(0.08),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: EdgeInsets.all(10.w),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [bgColor, bgColor.withOpacity(0.5)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: EdgeInsets.all(10.w),
+                decoration: BoxDecoration(
+                  color: iconColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Icon(icon, color: iconColor, size: 20.sp),
               ),
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: Icon(icon, color: iconColor, size: 20.sp),
+              Icon(Icons.arrow_forward_ios_rounded, color: context.textHintColor, size: 12.sp),
+            ],
           ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  value,
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 20.sp,
-                    fontWeight: FontWeight.w700,
-                    color: context.textPrimaryColor,
-                  ),
-                ),
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 11.sp,
-                    color: context.textSecondaryColor,
-                  ),
-                  maxLines: 2,
-                ),
-              ],
+          SizedBox(height: 16.h),
+          Text(
+            value,
+            style: TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 22.sp,
+              fontWeight: FontWeight.w700,
+              color: context.textPrimaryColor,
+              height: 1.2,
             ),
+          ),
+          SizedBox(height: 4.h),
+          Text(
+            label,
+            style: TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 12.sp,
+              color: context.textSecondaryColor,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -662,17 +662,17 @@ class _PendingRequestsBanner extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: const Color(0xFFF59E0B).withOpacity(0.1),
+          color: const Color(0xFFF59E0B).withOpacity(0.08),
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.3)),
+          border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.3), width: 0.5),
         ),
         child: Row(
           children: [
             Container(
-              padding: EdgeInsets.all(8.w),
+              padding: EdgeInsets.all(10.w),
               decoration: BoxDecoration(
                 color: const Color(0xFFF59E0B).withOpacity(0.15),
-                shape: BoxShape.circle,
+                borderRadius: BorderRadius.circular(12.r),
               ),
               child: Icon(
                 Icons.pending_actions_rounded,
@@ -680,7 +680,7 @@ class _PendingRequestsBanner extends StatelessWidget {
                 size: 20.sp,
               ),
             ),
-            SizedBox(width: 12.w),
+            SizedBox(width: 14.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -694,6 +694,7 @@ class _PendingRequestsBanner extends StatelessWidget {
                       color: context.textPrimaryColor,
                     ),
                   ),
+                  SizedBox(height: 2.h),
                   Text(
                     'Tap to review and accept',
                     style: TextStyle(

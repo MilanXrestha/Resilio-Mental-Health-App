@@ -122,12 +122,12 @@ class TherapistCubit extends Cubit<TherapistState> {
 
   // ── Profile ─────────────────────────────────────────────────────────────────
   Future<void> loadProfile() async {
-    emit(state.copyWith(isLoading: true, clearError: true));
+    emit(state.copyWith(isProfileLoading: true, clearError: true));
     try {
       final profile = await _repository.getPortalProfile();
-      emit(state.copyWith(isLoading: false, profile: profile));
+      emit(state.copyWith(isProfileLoading: false, profile: profile));
     } catch (e) {
-      emit(state.copyWith(isLoading: false, errorMessage: e.toString()));
+      emit(state.copyWith(isProfileLoading: false, errorMessage: e.toString()));
     }
   }
 

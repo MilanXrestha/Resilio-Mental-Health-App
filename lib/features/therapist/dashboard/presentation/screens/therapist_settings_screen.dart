@@ -26,6 +26,9 @@ class _TherapistSettingsScreenState extends State<TherapistSettingsScreen> {
     PackageInfo.fromPlatform().then((pi) {
       if (mounted) setState(() => _appVersion = pi.version);
     });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<TherapistCubit>().loadProfile();
+    });
   }
 
   @override

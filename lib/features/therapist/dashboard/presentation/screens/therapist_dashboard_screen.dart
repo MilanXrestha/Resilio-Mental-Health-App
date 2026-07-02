@@ -3,6 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../../../core/theme/app_colors.dart';
 
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../bloc/therapist_cubit.dart';
 import 'tabs/therapist_home_tab.dart';
 import 'tabs/therapist_appointments_tab.dart';
 import 'tabs/therapist_patients_tab.dart';
@@ -35,6 +37,16 @@ class _TherapistDashboardScreenState extends State<TherapistDashboardScreen> {
       const TherapistEarningsTab(),
       const TherapistContentHubTab(),
     ];
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final cubit = context.read<TherapistCubit>();
+        cubit.loadProfile();
+        cubit.loadDashboard();
+        cubit.loadAppointments();
+        cubit.loadPatients();
+        cubit.loadEarnings();
+      }
+    });
   }
 
   @override
