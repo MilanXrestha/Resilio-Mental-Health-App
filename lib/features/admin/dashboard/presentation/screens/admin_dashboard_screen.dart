@@ -61,31 +61,32 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           index: _currentIndex,
           children: pages,
         ),
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: _onTabTapped,
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: _currentIndex,
+          onDestinationSelected: _onTabTapped,
           backgroundColor: context.surfaceColor,
-          selectedItemColor: context.primaryColor,
-          unselectedItemColor: context.textSecondaryColor,
-          type: BottomNavigationBarType.fixed,
-          elevation: 8,
-          selectedLabelStyle: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600, fontSize: 11),
-          unselectedLabelStyle: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w500, fontSize: 11),
-          items: [
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.dashboard_rounded),
+          elevation: 0,
+          indicatorColor: context.primaryColor.withOpacity(0.15),
+          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+          destinations: [
+            NavigationDestination(
+              icon: Icon(Icons.dashboard_outlined, color: context.textSecondaryColor),
+              selectedIcon: Icon(Icons.dashboard_rounded, color: context.primaryColor),
               label: AppLocalizations.of(context)!.admOverview,
             ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.perm_media_rounded),
+            NavigationDestination(
+              icon: Icon(Icons.perm_media_outlined, color: context.textSecondaryColor),
+              selectedIcon: Icon(Icons.perm_media_rounded, color: context.primaryColor),
               label: AppLocalizations.of(context)!.admContent,
             ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.psychology_rounded),
+            NavigationDestination(
+              icon: Icon(Icons.psychology_outlined, color: context.textSecondaryColor),
+              selectedIcon: Icon(Icons.psychology_rounded, color: context.primaryColor),
               label: AppLocalizations.of(context)!.admTherapists,
             ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.people_rounded),
+            NavigationDestination(
+              icon: Icon(Icons.people_outline_rounded, color: context.textSecondaryColor),
+              selectedIcon: Icon(Icons.people_rounded, color: context.primaryColor),
               label: AppLocalizations.of(context)!.admUsers,
             ),
           ],

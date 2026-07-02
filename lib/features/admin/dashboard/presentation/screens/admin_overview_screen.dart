@@ -76,8 +76,8 @@ class _AdminOverviewScreenState extends State<AdminOverviewScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Admin Panel',
-                style: TextStyle(fontFamily: 'Poppins', fontSize: 26.sp, fontWeight: FontWeight.w800, color: context.textPrimaryColor),
+                'Admin Dashboard',
+                style: TextStyle(fontFamily: 'Poppins', fontSize: 24.sp, fontWeight: FontWeight.w700, color: context.textPrimaryColor, letterSpacing: -0.5),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -97,13 +97,12 @@ class _AdminOverviewScreenState extends State<AdminOverviewScreen> {
             width: 44.w,
             height: 44.w,
             decoration: BoxDecoration(
-              gradient: LinearGradient(colors: [context.primaryColor, context.primaryColor.withOpacity(0.7)]),
+              color: context.surfaceColor,
               shape: BoxShape.circle,
-              border: Border.all(color: context.primaryColor.withOpacity(0.3), width: 2),
-              boxShadow: [BoxShadow(color: context.primaryColor.withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 4))],
+              border: Border.all(color: context.dividerColor, width: 1.5),
             ),
             child: Center(
-              child: Icon(Icons.person_rounded, color: Colors.white, size: 24.sp),
+              child: Icon(Icons.person_outline_rounded, color: context.textPrimaryColor, size: 24.sp),
             ),
           ),
         ),
@@ -279,7 +278,12 @@ class _AdminOverviewScreenState extends State<AdminOverviewScreen> {
 
         return Container(
           padding: EdgeInsets.all(20.w),
-          decoration: BoxDecoration(color: context.surfaceColor, borderRadius: BorderRadius.circular(20.r), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))]),
+          decoration: BoxDecoration(
+            color: context.surfaceColor,
+            borderRadius: BorderRadius.circular(20.r),
+            border: Border.all(color: context.dividerColor, width: 1),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -341,7 +345,12 @@ class _AdminOverviewScreenState extends State<AdminOverviewScreen> {
           onTap: () => widget.onNavigateTab?.call(1),
           child: Container(
             padding: EdgeInsets.all(20.w),
-            decoration: BoxDecoration(color: context.surfaceColor, borderRadius: BorderRadius.circular(20.r), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))]),
+            decoration: BoxDecoration(
+              color: context.surfaceColor,
+              borderRadius: BorderRadius.circular(20.r),
+              border: Border.all(color: context.dividerColor, width: 1),
+              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

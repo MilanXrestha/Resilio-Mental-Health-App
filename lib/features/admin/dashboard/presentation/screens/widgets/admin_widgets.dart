@@ -35,9 +35,10 @@ class AdminStatCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: context.surfaceColor,
           borderRadius: BorderRadius.circular(20.r),
+          border: Border.all(color: context.dividerColor, width: 1),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(context.isDarkMode ? 0.3 : 0.04),
+              color: Colors.black.withOpacity(0.03),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
