@@ -48,13 +48,15 @@ class _AdminOverviewScreenState extends State<AdminOverviewScreen> {
               children: [
                 SizedBox(height: 16.h),
                 _buildHeader(context),
-                SizedBox(height: 24.h),
+                SizedBox(height: 20.h),
+                _buildQuickActions(context),
+                SizedBox(height: 20.h),
                 _buildRevenueCard(context),
-                SizedBox(height: 24.h),
+                SizedBox(height: 20.h),
                 _buildStatsGrid(),
-                SizedBox(height: 24.h),
+                SizedBox(height: 20.h),
                 _buildUserDistribution(),
-                SizedBox(height: 24.h),
+                SizedBox(height: 20.h),
                 _buildContentStats(),
                 SizedBox(height: 32.h),
               ],
@@ -62,6 +64,41 @@ class _AdminOverviewScreenState extends State<AdminOverviewScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildQuickActions(BuildContext context) {
+    final actions = [
+      _QuickAction('Broadcast', Icons.campaign_rounded, const Color(0xFFEC4899), () => context.push('/admin-notifications')),
+      _QuickAction('Revenue', Icons.bar_chart_rounded, const Color(0xFF6366F1), () => context.push('/admin-revenue')),
+      _QuickAction('Prefs', Icons.app_settings_alt_rounded, const Color(0xFF10B981), () => context.push('/admin-preferences')),
+      _QuickAction('Settings', Icons.settings_rounded, const Color(0xFF8B5CF6), () => context.push('/admin-settings')),
+    ];
+    return Row(
+      children: actions.asMap().entries.map((e) {
+        final action = e.value;
+        return Expanded(
+          child: GestureDetector(
+            onTap: action.onTap,
+            child: Column(
+              children: [
+                Container(
+                  width: 52.w,
+                  height: 52.w,
+                  decoration: BoxDecoration(
+                    color: action.color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16.r),
+                    border: Border.all(color: action.color.withOpacity(0.2)),
+                  ),
+                  child: Icon(action.icon, color: action.color, size: 24.sp),
+                ),
+                SizedBox(height: 6.h),
+                Text(action.label, style: TextStyle(fontFamily: 'Poppins', fontSize: 10.sp, fontWeight: FontWeight.w600, color: context.textSecondaryColor)),
+              ],
+            ),
+          ).animate(delay: (e.key * 50).ms).fadeIn().slideY(begin: 0.1),
+        );
+      }).toList(),
     );
   }
 
@@ -442,4 +479,12 @@ class _BarData {
   final double value;
   final Color color;
   const _BarData(this.label, this.value, this.color);
+}
+
+class _QuickAction {
+  final String label;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+  const _QuickAction(this.label, this.icon, this.color, this.onTap);
 }

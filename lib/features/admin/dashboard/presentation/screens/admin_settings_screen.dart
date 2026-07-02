@@ -20,7 +20,7 @@ class AdminSettingsScreen extends StatefulWidget {
 
 class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
   bool _isUploadingAvatar = false;
-  String? _avatarUrl; // We would ideally read this from auth state
+  String? _avatarUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -32,9 +32,12 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
         return Scaffold(
           backgroundColor: context.backgroundColor,
           appBar: AppBar(
-            title: Text(
-              'App Settings',
-              style: TextStyle(fontFamily: 'Poppins', fontSize: 20.sp, fontWeight: FontWeight.w700, color: context.textPrimaryColor),
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('App Settings', style: TextStyle(fontFamily: 'Poppins', fontSize: 20.sp, fontWeight: FontWeight.w700, color: context.textPrimaryColor, letterSpacing: -0.3)),
+                Text('Customize your experience', style: TextStyle(fontFamily: 'Poppins', fontSize: 11.sp, color: context.textSecondaryColor)),
+              ],
             ),
             backgroundColor: context.backgroundColor,
             elevation: 0,
@@ -51,72 +54,77 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                 _buildProfileSection(context),
                 SizedBox(height: 32.h),
 
-                _buildSectionHeader('Appearance & Language'),
-                SizedBox(height: 12.h),
-                _buildSettingCard(
-                  children: [
-                    _buildToggleSetting(
-                      icon: Icons.dark_mode_rounded,
-                      iconColor: const Color(0xFF8B5CF6),
-                      title: 'Dark Mode',
-                      subtitle: 'Switch application theme',
-                      value: isDarkMode,
-                      onChanged: (val) {
-                        context.read<ThemeCubit>().toggleTheme();
-                      },
-                    ),
-                    Divider(color: context.dividerColor, height: 1),
-                    _buildToggleSetting(
-                      icon: Icons.language_rounded,
-                      iconColor: const Color(0xFF10B981),
-                      title: 'Nepali Language',
-                      subtitle: 'Toggle localized strings',
-                      value: isNepali,
-                      onChanged: (val) {
-                        context.read<ThemeCubit>().toggleLocale();
-                      },
-                    ),
-                  ],
-                ),
-                
-                SizedBox(height: 24.h),
-                _buildSectionHeader('Platform Management'),
-                SizedBox(height: 12.h),
-                _buildSettingCard(
-                  children: [
-                    _buildActionSetting(
-                      icon: Icons.app_settings_alt_rounded,
-                      iconColor: const Color(0xFFF59E0B),
-                      title: 'Onboarding Preferences',
-                      onTap: () => context.push('/admin-preferences'),
-                    ),
-                    Divider(color: context.dividerColor, height: 1),
-                    _buildActionSetting(
-                      icon: Icons.notifications_active_rounded,
-                      iconColor: const Color(0xFFEC4899),
-                      title: 'Broadcasts Log',
-                      onTap: () => context.push('/admin-notifications'),
-                    ),
-                  ],
-                ),
+                _buildSectionLabel('Appearance & Language'),
+                SizedBox(height: 10.h),
+                _buildCard(children: [
+                  _buildToggleRow(
+                    context: context,
+                    icon: isDarkMode ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+                    iconColor: const Color(0xFF8B5CF6),
+                    title: 'Dark Mode',
+                    subtitle: isDarkMode ? 'Currently dark' : 'Currently light',
+                    value: isDarkMode,
+                    onChanged: (_) => context.read<ThemeCubit>().toggleTheme(),
+                  ),
+                  _divider(context),
+                  _buildToggleRow(
+                    context: context,
+                    icon: Icons.language_rounded,
+                    iconColor: const Color(0xFF10B981),
+                    title: 'Nepali Language',
+                    subtitle: isNepali ? 'नेपाली सक्रिय छ' : 'English is active',
+                    value: isNepali,
+                    onChanged: (_) => context.read<ThemeCubit>().toggleLocale(),
+                  ),
+                ]),
 
                 SizedBox(height: 24.h),
-                _buildSectionHeader('Account Actions'),
-                SizedBox(height: 12.h),
-                _buildSettingCard(
-                  children: [
-                    _buildActionSetting(
-                      icon: Icons.logout_rounded,
-                      iconColor: const Color(0xFFEF4444),
-                      title: 'Log Out',
-                      textColor: const Color(0xFFEF4444),
-                      showArrow: false,
-                      onTap: () {
-                        context.read<AuthBloc>().add(LogoutRequested());
-                      },
-                    ),
-                  ],
-                ),
+                _buildSectionLabel('Platform Management'),
+                SizedBox(height: 10.h),
+                _buildCard(children: [
+                  _buildActionRow(
+                    context: context,
+                    icon: Icons.app_settings_alt_rounded,
+                    iconColor: const Color(0xFFF59E0B),
+                    title: 'Onboarding Preferences',
+                    subtitle: 'Manage category options',
+                    onTap: () => context.push('/admin-preferences'),
+                  ),
+                  _divider(context),
+                  _buildActionRow(
+                    context: context,
+                    icon: Icons.campaign_rounded,
+                    iconColor: const Color(0xFFEC4899),
+                    title: 'Broadcast Center',
+                    subtitle: 'Send push notifications',
+                    onTap: () => context.push('/admin-notifications'),
+                  ),
+                  _divider(context),
+                  _buildActionRow(
+                    context: context,
+                    icon: Icons.bar_chart_rounded,
+                    iconColor: const Color(0xFF6366F1),
+                    title: 'Revenue Analytics',
+                    subtitle: 'View earnings and charts',
+                    onTap: () => context.push('/admin-revenue'),
+                  ),
+                ]),
+
+                SizedBox(height: 24.h),
+                _buildSectionLabel('Account'),
+                SizedBox(height: 10.h),
+                _buildCard(children: [
+                  _buildActionRow(
+                    context: context,
+                    icon: Icons.logout_rounded,
+                    iconColor: const Color(0xFFEF4444),
+                    title: 'Log Out',
+                    subtitle: 'Sign out of admin account',
+                    textColor: const Color(0xFFEF4444),
+                    showArrow: false,
+                    onTap: () => context.read<AuthBloc>().add(LogoutRequested()),
+                  ),
+                ]),
                 SizedBox(height: 32.h),
               ],
             ),
@@ -127,42 +135,57 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
   }
 
   Widget _buildProfileSection(BuildContext context) {
-    return Center(
-      child: Column(
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: context.surfaceColor,
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: context.dividerColor),
+      ),
+      child: Row(
         children: [
           Stack(
             children: [
               CircleAvatar(
-                radius: 48.r,
+                radius: 36.r,
                 backgroundColor: context.primaryColor.withOpacity(0.1),
                 backgroundImage: _avatarUrl != null ? NetworkImage(_avatarUrl!) : null,
                 child: _avatarUrl == null && !_isUploadingAvatar
-                    ? Icon(Icons.shield_rounded, size: 40.sp, color: context.primaryColor)
+                    ? Icon(Icons.shield_rounded, size: 32.sp, color: context.primaryColor)
                     : _isUploadingAvatar
-                        ? const CircularProgressIndicator()
+                        ? const CircularProgressIndicator(strokeWidth: 2)
                         : null,
               ),
               Positioned(
-                bottom: 0,
-                right: 0,
+                bottom: 0, right: 0,
                 child: GestureDetector(
                   onTap: _pickAndUploadAvatar,
                   child: Container(
-                    padding: EdgeInsets.all(8.w),
-                    decoration: BoxDecoration(
-                      color: context.primaryColor,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: context.backgroundColor, width: 3),
-                    ),
-                    child: Icon(Icons.camera_alt_rounded, color: Colors.white, size: 16.sp),
+                    padding: EdgeInsets.all(6.w),
+                    decoration: BoxDecoration(color: context.primaryColor, shape: BoxShape.circle, border: Border.all(color: context.backgroundColor, width: 2)),
+                    child: Icon(Icons.camera_alt_rounded, color: Colors.white, size: 14.sp),
                   ),
                 ),
               ),
             ],
           ),
-          SizedBox(height: 16.h),
-          Text('Admin User', style: TextStyle(fontFamily: 'Poppins', fontSize: 18.sp, fontWeight: FontWeight.w700, color: context.textPrimaryColor)),
-          Text('System Administrator', style: TextStyle(fontFamily: 'Poppins', fontSize: 13.sp, color: context.textSecondaryColor)),
+          SizedBox(width: 16.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Admin User', style: TextStyle(fontFamily: 'Poppins', fontSize: 16.sp, fontWeight: FontWeight.w700, color: context.textPrimaryColor)),
+                SizedBox(height: 2.h),
+                Text('System Administrator', style: TextStyle(fontFamily: 'Poppins', fontSize: 12.sp, color: context.textSecondaryColor)),
+                SizedBox(height: 8.h),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                  decoration: BoxDecoration(color: context.primaryColor.withOpacity(0.1), borderRadius: BorderRadius.circular(20.r)),
+                  child: Text('Super Admin', style: TextStyle(fontFamily: 'Poppins', fontSize: 10.sp, fontWeight: FontWeight.w700, color: context.primaryColor)),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -172,42 +195,42 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile == null) return;
-
     setState(() => _isUploadingAvatar = true);
     try {
       final uploader = getIt<CloudinaryService>();
-      // Using generic admin_avatar key for this demo.
       final url = await uploader.uploadProfileImage(File(pickedFile.path), 'admin_avatar');
       setState(() => _avatarUrl = url);
-      
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Avatar updated successfully')));
-      }
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Avatar updated successfully')));
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Upload failed: $e')));
-      }
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Upload failed: $e')));
     } finally {
       if (mounted) setState(() => _isUploadingAvatar = false);
     }
   }
 
-  Widget _buildSectionHeader(String title) {
-    return Text(title, style: TextStyle(fontFamily: 'Poppins', fontSize: 13.sp, fontWeight: FontWeight.w700, color: context.textSecondaryColor));
+  Widget _buildSectionLabel(String title) {
+    return Text(title.toUpperCase(), style: TextStyle(fontFamily: 'Poppins', fontSize: 11.sp, fontWeight: FontWeight.w700, color: context.textSecondaryColor, letterSpacing: 0.8));
   }
 
-  Widget _buildSettingCard({required List<Widget> children}) {
+  Widget _buildCard({required List<Widget> children}) {
     return Container(
       decoration: BoxDecoration(
         color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10)],
+        border: Border.all(color: context.dividerColor),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8)],
       ),
       child: Column(children: children),
     );
   }
 
-  Widget _buildToggleSetting({
+  Widget _divider(BuildContext context) => Padding(
+    padding: EdgeInsets.symmetric(horizontal: 16.w),
+    child: Divider(color: context.dividerColor, height: 1),
+  );
+
+  Widget _buildToggleRow({
+    required BuildContext context,
     required IconData icon,
     required Color iconColor,
     required String title,
@@ -224,7 +247,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
             decoration: BoxDecoration(color: iconColor.withOpacity(0.1), borderRadius: BorderRadius.circular(10.r)),
             child: Icon(icon, color: iconColor, size: 20.sp),
           ),
-          SizedBox(width: 16.w),
+          SizedBox(width: 14.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -240,10 +263,12 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
     );
   }
 
-  Widget _buildActionSetting({
+  Widget _buildActionRow({
+    required BuildContext context,
     required IconData icon,
     required Color iconColor,
     required String title,
+    required String subtitle,
     required VoidCallback onTap,
     Color? textColor,
     bool showArrow = true,
@@ -252,7 +277,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(16.r),
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
         child: Row(
           children: [
             Container(
@@ -260,9 +285,17 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
               decoration: BoxDecoration(color: iconColor.withOpacity(0.1), borderRadius: BorderRadius.circular(10.r)),
               child: Icon(icon, color: iconColor, size: 20.sp),
             ),
-            SizedBox(width: 16.w),
-            Expanded(child: Text(title, style: TextStyle(fontFamily: 'Poppins', fontSize: 14.sp, fontWeight: FontWeight.w600, color: textColor ?? context.textPrimaryColor))),
-            if (showArrow) Icon(Icons.arrow_forward_ios_rounded, size: 16.sp, color: context.textSecondaryColor),
+            SizedBox(width: 14.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: TextStyle(fontFamily: 'Poppins', fontSize: 14.sp, fontWeight: FontWeight.w600, color: textColor ?? context.textPrimaryColor)),
+                  Text(subtitle, style: TextStyle(fontFamily: 'Poppins', fontSize: 11.sp, color: context.textSecondaryColor)),
+                ],
+              ),
+            ),
+            if (showArrow) Icon(Icons.arrow_forward_ios_rounded, size: 14.sp, color: context.textSecondaryColor),
           ],
         ),
       ),
