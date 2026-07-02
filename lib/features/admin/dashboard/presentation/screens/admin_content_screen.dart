@@ -74,6 +74,10 @@ class _AdminContentScreenState extends State<AdminContentScreen> with SingleTick
           controller: _tabController,
           isScrollable: true,
           tabAlignment: TabAlignment.start,
+          // Pill covers the whole tab; padding gives the icon+text breathing room.
+          indicatorSize: TabBarIndicatorSize.tab,
+          labelPadding: EdgeInsets.symmetric(horizontal: 8.w),
+          indicatorPadding: EdgeInsets.symmetric(vertical: 8.h),
           indicator: BoxDecoration(
             color: _tabs[_tabController.index].color.withOpacity(0.12),
             borderRadius: BorderRadius.circular(20.r),
@@ -84,12 +88,15 @@ class _AdminContentScreenState extends State<AdminContentScreen> with SingleTick
           unselectedLabelColor: context.textSecondaryColor,
           dividerColor: Colors.transparent,
           tabs: _tabs.map((t) => Tab(
-            child: Row(
-              children: [
-                Icon(t.icon, size: 16.sp),
-                SizedBox(width: 6.w),
-                Text(t.label),
-              ],
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 14.w),
+              child: Row(
+                children: [
+                  Icon(t.icon, size: 16.sp),
+                  SizedBox(width: 6.w),
+                  Text(t.label),
+                ],
+              ),
             ),
           )).toList(),
         ),
