@@ -304,11 +304,13 @@ class _SubscriptionsTab extends StatelessWidget {
                   itemCount: subs.length,
                   itemBuilder: (_, i) {
                     final sub = subs[i];
-                    final name = sub['displayName']?.toString() ?? 'Unknown';
+                    final userObj = sub['users'] as Map<String, dynamic>?;
+                    final name = userObj?['display_name']?.toString() ?? 'Unknown';
+                    final email = userObj?['email']?.toString() ?? '';
                     final plan = sub['plan_id']?.toString() ?? 'Free';
                     final status = sub['status']?.toString() ?? 'unknown';
-                    final endDate = sub['end_date']?.toString().substring(0, 10) ?? '';
-                    final photo = sub['photoUrl']?.toString();
+                    final endDate = sub['end_date']?.toString().substring(0, 10) ?? (sub['created_at']?.toString().substring(0, 10) ?? '');
+                    final photo = null;
                     final statusColor = status == 'active' ? const Color(0xFF10B981) : const Color(0xFFEF4444);
 
                     return Container(
@@ -330,7 +332,7 @@ class _SubscriptionsTab extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start, 
                               children: [
                                 Text(name, style: TextStyle(fontFamily: 'Poppins', fontSize: 14.sp, fontWeight: FontWeight.w700, color: context.textPrimaryColor), maxLines: 1, overflow: TextOverflow.ellipsis),
-                                Text(sub['email']?.toString() ?? '', style: TextStyle(fontFamily: 'Poppins', fontSize: 11.sp, color: context.textSecondaryColor), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                Text(email, style: TextStyle(fontFamily: 'Poppins', fontSize: 11.sp, color: context.textSecondaryColor), maxLines: 1, overflow: TextOverflow.ellipsis),
                               ]
                             )
                           ),
@@ -371,12 +373,13 @@ class _TherapistPaymentsTab extends StatelessWidget {
           itemCount: payments.length,
           itemBuilder: (_, i) {
             final p = payments[i];
-            final total = p['totalAmount'] as num? ?? 0;
-            final commission = p['adminCommission'] as num? ?? 0;
-            final payout = p['therapistPayout'] as num? ?? 0;
-            final date = p['appointmentDate']?.toString().substring(0, 10) ?? '';
-            final therapistName = p['therapistName']?.toString() ?? 'Unknown';
-            final photo = p['therapistPhoto']?.toString();
+            final userObj = p['users'] as Map<String, dynamic>?;
+            final therapistName = userObj?['display_name']?.toString() ?? 'Unknown';
+            final total = p['amount'] as num? ?? 0;
+            final commission = total * 0.1; // 10% admin cut
+            final payout = total * 0.9;
+            final date = p['created_at']?.toString().substring(0, 10) ?? '';
+            final photo = null;
 
             return Container(
               margin: EdgeInsets.only(bottom: 12.h),

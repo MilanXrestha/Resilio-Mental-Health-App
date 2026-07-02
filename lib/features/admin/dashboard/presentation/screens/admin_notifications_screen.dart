@@ -410,7 +410,22 @@ class _BroadcastDialogState extends State<_BroadcastDialog> {
       targetRole: _targetRole,
     );
     if (mounted) setState(() => _isSending = false);
-    if (ok && mounted) Navigator.pop(context);
+    if (ok && mounted) {
+      final sentCount = context.read<AdminNotificationCubit>().state.lastSentCount ?? 0;
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Broadcast completed! Sent to $sentCount users.'),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: const Color(0xFF10B981),
+        ),
+      );
+    } else if (!ok && mounted) {
+      final err = context.read<AdminNotificationCubit>().state.error ?? 'Failed to send broadcast';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(err), behavior: SnackBarBehavior.floating, backgroundColor: const Color(0xFFEF4444)),
+      );
+    }
   }
 }
 
