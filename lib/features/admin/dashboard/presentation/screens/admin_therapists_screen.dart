@@ -137,14 +137,14 @@ class _TherapistCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isVerified = therapist['is_verified'] as bool? ?? false;
+    final isVerified = therapist['isVerified'] as bool? ?? false;
     final name = therapist['displayName'] as String? ?? 'Unknown';
     final email = therapist['email'] as String? ?? '';
     final specialty = therapist['specialty'] as String? ?? 'Not specified';
-    final experience = therapist['years_of_experience'] as int? ?? 0;
+    final experience = therapist['yearsOfExperience'] as int? ?? 0;
     final rating = (therapist['rating'] as num?)?.toDouble() ?? 0.0;
     final photo = therapist['profileImageUrl'] as String?;
-    final fee = (therapist['consultation_fee'] as num?)?.toDouble() ?? 0.0;
+    final fee = (therapist['consultationFee'] as num?)?.toDouble() ?? 0.0;
     final commission = therapist['commissionRate'] as int? ?? 10;
 
     return Container(

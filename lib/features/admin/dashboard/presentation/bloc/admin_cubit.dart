@@ -115,6 +115,10 @@ class AdminCubit extends Cubit<AdminState> {
     required bool isVerified,
     String? rejectionReason,
   }) async {
+    // Capture current filter before changing state
+    final currentFilter = state.maybeMap(loaded: (s) => s.therapistFilter, orElse: () => 'all');
+    final currentSearch = state.maybeMap(loaded: (s) => s.therapistSearch, orElse: () => '');
+
     emit(_createLoadedState(isVerifyingTherapist: true));
     try {
       await _repository.verifyTherapist(
@@ -122,7 +126,8 @@ class AdminCubit extends Cubit<AdminState> {
         isVerified: isVerified,
         rejectionReason: rejectionReason,
       );
-      await loadTherapists();
+      // Reload with same filter/search so the UI reflects the change correctly
+      await loadTherapists(verified: currentFilter, search: currentSearch);
       await loadDashboard();
     } catch (e) {
       emit(AdminState.error(e.toString()));
@@ -132,10 +137,13 @@ class AdminCubit extends Cubit<AdminState> {
   }
 
   Future<void> deleteTherapist(String therapistId) async {
+    final currentFilter = state.maybeMap(loaded: (s) => s.therapistFilter, orElse: () => 'all');
+    final currentSearch = state.maybeMap(loaded: (s) => s.therapistSearch, orElse: () => '');
+
     emit(_createLoadedState(isDeletingTherapist: true));
     try {
       await _repository.deleteTherapist(therapistId);
-      await loadTherapists();
+      await loadTherapists(verified: currentFilter, search: currentSearch);
       await loadDashboard();
     } catch (e) {
       emit(AdminState.error(e.toString()));
